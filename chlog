@@ -1,0 +1,6 @@
+Initial version, let's get started!
+This commit is mostly about the conceptual documentation. However, I found that
+there are too much details in the documentation, it's not like a 'conceptual'
+design document, it's more like a reference. So I will most probably delete
+most of the staff in the next commit. If somehow the old docs are still wanted,
+please checkout this commit.
