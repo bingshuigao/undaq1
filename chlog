@@ -4,3 +4,10 @@ there are too much details in the documentation, it's not like a 'conceptual'
 design document, it's more like a reference. So I will most probably delete
 most of the staff in the next commit. If somehow the old docs are still wanted,
 please checkout this commit.
+
+
+In this version, the classes for madc32, v830, v2718, v1190 are created (some
+functions are left unimplemented yet). The base class vme_ctl and module are
+also created. The class modules, which makes the read out of many modules of
+the same type easier, is also created. All other vme modules should derive from
+the base class module.
