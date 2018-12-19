@@ -54,6 +54,9 @@ public:
 	void set_dw(int dw) {this->dw = dw;}
 	int get_dw() {return dw;}
 
+	void set_crate(int n) {crate = n;}
+	int get_crate() {return crate;}
+
 	/* Get the name of the controller */
 	std::string get_name() {return name;}
 
@@ -109,5 +112,6 @@ protected:
 	int am; /* address modifier */
 	int dw; /* data width (dw = 16, or 32, or 64) */
 	std::string name; /* name of the controller */
+	int crate; /* crate number of the controller */
 };
 #endif

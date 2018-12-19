@@ -102,6 +102,16 @@
 	the experiment. How do we know which modules are used ? We can find it
 	out from the configuration file.
 
+	About the trigger: It is very difficult to decide the trigger mechanism
+	when we don't know the electronics setup at all. Since here we are
+	trying to develop a `universal' DAQ, a `universal' trigger mechanism has
+	to be figured out. The best one that I can think of is to use the I/O
+	register module V977 as the `trigger module'. So in order to use this
+	DAQ, it is preferable to have a V977 module (as the trigger module).
+	However, any module $can$ be used as a trigger module. The function
+	`module::if\_trig()' should be overwritten if the module is going to be
+	the trigger module.
+
 	Since frontend will communicate with the electronics, connections of the
 	hardware is needed to run the program. However, for testing purposes, it
 	should provide a mechanism to run the program without really connecting
@@ -111,18 +121,28 @@
 	out to event builder with minimum pre-processing. The modules can be
 	categorized into two types: `trigger type' and `scaler type'. The
 	`trigger type' modules are read whenever there is a trigger, the `scaler
-	type' modules are read regularly, independent of the trigger. Meanwhile
-	the frontend has to communicate with the controller. So four threads
-	should be used:
+	type' modules are read regularly, independent of the trigger. Each
+	scaler-type module has a reading period. If the period is 0, then the
+	module is never going to be readout. Meanwhile the frontend has to
+	communicate with the controller. So four threads should be used:
 	\begin{itemize}
-		\item Thread 1, (main thread). It waits for trigger and read data
-			from modules. Then it packs and copies the data into a ring
-			buffer.
+		\item Thread 1,  It waits for trigger and read data from modules.
+			Then it packs and copies the data into a ring buffer.
 		\item Thread 2. It reads data regularly from scaler type modules and
 			packs and copies the data into the ring buffer as in thread 1.
 		\item Thread 3. It reads data packets from the ring buffer and sends
 			them out to the event builder (Tcp server).
 		\item Thread 4. It communicates with the controller (Tcp client).
+	\end{itemize}
+
+	To make life easier, it is better to organize these things in classes.
+	To do this, (at least) five classes are needed:
+	\begin{itemize}
+		\item One class for each of the threads.
+		\item Another class called `initializer' which initialize everything
+			(including the modules, ring buffer ...). This class can also be
+			used in other parts (e.g. event builder) of the DAQ to
+			initialize.
 	\end{itemize}
 
 	\section{event builder}
@@ -135,17 +155,18 @@
 	The main task of event builder is to build event from the data received
 	from frontend based on their time stamps. Four threads should be used:
 	\begin{itemize}
-		\item Thread 1. It receives data from frontend (Tcp client). Then it
-			sorts the data into different ring buffers. Here each single
-			module (adc, tdc ...) has a dedicated ring buffer. In each ring
-			buffer, the events are sorted by their time stamps.
-		\item Thread 2 (main thread). It reads data from the ring buffers in
+		\item Thread 1. It receives data from frontend (Tcp client) and
+			saves the data into a ring buffer.
+		\item Thread 2. It sorts the data into different ring buffers. Here
+			each single module (adc, tdc ...) has a dedicated ring buffer.
+			In each ring buffer, the events are sorted by their time stamps.
+		\item Thread 3 (main thread). It reads data from the ring buffers in
 			thread 1 and build events out of the fragments contained in the
 			ring buffers. It then copies the composed event into the `master
 			ring buffer'.
-		\item Thread 3. It read the composed events from the `master ring
+		\item Thread 4. It read the composed events from the `master ring
 			buffer' and sends them out to logger \& analyser (Tcp server).
-		\item Thread 4. It communicates with the controller (Tcp client).
+		\item Thread 5. It communicates with the controller (Tcp client).
 	\end{itemize}
 	The processing of the data flow is demonstrated in Fig. \ref{fig03}.
 

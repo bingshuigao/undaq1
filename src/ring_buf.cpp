@@ -89,13 +89,11 @@ int ring_buf::init(uint32_t sz)
 {
 	/* allocate memory and create appropriate maps for it */
 	if (create_map(sz)) {
-		std::cerr<<"cannot map the ring buffer!"<<std::endl;
 		return -1;
 	}
 
 	/* init the mutex */
 	if (pthread_mutex_init(&mutex, NULL)) {
-		std::cerr<<"cannot init mutex!"<<std::endl;
 		return -1;
 	}
 	mutex_init = 1;
@@ -118,14 +116,15 @@ int ring_buf::init(uint32_t sz)
  * read as much as possible.
  * @return The actual number of bytes read, -1 in case of error.
  * */
-int32_t ring_buf::read(void* dst, int32_t size)
+int32_t ring_buf::read(void* dst, int32_t size, bool peek, bool lock)
 {
 	uint32_t sz_used, sz_read;
 
-	/* acquire the lock */
-	if (pthread_mutex_lock(&mutex)) {
-		std::cerr<<"cannot get lock!"<<std::endl;
-		return -1;
+	if (lock) {
+		/* acquire the lock */
+		if (pthread_mutex_lock(&mutex)) {
+			return -1;
+		}
 	}
 
 	/* read data from ring buffer */
@@ -135,18 +134,23 @@ int32_t ring_buf::read(void* dst, int32_t size)
 	else
 		sz_read = size;
 	memcpy(dst, rd_ptr, sz_read);
-	rd_ptr += sz_read;
 
-	/* update read and write pointers if neccessary */
-	if (rd_ptr - buf_ptr >= size) {
-		rd_ptr -= size;
-		wr_ptr -= size;
+	/* if not peek, update the read/write pointers */
+	if (!peek) {
+		rd_ptr += sz_read;
+
+		/* update read and write pointers if neccessary */
+		if (rd_ptr - buf_ptr >= size) {
+			rd_ptr -= size;
+			wr_ptr -= size;
+		}
 	}
 
-	/* release the lock */
-	if (pthread_mutex_unlock(&mutex)) {
-		std::cerr<<"cannot release lock!"<<std::endl;
-		return -1;
+	if (lock) {
+		/* release the lock */
+		if (pthread_mutex_unlock(&mutex)) {
+			return -1;
+		}
 	}
 	return sz_read;
 }
@@ -157,14 +161,15 @@ int32_t ring_buf::read(void* dst, int32_t size)
  * @param size The desired size of data to write (bytes).
  * @return The actual number of bytes written. -1 in case of error.
  * */
-int32_t ring_buf::write(void* src, int32_t size)
+int32_t ring_buf::write(void* src, int32_t size, bool lock)
 {
 	uint32_t sz_write, sz_free;
 
-	/* acquire the lock */
-	if (pthread_mutex_lock(&mutex)) {
-		std::cerr<<"cannot get lock!"<<std::endl;
-		return -1;
+	if (lock) {
+		/* acquire the lock */
+		if (pthread_mutex_lock(&mutex)) {
+			return -1;
+		}
 	}
 
 	/* read data from ring buffer */
@@ -176,10 +181,11 @@ int32_t ring_buf::write(void* src, int32_t size)
 	memcpy(wr_ptr, src, sz_write);
 	wr_ptr += sz_write;
 
-	/* release the lock */
-	if (pthread_mutex_unlock(&mutex)) {
-		std::cerr<<"cannot release lock!"<<std::endl;
-		return -1;
+	if (lock) {
+		/* release the lock */
+		if (pthread_mutex_unlock(&mutex)) {
+			return -1;
+		}
 	}
 	return sz_write;
 }
@@ -192,13 +198,12 @@ int32_t ring_buf::write(void* src, int32_t size)
  * @return Return the free/used space of the buffer (in bytes). Return
  * -1 in case of error.
  */
-uint32_t ring_buf::get_free()
+int32_t ring_buf::get_free()
 {
 	uint32_t sz_free;
 
 	/* acquire the lock */
 	if (pthread_mutex_lock(&mutex)) {
-		std::cerr<<"cannot get lock!"<<std::endl;
 		return -1;
 	}
 
@@ -206,19 +211,17 @@ uint32_t ring_buf::get_free()
 
 	/* release the lock */
 	if (pthread_mutex_unlock(&mutex)) {
-		std::cerr<<"cannot release lock!"<<std::endl;
 		return -1;
 	}
 
 	return sz_free;
 }
-uint32_t ring_buf::get_used()
+int32_t ring_buf::get_used()
 {
 	uint32_t sz_used;
 
 	/* acquire the lock */
 	if (pthread_mutex_lock(&mutex)) {
-		std::cerr<<"cannot get lock!"<<std::endl;
 		return -1;
 	}
 
@@ -226,9 +229,25 @@ uint32_t ring_buf::get_used()
 
 	/* release the lock */
 	if (pthread_mutex_unlock(&mutex)) {
-		std::cerr<<"cannot release lock!"<<std::endl;
 		return -1;
 	}
 
 	return sz_used;
+}
+
+uint32_t ring_buf::wait_buf_free(uint32_t sz, int t_us, int t2_us)
+{
+	uint32_t free_sz;
+	int t_out = 0;
+begin:
+	if (t2_us > 0 && t_out >= t2_us)
+		return -1;
+	free_sz = get_free();
+	if (free_sz == -1)
+		return -1;
+	if (free_sz >= sz)
+		return 0;
+	usleep(t_us);
+	t_out += t_us;
+	goto begin;
 }

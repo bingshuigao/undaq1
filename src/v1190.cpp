@@ -1,5 +1,13 @@
 #include "v1190.h"
 
+v1190::v1190()
+{
+	buf_off = 0x0;
+	name = "v1190";
+	mod_id = 2;
+	geo = -1;
+}
+
 /* Read single event word-by-word from the event buffer 
  * Note: It works only for trigger-matching mode.
  * @param am vme address modifier
@@ -28,6 +36,40 @@ int v1190::read_single_evt(int am, uint32_t *evt, int* sz_out)
 	} while (1);
 };
 
+int v1190::get_cblt_conf(uint16_t* addr, int* cblt_enable, int* cblt_first,
+		int* cblt_last)
+{
+	int ret;
+	uint16_t val;
+
+	ret = read_reg(0x1012, 16, &val);
+	RET_IF_NONZERO(ret);
+	if (cblt_enable)
+		*cblt_enable = val & 0x3;
+	if (cblt_first) {
+		if (val == 0x2)
+			*cblt_first = 1;
+		else
+			*cblt_first = 0;
+	}
+	if (cblt_last) {
+		if (val == 0x1)
+			*cblt_last = 1;
+		else
+			*cblt_last = 0;
+	}
+	if (addr) {
+		ret = read_reg(0x1010, 16, &val);
+		RET_IF_NONZERO(ret);
+		*addr = val;
+	}
+
+	return 0;
+}
+
+
+
+
 /* Enable MCST.
  * @param mcst_addr The mcst_addr to be used. If zero, use the default
  * address (0xBB)
@@ -46,6 +88,17 @@ int v1190::enable_mcst(uint32_t mcst_addr)
  * chain
  * @return 0 if succeed, nonzero error codes if error.*/
 int v1190::enable_cblt(uint32_t cblt_addr, int first, int last)
+{
+	/* not implemented, don't use! */
+	return -E_NOT_IMPLE;
+}
+
+int write_micro( uint16_t ope_code, uint16_t* p_pars, int n)
+{
+	/* not implemented, don't use! */
+	return -E_NOT_IMPLE;
+}
+int read_micro( uint16_t ope_code, uint16_t* p_pars, int n)
 {
 	/* not implemented, don't use! */
 	return -E_NOT_IMPLE;
@@ -187,16 +240,6 @@ int v1190::set_output_prog_ctrl( uint16_t val)
 	return -E_NOT_IMPLE;
 }
 int v1190::get_output_prog_ctrl( uint16_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::write_micro( uint16_t val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::read_micro( uint16_t* val)
 {
 	/* not implemented, don't use! */
 	return -E_NOT_IMPLE;

@@ -12,7 +12,7 @@
 class madc32: public module
 {
 public:
-	madc32(){};
+	madc32();
 	~madc32(){};
 
 	/* Used for testing purposes, when the test mode is set, all
@@ -22,6 +22,30 @@ public:
 	/* should be moved to madc32s 
 	void set_test(int test); */
 
+	/* will be called at end of each readout */
+	virtual int on_readout() 
+	{
+		uint16_t dum = 0; 
+		return write_reg(0x6034, 16, &dum);
+	}
+
+	/* see the comments in base class */
+	int write_reg(uint32_t addr, int dw, void* val)
+	{
+		if (addr == 0x6004) 
+			geo = reinterpret_cast<uint16_t*>(val)[0];
+		return module::write_reg(addr, dw, val);
+	}
+
+	/* get the GEO of the module. 
+	 * @return return the GEO */
+	int get_geo()
+	{
+		if (geo == 0xFF || geo == -1)
+			return base_addr >> 24;
+		else
+			return geo;
+	}
 
 	/* Read single event word-by-word from the event buffer 
 	 * @param am vme address modifier

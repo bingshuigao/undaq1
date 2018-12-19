@@ -9,30 +9,52 @@
 #include <stdint.h>
 #include "vme_ctl.h"
 #include "err_code.h"
+#include <string>
+#include "my_timer.h"
+#include "imp_daq.h"
 
 class module
 {
 public:
-	module() {};
+	module() 
+	{
+		trig_mod = false; 
+		ctl = NULL;
+		type = 'T';
+		timer = NULL;
+		geo = -1;
+	}
 	~module() {};
 
 	/* Initialization routines which must be called before using the object
 	 * */
 	void set_ctl(vme_ctl* ctl) {this->ctl = ctl;}
+	vme_ctl* get_ctl() {return ctl;}
 	void set_slot(uint32_t n) {slot_n = n;}
 	void set_crate(uint32_t n) {crate_n = n;}
 	void set_base(uint32_t base) {base_addr = base;}
 	uint32_t get_slot() {return slot_n;}
 	uint32_t get_crate() {return crate_n;}
 	uint32_t get_base() {return base_addr;}
+	uint32_t get_mod_id() {return mod_id;}
 	void set_am(int am) {am_reg = am;}
 	int get_am() {return am_reg;}
-	uint32_t get_buf_off() {return buf_off;}
-	void set_buf_off(uint32_t off) {buf_off = off;}
+	void set_period(int t) {period = t;}
+	uint32_t get_period() {return period;}
+	void set_type(char t) {type = t;}
+	char get_type() {return type;}
+	std::string get_name() {return name;}
+	bool get_trig_mod() {return trig_mod;}
+	void set_trig_mod(bool yesno) {trig_mod = yesno;}
+	void set_timer(my_timer* t) {timer = t;}
+	my_timer* get_timer() {return timer;}
+	void reset_timer() {timer->reset();}
+
+
 
 	/* General purpose read of register. 
 	 * @param addr vme bus address
-	 * @param dw vme data width
+	 * @param dw vme data width, can be 8, 16, 32...
 	 * @param out buffer where the result is saved
 	 * @return 0 if succeed, nonzero error codes if error  */
 	int read_reg(uint32_t addr, int dw, void* out)
@@ -44,10 +66,14 @@ public:
 	
 	/* General purpose write of register. 
 	 * @param addr vme bus address
-	 * @param dw vme data width
+	 * @param dw vme data width, can be 8, 16, 32...
 	 * @param val pointer to value to write
-	 * @return 0 if succeed, nonzero error codes if error. */
-	int write_reg(uint32_t addr, int dw, void* val)
+	 * @return 0 if succeed, nonzero error codes if error. 
+	 * Note: it is important to make sure the data width should be
+	 * compatible with the content pointed by void* val. For example, if
+	 * data width=16, the data pointed by void* val should have content of
+	 * uint16_t types.*/
+	virtual int write_reg(uint32_t addr, int dw, void* val)
 	{
 		ctl->set_am(am_reg);
 		ctl->set_dw(dw);
@@ -60,6 +86,10 @@ public:
 	 * @param sz_out number of bytes read.
 	 * @return 0 if succeed, nonzero error codes if error. */
 	virtual int read_single_evt(int am, uint32_t *evt, int* sz_out) = 0;
+
+	/* get the GEO
+	 * @return return the geo value */
+	virtual int get_geo() = 0;
 
 	/* Read the event buffer using (c)(m)blt mode.
 	 * @param am vme address modifier
@@ -90,6 +120,11 @@ public:
 		return ctl->mblt_read(addr, dst, sz_in, sz_out);
 	}
 
+	/* (only usefull if is scaler-type module) 
+	 * return true if the timer is out since last reset, otherwise return
+	 * false*/
+	bool time_out() { return timer->time_out(1000UL * period); }
+
 	/* Enable MCST.
 	 * @param mcst_addr The mcst_addr to be used. If zero, use the default
 	 * address 
@@ -116,6 +151,18 @@ public:
 	virtual int get_cblt_conf(uint16_t* addr, int* cblt_enable, 
 			int* cblt_first, int* cblt_last) = 0;
 
+
+	/* See if DAQ triggers (only makes sense for trigger module).
+	 * return 0 if succeed, otherwise return error code.*/
+	virtual int if_trig(bool& x) {x = false; return 0;}
+
+	/* prepare to start/stop. This should be called at the begin/end of
+	 * each run. 
+	 * return 0 if succeed, otherwise return error code.*/
+	virtual int on_start() {return 0;}
+	virtual int on_stop() {return 0;}
+	virtual int on_readout() {return 0;}
+
 protected:
 	/* base address of the module */
 	uint32_t base_addr;
@@ -134,8 +181,37 @@ protected:
 	 * */
 	int am_reg;
 
+	/* the GEO */
+	int32_t geo;
+
+	/* module id 
+	 * madc32 --> mod_id = 1;
+	 * v1190  --> mod_id = 2;
+	 * v830   --> mod_id = 3;
+	 * */
+	uint32_t mod_id;
+	
+
 	/* vme controller */
 	vme_ctl* ctl;
+
+	/* Period (in ms), only makes sense for Scaler-type modules. If the
+	 * module type is Scaler-type, but the period is 0, then the module
+	 * will not be readout in trigger event or scaler event (e.g. if the
+	 * module is a trigger module (v977)).  */
+	uint32_t period;
+	
+	/* type of the module T/S */
+	char type;
+
+	/* name of the module */
+	std::string name;
+
+	/* if the module is a trigger module */
+	bool trig_mod;
+
+	/* if the module is a scaler type module */
+	my_timer* timer;
 };
 
 #endif

@@ -1,5 +1,14 @@
 #include "madc32.h"
 
+madc32::madc32()
+{
+	/* set buffer offset */
+	buf_off = 0x0;
+	
+	name = "madc32";
+	mod_id = 1;
+}
+
 /* Read single event word-by-word from the event buffer 
  * @param am vme address modifier
  * @param evt Pointer to the buffer where the word will be saved

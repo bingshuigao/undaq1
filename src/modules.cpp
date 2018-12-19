@@ -1,25 +1,59 @@
 #include "modules.h"
 #include "err_code.h"
+#include <string.h>
+#include <assert.h>
 
 modules::modules()
 {
 	int i;
 	for (i = 0; i < MAX_MODULE; i++) 
 		mods[i] = 0;
+	name = "";
+	crate_n = 0;
 }
 
-int modules::add_mod(module* mod, int am_mblt, int am_cmblt)
+int get_am_mblt(int am)
+{
+	if (am == VME_A24_S_DATA)
+		return VME_A24_S_MBLT;
+	if (am == VME_A24_U_DATA)
+		return VME_A24_U_MBLT;
+	if (am == VME_A32_S_DATA)
+		return VME_A32_S_BLT;
+	if (am == VME_A32_U_DATA)
+		return VME_A32_U_MBLT;
+
+	return -1;
+}
+
+int modules::add_mod(module* mod)
 {
 	int n;
 
+	/* get the am to be used in (c)mblt */
+	int am_mblt = get_am_mblt(mod->get_am());
+	if (am_mblt < 0 )
+	return -E_AM;
+
 	n = mod->get_slot();
 	if (n >= MAX_MODULE)
-		return -E_GENERIC;
+		return -E_MAX_MODULE;
 	mods[n] = mod;
 	am_mblts[n] = am_mblt;
-	am_cmblts[n] = am_cmblt;
+	am_cmblts[n] = am_mblt;
 
+	name = mod->get_name();
+	crate_n = mod->get_crate();
 	return update_read_list();
+}
+
+/* get the position of the first zon-zero bit.
+ * for example 0x04 ---> 2
+ * for example 0x06 ---> 1*/
+static inline int get_1st_bit(uint32_t msk)
+{
+	assert(msk);
+	return ffsll(msk) - 1;
 }
 
 /* Read the event buffers of all the modules. 
@@ -32,10 +66,14 @@ int modules::read_evtbuf(void* buf, int sz_in, int* sz_out)
 	int i, ret;
 	char* buf1 = static_cast<char*>(buf);
 	int tmp_out;
+	uint32_t* p_head;
 
 
 	*sz_out = 0;
 	for (i = 0; i < mod_n.size(); i++) {
+		p_head = reinterpret_cast<uint32_t*>(buf1);
+		buf1 += 8;
+		sz_in -= 8;
 		switch (read_fun[i]) {
 		case 0:
 			/* there is really no reason to use the slow and
@@ -43,19 +81,21 @@ int modules::read_evtbuf(void* buf, int sz_in, int* sz_out)
 			 * implement it by now... */
 			return -E_NOT_IMPLE;
 		case 1:
-			ret = mods[mod_n[i]]->read_evt_blt(am[i], buf1, sz_in,
-					&tmp_out, blt_addr[i], chain[i]);
+			ret = mods[get_1st_bit(mod_n[i])]->read_evt_blt(am[i], 
+				buf1, sz_in, &tmp_out, blt_addr[i], chain[i]);
 			break;
 		case 2:
-			ret = mods[mod_n[i]]->read_evt_mblt(am[i], buf1, sz_in,
-					&tmp_out, blt_addr[i], chain[i]);
+			ret = mods[get_1st_bit(mod_n[i])]->read_evt_mblt(am[i], 
+				buf1, sz_in, &tmp_out, blt_addr[i], chain[i]);
 			break;
 		default:
 			break;
 		}
 		buf1 += tmp_out;
 		sz_in -= tmp_out;
-		*sz_out += tmp_out;
+		p_head[0] = tmp_out + 8;
+		p_head[1] = mod_n[i];
+		*sz_out += p_head[0];
 		/* Bus error is not really an error in case of blt */
 		if (ret && ret != -E_VME_BUS)
 			return ret;
@@ -64,7 +104,7 @@ int modules::read_evtbuf(void* buf, int sz_in, int* sz_out)
 			break;
 	}
 
-	return 0;
+	return on_readout();
 }
 
 
@@ -103,8 +143,7 @@ int modules::update_read_list_v2718()
 		if (!mods[i])
 			continue;
 		ret = mods[i]->get_cblt_conf(0, 0, &is_first, 0);
-		if (ret)
-			return ret;
+		RET_IF_NONZERO(ret);
 		
 		/* Not the first module of a cmblt chain, then a normla mblt
 		 * readout should be performed */
@@ -116,24 +155,22 @@ int modules::update_read_list_v2718()
 		/* It is the first module of a cmblt chain, then try to find a
 		 * complete chain and get the length.*/
 		ret = get_chain_len(i, &len);
-		if (ret) 
-			return ret;
+		RET_IF_NONZERO(ret);
 		if (len > 0) {
 			/* a complete chain is found, a cmblt readout should be
 			 * performed. */
 			uint32_t addr;
 			uint16_t addr16;
 			ret = mods[i]->get_cblt_conf(&addr16, 0, 0, 0);
-			if (ret)
-				return ret;
+			RET_IF_NONZERO(ret);
 			addr = addr16;
 			addr <<= 24;
-			add_cmblt(i, addr);
+			add_cmblt(i, addr, len);
 			i += (len-1);
 		}
 		else {
 			/* a complete chain is not found, a
-			 * normal cmblt should be performed for
+			 * normal mblt should be performed for
 			 * the current module. */
 			add_mblt(i);
 		}
@@ -146,19 +183,29 @@ int modules::update_read_list_v2718()
  **/
 void modules::add_mblt(int n)
 {
+	uint32_t msk = 1;
+
 	am.push_back(am_mblts[n]);
 	dw.push_back(64);
-	mod_n.push_back(n);
+	mod_n.push_back(msk<<n);
 	read_fun.push_back(2);
 	blt_addr.push_back(mods[n]->get_base());
 	chain.push_back(0);
 }
 
-void modules::add_cmblt(int n, uint32_t addr)
+void modules::add_cmblt(int n, uint32_t addr, int len)
 {
+	uint32_t msk = 0;
+	int i;
+	for (i = 0; i < len; i++) {
+		uint32_t tmp = 1;
+		msk |= tmp << (n+i);
+	}
+
+
 	am.push_back(am_cmblts[n]);
 	dw.push_back(64);
-	mod_n.push_back(n);
+	mod_n.push_back(msk);
 	read_fun.push_back(2);
 	blt_addr.push_back(addr);
 	chain.push_back(1);
@@ -171,8 +218,7 @@ int modules::get_chain_len(int n, int* len)
 	uint16_t reg;
 
 	ret = mods[n]->get_cblt_conf(&reg, 0, 0, 0);
-	if (ret)
-		return ret;
+	RET_IF_NONZERO(ret);
 	addr = reg;
 	addr <<= 24;
 	
@@ -185,8 +231,7 @@ int modules::get_chain_len(int n, int* len)
 			
 		ret = mods[i]->get_cblt_conf(&reg, &cblt_enable,
 				&cblt_first, &cblt_last);
-		if (ret)
-			return ret;
+		RET_IF_NONZERO(ret);
 		addrx = reg;
 		addrx <<= 24;
 		if (addrx != addr || !cblt_enable || cblt_first) 
@@ -207,4 +252,3 @@ bad_chain:
 	*len = -1;
 	return 0;
 }
-
