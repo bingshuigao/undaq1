@@ -11,7 +11,7 @@ ring_buf::ring_buf()
 	rd_ptr = NULL;
 	wr_ptr = NULL;
 	buf_ptr = NULL;
-	size = 0;
+	buf_size = 0;
 	mutex_init = 0;
 	/* The initialization of mutex is delayed to the Init() function where
 	 * error checks can be done */
@@ -22,7 +22,7 @@ ring_buf::~ring_buf()
 {
 	/* Free the mapped virtual memory space for the ring buffer. */
 	if (buf_ptr) 
-		munmap(buf_ptr, size<<1);
+		munmap(buf_ptr, buf_size<<1);
 	/* destroy the mutex */
 	if (mutex_init)
 		pthread_mutex_destroy(&mutex);
@@ -43,9 +43,9 @@ int ring_buf::create_map(uint32_t sz)
 	if (page_sz == -1) 
 		return -1;
 	if (sz <= page_sz) 
-		size = page_sz;
+		buf_size = page_sz;
 	else 
-		size = sz / page_sz * page_sz;
+		buf_size = sz / page_sz * page_sz;
 
 	/* get a unique file name from the template */
 	fd = mkstemp(path);
@@ -55,23 +55,23 @@ int ring_buf::create_map(uint32_t sz)
 	if (unlink(path)) 
 		return -1;
 
-	if (ftruncate(fd, size)) 
+	if (ftruncate(fd, buf_size)) 
 		return -1;
 
 	/* alloc memory space and create appropriate maps */
-	buf_ptr = (char *)mmap(NULL, size<<1, PROT_NONE, 
+	buf_ptr = (char *)mmap(NULL, buf_size<<1, PROT_NONE, 
 			MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 	if (buf_ptr == MAP_FAILED) {
 		buf_ptr = NULL;
 		return -1;
 	}
-	addr = mmap(buf_ptr, size, PROT_READ | PROT_WRITE, 
+	addr = mmap(buf_ptr, buf_size, PROT_READ | PROT_WRITE, 
 			MAP_FIXED | MAP_SHARED, fd, 0);
 	if (addr != buf_ptr) 
 		return -1;
-	addr = mmap(buf_ptr + size, size, PROT_READ | PROT_WRITE,
+	addr = mmap(buf_ptr + buf_size, buf_size, PROT_READ | PROT_WRITE,
 			MAP_FIXED | MAP_SHARED, fd, 0);
-	if (addr != buf_ptr + size) 
+	if (addr != buf_ptr + buf_size) 
 		return -1;
 
 	if (close(fd)) 
@@ -118,7 +118,7 @@ int ring_buf::init(uint32_t sz)
  * read as much as possible.
  * @return The actual number of bytes read, -1 in case of error.
  * */
-int32_t ring_buf::read(void* dst, int32_t size, bool peek, bool lock)
+int32_t ring_buf::read(void* dst, int32_t sz, bool peek, bool lock)
 {
 	uint32_t sz_used, sz_read;
 
@@ -131,10 +131,10 @@ int32_t ring_buf::read(void* dst, int32_t size, bool peek, bool lock)
 
 	/* read data from ring buffer */
 	sz_used = get_used_nolock();
-	if (size >= sz_used || size == 0) 
+	if (sz >= sz_used || sz == 0) 
 		sz_read = sz_used;
 	else
-		sz_read = size;
+		sz_read = sz;
 	memcpy(dst, rd_ptr, sz_read);
 
 	/* if not peek, update the read/write pointers */
@@ -142,9 +142,9 @@ int32_t ring_buf::read(void* dst, int32_t size, bool peek, bool lock)
 		rd_ptr += sz_read;
 
 		/* update read and write pointers if neccessary */
-		if (rd_ptr - buf_ptr >= size) {
-			rd_ptr -= size;
-			wr_ptr -= size;
+		if (rd_ptr - buf_ptr >= buf_size) {
+			rd_ptr -= buf_size;
+			wr_ptr -= buf_size;
 		}
 	}
 
@@ -163,7 +163,7 @@ int32_t ring_buf::read(void* dst, int32_t size, bool peek, bool lock)
  * @param size The desired size of data to write (bytes).
  * @return The actual number of bytes written. -1 in case of error.
  * */
-int32_t ring_buf::write(void* src, int32_t size, bool lock)
+int32_t ring_buf::write(void* src, int32_t sz, bool lock)
 {
 	uint32_t sz_write, sz_free;
 
@@ -176,10 +176,10 @@ int32_t ring_buf::write(void* src, int32_t size, bool lock)
 
 	/* read data from ring buffer */
 	sz_free = get_free_nolock();
-	if (size >= sz_free)
+	if (sz >= sz_free)
 		sz_write = sz_free;
 	else
-		sz_write = size;
+		sz_write = sz;
 	memcpy(wr_ptr, src, sz_write);
 	wr_ptr += sz_write;
 
@@ -252,4 +252,27 @@ begin:
 	usleep(t_us);
 	t_out += t_us;
 	goto begin;
+}
+
+int32_t ring_buf:skip(uint32_t size)
+{
+	uint32_t sz_used, sz_read;
+
+	/* read data from ring buffer */
+	sz_used = get_used_nolock();
+	if (size >= sz_used) 
+		sz_read = sz_used;
+	else
+		sz_read = size;
+
+	/*  update the read/write pointers */
+	rd_ptr += sz_read;
+
+	/* update read and write pointers if neccessary */
+	if (rd_ptr - buf_ptr >= buf_size) {
+		rd_ptr -= buf_size;
+		wr_ptr -= buf_size;
+	}
+
+	return sz_read;
 }

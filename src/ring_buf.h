@@ -85,6 +85,9 @@ public:
 	int32_t write1(void* src, int32_t size)
 	{ return write(src, size, false); }
 
+	/* skip certain amount of data, return actual amount of data skipped */
+	int32_t skip(int32_t size);
+
 	
 	/* acquire/release the lock, return 0 if succeed, otherwise return -1.*/
 	int get_lock()
@@ -101,7 +104,7 @@ public:
 	}
 
 	/* Get the size of the ring buffer.  */
-	uint32_t get_sz() {return size;} 
+	uint32_t get_sz() {return buf_size;} 
 
 	/* (Obsoleted, use get_free1/used1 in stead!) 
 	 * Get the available/free space of the ring buffer, this is a wrapper
@@ -114,11 +117,11 @@ public:
 	int32_t get_free();
 	int32_t get_used();
 	uint32_t get_used_nolock() {return wr_ptr - rd_ptr;}
-	uint32_t get_free_nolock() {return size - get_used_nolock();}
+	uint32_t get_free_nolock() {return buf_size - get_used_nolock();}
 
 	/* Get used/free space of the ring buffer.*/
 	uint32_t get_used1() {return wr_ptr - rd_ptr;}
-	uint32_t get_free1() {return size - get_used_nolock();}
+	uint32_t get_free1() {return buf_size - get_used_nolock();}
 
 	/* get the user data buffer */
 	char* get_usr_data() {return usr_data;}
@@ -141,6 +144,7 @@ public:
 	 * it.*/
 	int wait_buf_free(uint32_t sz, int t_us = 120, int t2_us = -1);
 
+
 private:
 	/* allocate memory for the ring buffer and create appropriate maps.
 	 * @param sz Size of the ring buffer (in bytes)
@@ -156,7 +160,7 @@ private:
 	char* rd_ptr; /* read pointer */
 	char* wr_ptr; /* write pointer */
 	char* buf_ptr; /* Address of the first byte of the buffer */
-	uint32_t size; /* size of the buffer (in bytes)*/
+	uint32_t buf_size; /* size of the buffer (in bytes)*/
 	pthread_mutex_t mutex; /* mutex (for inter-thread synchronization) */
 	int mutex_init; /* set to 1 if mutex initialized */
 	char usr_data[1024]; /* can be used for anything. */

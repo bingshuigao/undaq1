@@ -62,7 +62,15 @@ int ebd_merge::start()
 
 int ebd_merge::stop()
 {
+	bool all_clr = false;
 	acq_stat = DAQ_STOP;
+	int ret;
+
+	/* clear the individual ring buffers */
+	while (!all_clr) {
+		ret = do_build(true, all_clr);
+		RET_IF_NONZERO(ret);
+	}
 
 	/* proporgate the stop message to the next thread */
 	return send_msg(4, 1, &acq_stat, 4);
@@ -85,7 +93,8 @@ begin:
 	ret = can_build(y_n);
 	if (y_n) {
 		/* good, let's start building */
-		return do_build();
+		bool all_clr;
+		return do_build(0, all_clr);
 	}
 	else {
 		/* try again */
@@ -116,19 +125,45 @@ static int set_clr_can_build(ring_buf* rb, char* usr_data, bool& set)
 
 
 
-int ebd_merge::do_build()
+int ebd_merge::do_build(bool force_merge, bool& all_clr)
 {
 	uint64_t ts_min = 0xFFFFFFFFFFFFFFFF;
 	uint64_t ts_cur;
 	uint32_t head[4];
 	int ret, tot_len_wd;
 
+	/* if the force_merge flag is set, we need to remove all the EOR if
+	 * any. 
+	 * NOTE: we should be careful here because some ring buffers might be
+	 * empty. */
+	all_clr = false;
+	if (force_merge) {
+		for (auto it = rb_data.begin(); it != rb_data.end(); it++) {
+			int len;
+start1:
+			len = (*it)->get_used();
+			if (len == 0)
+				continue;
+			(*it)->read1(head, 8, true);
+			if (head[1] == 1) {
+				/* this is an EOR, we should remove, also note
+				 * that we don't need to get lock because the
+				 * sort thread has stopped by the time when
+				 * this thread received the stop command. */
+				(*it)->skip(12);
+				goto start1;
+			}
+		}
+	}
+
 	/* first, we need to find the minimum of the timestamps */
 	for (auto it = rb_data.begin(); it != rb_data.end(); it++) {
 		/* here we peek data, so no need to lock */
 		bool rm, chg;
 start:
-		(*it)->read1(head, 16, true);
+		if ((*it)->read1(head, 16, true) == 0)
+			/* this ring buffer is empty */
+			continue;
 		if (head[1] == 1) {
 			/* this is an EOR */
 			/* first let's see if we can remove the EOR */
@@ -162,7 +197,9 @@ start:
 	for (auto it = rb_data.begin(); it != rb_data.end(); it++) {
 		int len_wd;
 		bool set;
-		(*it)->read1(head, 16, true);
+		if ((*it)->read1(head, 16, true) == 0)
+			/* this ring buffer is empty */
+			continue;
 		if (head[1] == 1) 
 			/* this is an EOR */
 			continue;
@@ -185,6 +222,12 @@ start:
 		set_clr_can_build(*it, (*it)->get_usr_data(), set);
 		tot_len_wd += len_wd;
 		merged_buf[0]++;
+	}
+
+	/* if no fragments any more, we should return. */
+	if (merged_buf[0] == 0) {
+		all_clr = true;
+		return 0;
 	}
 
 	/* save the event into the merged ring buffer */

@@ -56,9 +56,15 @@ private:
 	 *   read out from the ring buffer, clear the can_build marker if
 	 *   appropriate.
 	 *
+	 * The parameter force_merge indicates if we should remove the EOR mark
+	 * no matter what. This is only used when a 'STOP' command is
+	 * received and we should clear all the ring buffers.
+	 * The parameter all_clr is set if all the individual ring buffers are
+	 * empty.
+	 *
 	 * return 0 if succeed, otherwise return error code.
 	 * */
-	int do_build();
+	int do_build(bool force_merge, bool& all_clr);
 
 	/* try to remove the EOR marker (based on the values of cur_rd and
 	 * cur_rd_rb).  If an EOR is removed: 
