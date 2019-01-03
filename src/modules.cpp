@@ -175,6 +175,7 @@ int modules::update_read_list_v2718()
 			add_mblt(i);
 		}
 	}
+	return 0;
 }
 
 

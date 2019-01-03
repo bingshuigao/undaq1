@@ -300,156 +300,195 @@ int v830::get_ch_enable(uint32_t* val)
 int v830::set_dwell_time(uint32_t val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_dwell_time(uint32_t* val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_ctrl_reg(uint16_t val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_ctrl_reg(uint16_t* val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_bit_set_reg(uint16_t val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_bit_clr_reg(uint16_t val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_status_reg(uint16_t val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_status_reg(uint16_t* val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_geo_reg(uint16_t geo)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_geo_reg(uint16_t* geo)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_int_lev(uint16_t lev)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_int_lev(uint16_t* lev)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_int_vec(uint16_t vec)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_int_vec(uint16_t* vec)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_addr32(uint16_t addr32)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_addr32(uint16_t* addr32)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_addr24(uint16_t addr24)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_addr24(uint16_t* addr24)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_enable_ader(uint16_t val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_enable_ader(uint16_t* val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_mcst_base(uint16_t mcst_base)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_mcst_base(uint16_t* mcst_base)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_mcst_ctrl(uint16_t val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_mcst_ctrl(uint16_t* val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_mod_reset()
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_soft_clr()
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_soft_trig()
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_trig_cnt(uint16_t* cnt)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_almost_ful(uint16_t val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_almost_ful(uint16_t* val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_blt_evt_num(uint16_t num)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_blt_evt_num(uint16_t* num)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_meb_evt_num(uint16_t* num)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_dum32(uint32_t val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_dum32(uint32_t* val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::set_dum16(uint16_t val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_dum16(uint16_t* val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_conf_rom(uint16_t* val)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }
 int v830::get_fw_ver(uint16_t* ver)
 {
 	/* Not implemented, do not use! */
+	return -E_NOT_IMPLE;
 }

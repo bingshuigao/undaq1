@@ -100,6 +100,7 @@ int ebd_sort::handle_msg(uint32_t* msg_body)
 int ebd_sort::start()
 {
 	acq_stat = DAQ_RUN;
+	n_readout = 0;
 	
 	/* proporgate the message to the next thread */
 	return send_msg(1, 1, &acq_stat, 4);
@@ -264,7 +265,6 @@ int ebd_sort::handle_BOR()
 	t_start = evt_buf[4];  /* time stamp high word*/
 	t_start <<= 32;
 	t_start += evt_buf[5]; /* time stamp low word */
-	n_readout = 0;
 	return 0;
 }
 

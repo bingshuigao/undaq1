@@ -726,6 +726,8 @@ std::vector<ring_buf*> initzer::get_ebd_rbs()
 				char* p_data = p_rb->get_usr_data();
 				p_data[0] = crate;
 				p_data[1] = slot;
+				p_data[2] = 0; /* a marker used by ebd_merge
+						  (can build or not) */
 			}
 			rbs_ebd.push_back(p_rb);
 		}
@@ -1155,3 +1157,30 @@ uint32_t initzer::get_ebd_sort_clock_hz()
 		return DEF_EBD_SORT_HZ;
 }
 
+uint32_t initzer::get_ebd_merge_glom()
+{
+	bool found;
+	std::string name("merge_glom");
+	int port;
+
+	port = get_ebd_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_EBD_MERGE_GLOM;
+
+}
+
+uint32_t initzer::get_ebd_merge_merged_buf_sz()
+{
+	bool found;
+	std::string name("merge_buf_sz");
+	int port;
+
+	port = get_ebd_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_EBD_MERGE_GLOM;
+
+}

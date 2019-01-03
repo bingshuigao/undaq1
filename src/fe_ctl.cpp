@@ -84,8 +84,9 @@ int fe_ctl::fe_ctl_init(my_thread* ptr, initzer* the_initzer)
 	 * quit. */
 	This->acq_stat = 1;
 
-
+	return 0;
 }
+
 int fe_ctl::main_proc()
 {
 	/* The main purpose of this function is to communicate with the GUI

@@ -76,6 +76,8 @@ int ring_buf::create_map(uint32_t sz)
 
 	if (close(fd)) 
 		return -1;
+
+	return 0;
 }
 
 
@@ -235,7 +237,7 @@ int32_t ring_buf::get_used()
 	return sz_used;
 }
 
-uint32_t ring_buf::wait_buf_free(uint32_t sz, int t_us, int t2_us)
+int ring_buf::wait_buf_free(uint32_t sz, int t_us, int t2_us)
 {
 	uint32_t free_sz;
 	int t_out = 0;

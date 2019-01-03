@@ -90,6 +90,20 @@ class adv_conf_ebd(adv_conf):
                  'wid_type' : 'entry',
                  'comment' : None
                  })
+        # The glom
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'merge_glom',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
+        # The merged event buffer size
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'merge_buf_sz',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
 
 
 

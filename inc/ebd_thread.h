@@ -77,15 +77,16 @@
  *     reason why it could be empty is that the receiving thread has not yet
  *     received this part of data (or has not yet docoded and filled the ring
  *     buffer), so we should wait.
- *     2) If some of the ring buffers contains only one EOR, do not start
- *     building and wait for a short time. This is because sometimes data from
- *     n'th and n+1'th readout could belong to the same event. However, data
- *     from n'th and n+2'th readout cannot belong to the same event (or may I'm
- *     wrong and they could ?), so if some ring buffers contains two EOR
- *     without any event data, it is OK to start building. Because the data
- *     from next readout (n+2'th readout) cannot belong to the same event as
- *     other ring buffers (with data from the n'th readout) anyway. So it make
- *     no sense to wait for another readout.
+ *     2) If some of the ring buffers contains only one EOR (no raw data or
+ *     anything else), do not start building and wait for a short time.
+ *     This is because sometimes data from n'th and n+1'th readout could belong
+ *     to the same event. However, data from n'th and n+2'th readout cannot
+ *     belong to the same event (or may I'm wrong and they could ?), so if some
+ *     ring buffers contains two EOR without any event data, it is OK to start
+ *     building. Because the data from next readout (n+2'th readout) cannot
+ *     belong to the same event from other ring buffers (with data from the
+ *     n'th readout) anyway. So it make no sense to wait for
+ *     another readout.
  *     3) When to remove the EOR from ring buffers ? We DO NOT remove it
  *     immediately when it reaches to the top of the ring buffer. In stead, we
  *     maintain a variable 'cur_rd' (current readout number) which equals to
