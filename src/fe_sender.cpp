@@ -64,7 +64,6 @@ int fe_sender::start()
 	if (sock == -1) {
 		sock = svr->accept();
 		svr->destroy();
-		delete svr;
 		if (sock == -1)
 			return -E_SYSCALL;
 		/* the first thing after connection established is to send the
@@ -76,6 +75,7 @@ int fe_sender::start()
 	/* proporgate the start message to thread 2*/
 	return send_msg(2, 1, &acq_stat, 4);
 }
+
 
 int fe_sender::send_slot_map()
 {

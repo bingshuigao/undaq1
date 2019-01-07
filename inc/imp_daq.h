@@ -24,6 +24,8 @@
 #define DEF_RB_EBD_MSG (1024*2)
 /* message sharing buffer */
 #define DEF_RB_EBD_SCL (1024*1024)
+/* event builder sender socket buffer size */
+#define DEF_SOCK_BUF_EBD_SEND (1024*1024)
 /********** frontend buffers *************/
 /* data sharing */
 #define DEF_RB_FE_DATA (1024*1024*40)
@@ -46,6 +48,8 @@
 #define DEF_SVR_CTL_FE "127.0.0.1" 
 /* frontend sender linsening port */
 #define DEF_PORT_SEND_FE 9092
+/* event builder sender linsening port */
+#define DEF_PORT_SEND_EBD 9093
 /* server address of the event builder receiver thread */
 #define DEF_SVR_RECV_EBD "127.0.0.1"
 
@@ -86,6 +90,7 @@
 /* Others */
 #define DEF_NTRY_FE 1000 
 #define DEF_EBD_SORT_HZ 10000000
+#define DEF_EBD_MERGE_GLOM 10
 
 static inline int do_send(int sock, void* buf, int sz, int flag)
 {

@@ -42,6 +42,7 @@
 #define E_DATA_V1190 33 /* corrupted v1190 data */
 #define E_V1190_CLOCK 34/* The v1190 has wrong clock freqency (not 40MHz)*/
 #define E_SYNC_CLOCK 35 /* clock related errors (this clock is used to build events) */
+#define E_MERGE_BUF_SZ 36 /* the merged buffer size too small */
 
 
 

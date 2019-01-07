@@ -952,6 +952,18 @@ int initzer::get_fe_sender_port()
 		return DEF_PORT_SEND_FE;
 }
 
+int initzer::get_ebd_sender_port()
+{
+	bool found;
+	std::string name("sender_port");
+	int port;
+
+	port = get_ebd_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_PORT_SEND_EBD;
+}
 int initzer::get_ctl_port_fe()
 {
 	bool found;
@@ -975,6 +987,19 @@ int initzer::get_fe_sender_buf_sz()
 		return port;
 	else
 		return DEF_SOCK_BUF_FE_SEND;
+
+}
+int initzer::get_ebd_sender_buf_sz()
+{
+	bool found;
+	std::string name("sender_buf_sz");
+	int port;
+
+	port = get_ebd_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_SOCK_BUF_EBD_SEND;
 
 }
 int initzer::get_fe_ctl_t_us()

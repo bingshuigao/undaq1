@@ -11,6 +11,7 @@
  * */
 
 #include "ebd_thread.h"
+#include <vector>
 
 
 class ebd_merge : public ebd_thread
@@ -37,9 +38,68 @@ private:
 	 * */
 	int can_build(bool& y_n);
 
+	/* read events from each individual ring buffers and merge them into a
+	 * complete event. The following things should be done:
+	 *   1) read (peek) events (if any) from individual ring buffers,
+	 *   compare their timestamps and find the smallest timestamp. If an
+	 *   EOR is seen when peeking events, remove it if possible. If an EOR
+	 *   is removed: 
+	 *     i) increase the value of cur_rd_rb and re-calculate the value of
+	 *     cur_rd. If the value of cur_rd is changed, restart the iteration
+	 *     over all the ring buffers. 
+	 *     ii) clear the can_build marker if appropriate. 
+	 *
+	 *   2) find all the events with timestamp close enough to the smallest
+	 *   timestamp, pull these events out from the ring buffers and merge
+	 *   them into a complete event and save it into the ring buffer
+	 *   'rb_evt'. If an EOR is seen, skip the ring buffer. If anything is
+	 *   read out from the ring buffer, clear the can_build marker if
+	 *   appropriate.
+	 *
+	 * The parameter force_merge indicates if we should remove the EOR mark
+	 * no matter what. This is only used when a 'STOP' command is
+	 * received and we should clear all the ring buffers.
+	 * The parameter all_clr is set if all the individual ring buffers are
+	 * empty.
+	 *
+	 * return 0 if succeed, otherwise return error code.
+	 * */
+	int do_build(bool force_merge, bool& all_clr);
+
+	/* try to remove the EOR marker (based on the values of cur_rd and
+	 * cur_rd_rb).  If an EOR is removed: 
+	 *     i) increase the value of cur_rd_rb and re-calculate the value of
+	 *     cur_rd. 
+	 *     ii) clear the can_build marker if appropriate. 
+	 * @param rb pointer to the ring buffer to be operated on.
+	 * @param rm set to true if the EOR is removed.
+	 * @param chg set to true if the cur_rd is changed.
+	 *
+	 * return 0 if succeed, otherwise return error code.
+	 * */
+	int try_rm_EOR(ring_buf* rb, bool& rm, bool& chg);
+
+	/* calculate the value of cur_rd. If the value of cur_rd as a result of
+	 * the calculation, chg is set to true. 
+	 *
+	 * return 0 if succeed, otherwise return error code.
+	 * */
+	int cal_cur_rd(bool& chg);
+
 private:
 	/* for the meaning of this variables, refer to "ebd_thread.h" */
-	int cur_rd;
+	uint32_t cur_rd;
+
+	/* this is the time interval (clock ticks) below which events should be
+	 * merged */
+	uint32_t glom;
+
+	/* the buffer for the merged events */
+	uint32_t* merged_buf;
+	
+	/* the size of the merged_buf (4-byte word) */
+	uint32_t merged_buf_sz;
+
 
 };
 

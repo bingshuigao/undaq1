@@ -73,6 +73,12 @@ public:
 	/* get the clock freqency */
 	uint32_t get_ebd_sort_clock_hz();
 
+	/* get the glom for merger */
+	uint32_t get_ebd_merge_glom();
+
+	/* get the buffer size for the merged events */
+	uint32_t get_ebd_merge_merged_buf_sz();
+
 	/* Get frontend buffer size. Return 0 if the configuration is not found
 	 * in the config file. 
 	 * @param id is the id of ring buffer: 1--> data ring buffer, 2-->
@@ -105,6 +111,9 @@ public:
 	/* get the listening port of the frontend data sender 
 	 * */
 	int get_fe_sender_port();
+	/* get the listening port of the evt builder data sender 
+	 * */
+	int get_ebd_sender_port();
 
 	/* get the listening port of the GUI controler for frontend 
 	 * */
@@ -121,6 +130,9 @@ public:
 	/* get the socket buffer size of the frontend data sender.
 	 * */
 	int get_fe_sender_buf_sz();
+	/* get the socket buffer size of the event builder data sender.
+	 * */
+	int get_ebd_sender_buf_sz();
 
 	/* get the socket buffer size of the frontend control thread
 	 * */

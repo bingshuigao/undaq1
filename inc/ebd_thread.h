@@ -102,7 +102,10 @@
  *     the 5th readout. Then the question is: when we should increase the value
  *     of cur_rd ? This is tricky and there many implementations, here we just
  *     use a simple but unefficient way. We maintain a cur_rd_rb (current
- *     readout number of the ring buffer) variable for each ring buffer. We
+ *     readout number of the ring buffer) variable for each ring buffer. This
+ *     should equal the value of n_readout, we use this variable so that we
+ *     don't have to access the ring buffer to get the current readout number
+ *     of the ring buffer. We
  *     increase the corresponding variable whenever we remove its EOR. Whenever
  *     we increase any of the cur_rd_rb variables, the cur_rd variable is
  *     re-calculated.
@@ -111,10 +114,33 @@
  *     are empty.
  *     5) After considering all complications listed above, the building
  *     process itself is relatively easy: look at the monotonic_ts associated
- *     with events in the ring buffers (if it is an EOR in a ring buffer, just
- *     ignore this ring buffer), find the smallest one, then take all the
- *     events out from the ring buffers that matches the smallest time stamp,
- *     and merge them into a single event.
+ *     with events in the ring buffers (if it is an EOR in a ring buffer,
+ *     remove it if possible, otherwise just ignore this ring buffer), find the
+ *     smallest one, then take all the events out from the ring buffers that
+ *     matches the smallest time stamp, and merge them into a single event.
+ *
+ *  Finally, the merged events has the following format:
+ *         _____________________________________________
+ *         | Number of fragments                       |
+ *         |___________________________________________|
+ *         | timestamp high                            | 
+ *         |___________________________________________|
+ *         | timestamp low                             |
+ *         |___________________________________________|
+ *         |  fragment 1                               |
+ *         |___________________________________________|
+ *         |  fragment 2                               |
+ *         |___________________________________________|
+ *         |  fragment 3                               |
+ *         |___________________________________________|
+ *         | ...                                       |
+ *         |___________________________________________|
+ *
+ *     Each fragment has exactly the same format as those in the individual
+ *     ring buffers. The timestamp is the minimum of the timestamps of the
+ *     fragments.
+ *
+ * 
  *
  *  The thread ids are defined as following:
  *  1--> The receiver thread
@@ -140,7 +166,15 @@ protected:
 	/* This is for data sharing. The rb_data is a vector of ring buffer
 	 * pointers. Because each vme module has a dedicated ring buffer, so we
 	 * use vectors to manage the ring buffers. These ring buffers contain
-	 * data before built into a complete event. */
+	 * data before built into a complete event. 
+	 * The user data of the ring buffers are heavily used. They are defined as following:
+	 * p_byte[0] --> crate;
+	 * p_byte[1] --> slot;
+	 * p_byte[2] --> can_build flag;
+	 * p_uint32[1] --> cur_rd_rb;
+	 * ...
+	 *
+	 * */
 	std::vector<ring_buf*> rb_data;
 
 	/* This is for data sharing of scaler */
