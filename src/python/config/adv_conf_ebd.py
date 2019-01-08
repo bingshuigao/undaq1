@@ -104,6 +104,27 @@ class adv_conf_ebd(adv_conf):
                  'wid_type' : 'entry',
                  'comment' : None
                  })
+        # The control thread buffer size
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'ctl_buf_sz',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
+        # The control GUI server address
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'ctl_svr_addr',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
+        # The control GUI server address
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'ctl_t_us',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
 
 
 

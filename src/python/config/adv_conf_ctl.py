@@ -12,21 +12,14 @@ class adv_conf_ctl(adv_conf):
     def __init__(self):
         self.var_lst = []
 
-        # the listening port for frontend
+        # the listening port
         self.var_lst.append({
                  'value' : 'default',
-                 'name' : 'fe_port',
+                 'name' : 'port',
                  'wid_type' : 'entry',
                  'comment' : None
                  })
 
-        # the listening port for event builder
-        self.var_lst.append({
-                 'value' : 'default',
-                 'name' : 'ebd_port',
-                 'wid_type' : 'entry',
-                 'comment' : None
-                 })
 
 
 ########## TEST ##########

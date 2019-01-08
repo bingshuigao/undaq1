@@ -254,7 +254,7 @@ begin:
 	goto begin;
 }
 
-int32_t ring_buf:skip(uint32_t size)
+int32_t ring_buf::skip(int32_t size)
 {
 	uint32_t sz_used, sz_read;
 

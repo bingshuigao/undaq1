@@ -1,21 +1,21 @@
-#include "fe_ctl.h"
+#include "ebd_ctl.h"
 #include "my_tcp_clt.h"
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/select.h>
 
-fe_ctl::fe_ctl()
+ebd_ctl::ebd_ctl()
 {
-	thread_id = 4;
-	init_fun.push_back(&fe_ctl_init);
+	thread_id = 5;
+	init_fun.push_back(&ebd_ctl_init);
 }
 
-fe_ctl::~fe_ctl()
+ebd_ctl::~ebd_ctl()
 {
 }
 
-int fe_ctl::handle_msg(uint32_t* msg_body)
+int ebd_ctl::handle_msg(uint32_t* msg_body)
 {
          /* The message type of the current thread are defined as following:
           * msg_type == 1 --> run status transition.                        
@@ -32,37 +32,37 @@ int fe_ctl::handle_msg(uint32_t* msg_body)
 	}
 }
 
-int fe_ctl::start()
+int ebd_ctl::start()
 {
 	int ret = ctl_start();
 	RET_IF_NONZERO(ret);
-	
+
 	/* proporgate the start message to next thread (thread 3)*/
-	return send_msg(3, 1, &real_stat, 4);
+	return send_msg(4, 1, &real_stat, 4);
 }
 
-int fe_ctl::stop()
+int ebd_ctl::stop()
 {
 	return ctl_stop();
 }
 
-int fe_ctl::quit()
+int ebd_ctl::quit()
 {
 	acq_stat = DAQ_EXIT;
 	return ctl_quit();
 }
 
-int fe_ctl::fe_ctl_init(my_thread* ptr, initzer* the_initzer)
+int ebd_ctl::ebd_ctl_init(my_thread* ptr, initzer* the_initzer)
 {
-	fe_ctl* This = static_cast<fe_ctl*>(ptr);
+	ebd_ctl* This = static_cast<ebd_ctl*>(ptr);
 	int port, sock_buf_sz, t_us;
 	std::string svr_addr;
 
 	This->port = the_initzer->get_ctl_port();
-	This->sock_buf_sz = the_initzer->get_fe_ctl_buf_sz();
+	This->sock_buf_sz = the_initzer->get_ebd_ctl_buf_sz();
 	This->sock_buf = new unsigned char[This->sock_buf_sz];
-	This->svr_addr = the_initzer->get_fe_ctl_svr_addr();
-	This->t_us = the_initzer->get_fe_ctl_t_us();
+	This->svr_addr = the_initzer->get_ebd_ctl_svr_addr();
+	This->t_us = the_initzer->get_ebd_ctl_t_us();
 
 	/* the control thread needs always be in running status unless when to
 	 * quit. */
@@ -72,7 +72,7 @@ int fe_ctl::fe_ctl_init(my_thread* ptr, initzer* the_initzer)
 }
 
 
-int fe_ctl::handle_GUI_msg(unsigned char* msg)
+int ebd_ctl::handle_GUI_msg(unsigned char* msg)
 {
 	uint32_t* p_msg = reinterpret_cast<uint32_t*>(msg);
 	uint32_t msg_type = p_msg[0];
@@ -83,13 +83,15 @@ int fe_ctl::handle_GUI_msg(unsigned char* msg)
 	case 0:
 		/* a run status transition is requested. */
 		stat = p_msg[1];
-		if (stat == 0) {
-			/* to stop a run, thread 1 initiate the chain */
-			return send_msg(1, 1, &stat, 4);
+		if (stat == DAQ_STOP) {
+			/* we ignore the stop run request, because we receive
+			 * the message from frontend (by sending a zero length
+			 * event) */
+			return 0;
 		}
 		else if (stat == 1) {
-			/* to start a run, thread 4 initiate the chain */
-			return send_msg(4, 1, &stat, 4);
+			/* to start a run, thread 5 initiate the chain */
+			return send_msg(5, 1, &stat, 4);
 		}
 		else if (stat == 2) {
 			/* to quit the daq, all the thread exit in parallel. */
@@ -100,6 +102,8 @@ int fe_ctl::handle_GUI_msg(unsigned char* msg)
 			ret = send_msg(3, 1, &stat, 4);
 			RET_IF_NONZERO(ret);
 			ret = send_msg(4, 1, &stat, 4);
+			RET_IF_NONZERO(ret);
+			ret = send_msg(5, 1, &stat, 4);
 			RET_IF_NONZERO(ret);
 			return 0;
 		}

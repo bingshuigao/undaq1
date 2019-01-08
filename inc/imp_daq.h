@@ -40,10 +40,8 @@
 
 
 /* default socket settings */
-/* listening port of the GUI controller for frontend */
-#define DEF_PORT_CTL_FE 9090;
-/* listening port of the GUI controller for event builder */
-#define DEF_PORT_CTL_EBD 9091;
+/* listening port of the GUI controller  */
+#define DEF_PORT_CTL 9090;
 /* server address of the frontend control thread */
 #define DEF_SVR_CTL_FE "127.0.0.1" 
 /* frontend sender linsening port */

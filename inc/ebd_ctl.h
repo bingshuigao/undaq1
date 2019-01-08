@@ -1,20 +1,20 @@
-#ifndef FE_CTL_HHH
-#define FE_CTL_HHH
+#ifndef EBD_CTL_HHH
+#define EBD_CTL_HHH
 
-/* This class is the thread in frontend which communicates with the daq
+/* This class is the thread in event builder which communicates with the daq
  * controller. 
  *
- * By B.Gao Nov. 2018*/
+ * By B.Gao Jan. 2019*/
 
-#include "fe_thread.h"
+#include "ebd_thread.h"
 #include "ctl_thread.h"
 #include <string>
 
-class fe_ctl : public fe_thread, public ctl_thread
+class ebd_ctl : public ebd_thread, public ctl_thread
 {
 public:
-	fe_ctl();
-	~fe_ctl();
+	ebd_ctl();
+	~ebd_ctl();
 
 protected:
 	/* handle the message. The pointer points to the message body (not
@@ -42,7 +42,7 @@ protected:
 
 
 private:
-	static int fe_ctl_init(my_thread* This, initzer* the_initzer);
+	static int ebd_ctl_init(my_thread* This, initzer* the_initzer);
 };
 
 #endif

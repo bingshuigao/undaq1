@@ -117,7 +117,7 @@ public:
 
 	/* get the listening port of the GUI controler for frontend 
 	 * */
-	int get_ctl_port_fe();
+	int get_ctl_port();
 
 	/* get the variable blt_buf_sz,
 	 * */
@@ -137,6 +137,9 @@ public:
 	/* get the socket buffer size of the frontend control thread
 	 * */
 	int get_fe_ctl_buf_sz();
+	/* get the socket buffer size of the event builder control thread
+	 * */
+	int get_ebd_ctl_buf_sz();
 
 	/* get the on_start_t_max of frontend */
 	int get_fe_on_start_t_max();
@@ -145,6 +148,10 @@ public:
 	 * thread
 	 *  */
 	int get_fe_ctl_t_us();
+	/* get the time out (us) of the select syscall  of the ebd control
+	 * thread
+	 *  */
+	int get_ebd_ctl_t_us();
 
 	/* get the timeout (us) of the select syscall of the event builder
 	 * receiver thread (how many micro seconds are spend to wait for
@@ -154,6 +161,9 @@ public:
 	/* get the server address of the frontend control thread
 	 *  */
 	std::string get_fe_ctl_svr_addr();
+	/* get the server address of the event builder control thread
+	 *  */
+	std::string get_ebd_ctl_svr_addr();
 
 	/* get the server address of the event builder receiver server */
 	std::string get_ebd_recv_svr_addr();
