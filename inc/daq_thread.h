@@ -129,6 +129,10 @@ protected:
 	 *     for event builder:
 	 *     1) To start 5->4->3->2->1
 	 *     2) To stop  1->2->3->4->5
+	 *     
+	 *     for logger
+	 *     1) To start 3->2->1
+	 *     2) To stop  1->2->3
 	 *     */
 	int acq_stat;
 

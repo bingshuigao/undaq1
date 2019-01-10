@@ -198,6 +198,18 @@
 	should be considered because thread 3 may also be reading the
 	histograms.
 
+	\section{Logger}
+	This is the logger. It receives
+	events from the event builder and save it into the hard drive.
+	Three threads should be used in logger:
+	\begin{itemize}
+		\item Thread 1. It receives events from event builder and save them
+			in a ring buffer.
+		\item Thread 2 (main thread). It reads data from the ring buffer and
+			save it into the disk.
+		\item Thread 3. It communicates with the controller (Tcp client).
+	\end{itemize}
+
 	\section{roody}
 	Roody is developed by the TRIUMF
 	(https://www.triumf.info/wiki/DAQwiki/index.php/ROODY). It is better to

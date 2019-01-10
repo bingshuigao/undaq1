@@ -38,8 +38,9 @@ private:
 	 * BE CAREFUL!!!! The lock should be hold when calling this method. The
 	 * lock will be released before returning from this method (don't
 	 * double release).
+	 * @param the_rb the ring buffer whose data is to be sent .
 	 * */
-	int send_data();
+	int send_data(ring_buf* rb);
 
 private:
 	/* listening socket*/

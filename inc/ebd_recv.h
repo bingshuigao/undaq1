@@ -11,9 +11,10 @@
  * By B.Gao Dec. 2018 */
 
 #include "ebd_thread.h"
+#include "recv_thread.h"
 #include <string>
 
-class ebd_recv : public ebd_thread
+class ebd_recv : public ebd_thread, public recv_thread
 {
 public:
 	ebd_recv();
@@ -30,36 +31,8 @@ private:
 	int quit();
 	int main_proc();
 
-	/* read the socket data (the raw data from frontend) and save to the
-	 * ring buffer.
-	 * @param sz The size (bytes) of incoming data. 
-	 * @return return 0 if succeed, otherwise return error code */
-	int read_sock_data(int sz);
-
-	/* determine if data available from the socket, return true if has
-	 * data, otherwise return false */
-	bool has_sock_data();
 
 private:
-	/* server port and address */
-	int port;
-	std::string svr_addr;
-
-	/* communication sock */
-	int sock;
-
-
-	/* The buffer for receiving data from socket */
-	unsigned char* sock_buf;
-
-	/* The buffer size of sock_buf (should be the same as the sender buffer
-	 * size of frontend) */
-	int recv_buf_sz;
-	
-	/* The time interval (us) which the thread spend checking for incoming
-	 * data packet from the socket (via select syscall) */
-	int t_us;
-
 	char slot_map[MAX_SLOT_MAP];
 };
 

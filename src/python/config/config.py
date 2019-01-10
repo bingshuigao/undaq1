@@ -16,6 +16,7 @@ from tkinter import ttk
 from tkinter import filedialog
 from frontend import frontend
 from ebd import ebd
+from log import log
 from ctl import ctl
 import xml.etree.ElementTree as et
 from xml.dom import minidom
@@ -64,6 +65,9 @@ class config:
         # create the event builder tab
         self._create_evt_builder(self.tab_ctrl)
         
+        # create the logger tab
+        self._create_logger(self.tab_ctrl)
+
         # create the GUI controler tab
         self._create_ctl(self.tab_ctrl)
 
@@ -81,6 +85,11 @@ class config:
         self.ebd = ebd(tab_ctrl)
         tab_ctrl.add(self.ebd.get_frm(), text='event builder')
 
+    # create the logger tab
+    def _create_logger(self, tab_ctrl):
+        self.log = log(tab_ctrl)
+        tab_ctrl.add(self.log.get_frm(), text='logger')
+    
     # create the GUI controller tab
     def _create_ctl(self, tab_ctrl):
         self.ctl = ctl(tab_ctrl)
@@ -138,6 +147,15 @@ class config:
         # the advanced settings for GUI controler
         for name,val,com in self.ctl.get_adv_conf().get_conf():
             ele_adv = et.SubElement(ele_ctl, 'advanced_ctl')
+            et.SubElement(ele_adv, 'name').text = name
+            et.SubElement(ele_adv, 'value').text = val
+            et.SubElement(ele_adv, 'comment').text = com
+
+        # create the elements of logger
+        ele_log = et.SubElement(root, 'logger')
+        # the advanced settings for event builder
+        for name,val,com in self.log.get_adv_conf().get_conf():
+            ele_adv = et.SubElement(ele_log, 'advanced_log')
             et.SubElement(ele_adv, 'name').text = name
             et.SubElement(ele_adv, 'value').text = val
             et.SubElement(ele_adv, 'comment').text = com
@@ -200,6 +218,10 @@ class config:
         ctl = root.find('GUI_ctl')
         if ctl:
             self._parse_ctl(ctl)
+        # parse logger
+        log = root.find('logger')
+        if log:
+            self._parse_log(log)
         ####################
 
     # parse the GUI controller part of the cofnig file
@@ -222,6 +244,15 @@ class config:
             conf.append((name, val, ''))
         self.ebd.get_adv_conf().set_conf(conf)
     
+    # parse the logger part of the cofnig file
+    def _parse_log(self, log):
+        # the advance settings (if any)
+        conf = []
+        for adv_conf in log.findall('advanced_log'):
+            name = adv_conf.find('name').text
+            val  = adv_conf.find('value').text
+            conf.append((name, val, ''))
+        self.log.get_adv_conf().set_conf(conf)
     # parse the frontend part of the cofnig file
     def _parse_fe(self, fe):
         # the module settings

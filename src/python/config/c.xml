@@ -160,11 +160,12 @@
             <comment>ring_buf_sz</comment>
         </advanced_ebd>
     </event_builder>
-    <GUI_ctl>
-        <advanced_ctl>
-            <name>fe_port</name>
-            <value>9099</value>
-            <comment>fe_port</comment>
-        </advanced_ctl>
-    </GUI_ctl>
+    <GUI_ctl/>
+    <logger>
+        <advanced_log>
+            <name>ring_buf_sz</name>
+            <value>1000000</value>
+            <comment>ring_buf_sz</comment>
+        </advanced_log>
+    </logger>
 </config>

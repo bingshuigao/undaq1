@@ -65,6 +65,7 @@ public:
 	 * @param id = 1 -> get advanced config of frontend
 	 * @param id = 2 -> get advanced config of event builder 
 	 * @param id = 3 -> get advanced config of GUI controler
+	 * @param id = 4 -> get advanced config of logger
 	 * @param status -> error code */
 	std::vector<struct conf_adv> get_conf_adv(int id, int& status);
 	

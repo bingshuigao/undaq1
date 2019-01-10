@@ -70,6 +70,13 @@ public:
 	 * */
 	ring_buf* get_ebd_rb(int id);
 
+	/* Similar as the get_fe_rb,
+	 * id == 0 --> The trigger event ring buffer
+	 * id == 1 --> the message ring buffer
+	 * id == 2 --> the scaler event ring buffer.
+	 * */
+	ring_buf* get_log_rb(int id);
+
 	/* get the clock freqency */
 	uint32_t get_ebd_sort_clock_hz();
 
@@ -96,6 +103,14 @@ public:
 	 *     */
 	int get_ebd_buf_sz(int id);
 
+	/* Get the buffer size of logger, return 0 if the configuration
+	 * is not found in the config file.
+	 * @param id is the buffer type: 
+	 * id == 0 --> The trigger event ring buffer
+	 * id == 1 --> the message ring buffer
+	 * id == 2 --> the scaler event ring buffer.
+	 *     */
+	int get_log_buf_sz(int id);
 
 	/* get a vector of ring buffers. each element in the vector is a
 	 * pointer of a ring buffer dedicated to one vme module, the modules
@@ -157,6 +172,10 @@ public:
 	 * receiver thread (how many micro seconds are spend to wait for
 	 * incoming data packet from frontend)*/
 	int get_ebd_recv_t_us();
+	
+	/* similar as the get_ebd_recv_t_us();
+	 * */
+	int get_log_recv_t_us();
 
 	/* get the server address of the frontend control thread
 	 *  */
@@ -167,7 +186,10 @@ public:
 
 	/* get the server address of the event builder receiver server */
 	std::string get_ebd_recv_svr_addr();
-	
+
+	/* get the server address of the logger receiver server */
+	std::string get_log_recv_svr_addr();
+
 	/* return NULL indicating errors */
 	char* get_slot_map() {return slot_map;}
 
@@ -196,6 +218,9 @@ private:
 	int get_ctl_adv_var(std::string& var_name, bool& found, 
 			std::string* value2 = NULL)
 	{return get_adv_var(3, var_name, found, value2); }
+	int get_log_adv_var(std::string& var_name, bool& found, 
+			std::string* value2 = NULL)
+	{return get_adv_var(4, var_name, found, value2); }
 
 
 
@@ -247,6 +272,16 @@ private: xml_parser* p_parser;
 	ring_buf* rb_ebd5;
 	std::vector<ring_buf*> rbs_ebd; 
 
+	/* ring buffers for the logger
+	 * rb_log0 --> trigger event ring buffer 
+	 * rb_log1 --> message ring buffer 
+	 * rb_log2 --> scaler event ring buffer 
+	 *
+	 * */
+	ring_buf* rb_log0;
+	ring_buf* rb_log1;
+	ring_buf* rb_log2;
+	
 	/* see the comments in ebd_sort.h. Because 3-d arrays are very
 	 * difficult to handle, we use a 1d array instead.  */
 	char slot_map[MAX_SLOT_MAP];

@@ -14,6 +14,9 @@ initzer::initzer()
 	rb_ebd2 = NULL;
 	rb_ebd3 = NULL;
 	rb_ebd5 = NULL;
+	rb_log0 = NULL;
+	rb_log1 = NULL;
+	rb_log2 = NULL;
 }
 
 initzer::~initzer()
@@ -735,6 +738,56 @@ std::vector<ring_buf*> initzer::get_ebd_rbs()
 
 	return rbs_ebd;
 }
+
+ring_buf* initzer::get_log_rb(int rb_id)
+{
+	uint32_t sz2;
+	ring_buf* p_rb;
+
+	sz2 = get_log_buf_sz(rb_id);
+	switch (rb_id) {
+	case 0:
+		/* first check if the ring buffer object already created */
+		RET_IF_NONZERO(rb_log0);
+		if (sz2 == 0)
+			sz2 = DEF_RB_LOG_TRIG;
+		break;
+	case 1:
+		/* first check if the ring buffer object already created */
+		RET_IF_NONZERO(rb_log1);
+		if (sz2 == 0)
+			sz2 = DEF_RB_LOG_MSG;
+		break;
+	case 2:
+		RET_IF_NONZERO(rb_log2);
+		if (sz2 == 0)
+			sz2 = DEF_RB_LOG_SCAL;
+		break;
+	default:
+		return NULL;
+	}
+	if (!p_parser)
+		return NULL;
+
+	p_rb = new ring_buf;
+	if (p_rb->init(sz2)) {
+		delete p_rb;
+		return NULL;
+	}
+	
+	switch (rb_id) {
+	case 0:
+		rb_log0 = p_rb;
+		break;
+	case 1:
+		rb_log1 = p_rb;
+		break;
+	case 2:
+		rb_log2 = p_rb;
+	}
+	return p_rb;
+}
+
 ring_buf* initzer::get_ebd_rb(int rb_id)
 {
 	uint32_t sz2;
@@ -1041,6 +1094,18 @@ int initzer::get_ebd_recv_t_us()
 		return DEF_T_US_RECV_EBD;
 }
 
+int initzer::get_log_recv_t_us()
+{
+	bool found;
+	std::string name("recv_t_us");
+	int port;
+
+	port = get_log_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_T_US_RECV_EBD;
+}
 int initzer::get_fe_ctl_buf_sz()
 {
 	bool found;
@@ -1077,6 +1142,32 @@ int initzer::get_fe_on_start_t_max()
 		return port;
 	else
 		return DEF_RD_ON_START; 
+}
+
+
+int initzer::get_log_buf_sz(int id)
+{
+	bool found;
+	std::string name("trig_buf_sz");
+	int port;
+
+	switch (id) {
+	case 0:
+		name = "trig_buf_sz";
+		break;
+	case 1:
+		name = "msg_buf_sz";
+		break;
+	case 2:
+		name = "scal_buf_sz";
+		break;
+	}
+
+	port = get_log_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return 0;
 }
 
 int initzer::get_ebd_buf_sz(int id)
@@ -1208,6 +1299,20 @@ std::string initzer::get_ebd_recv_svr_addr()
 	return addr;
 }
 
+std::string initzer::get_log_recv_svr_addr()
+{
+	bool found;
+	std::string name("ebd_server_addr");
+	std::string addr;
+
+	get_log_adv_var(name, found, &addr);
+	if (!found)
+		addr = DEF_SVR_RECV_EBD;
+	else
+		addr = decode_str(addr);
+
+	return addr;
+}
 uint32_t initzer::get_ebd_sort_clock_hz()
 {
 	bool found;

@@ -37,6 +37,13 @@
 #define DEF_SOCK_BUF_FE_SEND (1024*1024)
 /* frontend blt buffer size */
 #define DEF_BLT_BUF_FE (1024*1024*10)
+/********** logger buffers *************/
+/* trigger data sharing */
+#define DEF_RB_LOG_TRIG (1024*1024*10)
+/* message sharing */
+#define DEF_RB_LOG_MSG (1024*2)
+/* scaler data */
+#define DEF_RB_LOG_SCAL (1024*1024*2)
 
 
 /* default socket settings */

@@ -132,6 +132,10 @@ std::vector<struct conf_adv> xml_parser::get_conf_adv(int id, int& status)
 		node = ctl;
 		node_name = "advanced_ctl";
 	}
+	else if (id == 4) {
+		node = ctl;
+		node_name = "advanced_log";
+	}
 	if (!node)
 		return vec_all;
 

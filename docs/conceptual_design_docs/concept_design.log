@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018/Arch Linux) (preloaded format=latex 2018.8.24)  3 JAN 2019 09:59
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018/Arch Linux) (preloaded format=latex 2018.8.24)  10 JAN 2019 08:23
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -389,7 +389,7 @@ File: ursfs.fd 1998/03/24 rsfs font definition file (jk)
 File: figs/data_format.eps Graphic file (type eps)
  <figs/data_format.eps>
 [3] [4]
-Overfull \hbox (40.11325pt too wide) in paragraph at lines 202--206
+Overfull \hbox (40.11325pt too wide) in paragraph at lines 214--218
 \OT1/cmr/m/n/12 Roody is de-vel-oped by the TRI-UMF (https://www.triumf.info/wi
 ki/DAQwiki/index.php/ROODY).
  []
@@ -408,4 +408,4 @@ Here is how much of TeX's memory you used:
  1141 hyphenation exceptions out of 8191
  54i,5n,73p,875b,302s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on concept_design.dvi (8 pages, 30392 bytes).
+Output written on concept_design.dvi (8 pages, 31036 bytes).

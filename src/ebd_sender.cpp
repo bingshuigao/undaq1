@@ -102,6 +102,20 @@ int ebd_sender::main_proc()
 	 * buffers. The client should take care of this. */
 	int32_t sz_in, ret;
 
+	/* check the scaler */
+	if (rb_scal->get_lock())
+		return -E_SYSCALL;
+	sz_in = rb_scal->get_used1();
+	if (sz_in == 0) {
+		/* no data available */
+		rb_scal->rel_lock();
+	}
+	else {
+		ret = send_data(rb_scal);
+		RET_IF_NONZERO(ret);
+	}
+
+	/* check the trigger */
 	if (rb_evt->get_lock())
 		return -E_SYSCALL;
 	sz_in = rb_evt->get_used1();
@@ -111,30 +125,40 @@ int ebd_sender::main_proc()
 		usleep(120);
 		return 0;
 	}
-
-	/* Now we have some data, let's send them out (remember that
-	 * the lock is released in the send_data() function */
-	ret = send_data();
-	RET_IF_NONZERO(ret);
+	else {
+		/* Now we have some data, let's send them out (remember that
+		 * the lock is released in the send_data() function */
+		ret = send_data(rb_evt);
+		RET_IF_NONZERO(ret);
+	}
 
 	return 0;
 
 }
 
 
-int ebd_sender::send_data()
+int ebd_sender::send_data(ring_buf* the_rb)
 {
 	int sz_out, ret;
 	
-	/* first, send the size */
-	sz_out = rb_evt->read1(sock_buf, sock_buf_sz);
-	rb_evt->rel_lock();
+	/* we need to let the receiver know if this is a scaler or a trigger
+	 * data. So we first send a size, then a type, then the data. if type
+	 * is 1, it is scaler data, if type is 2, it is trigger data.  */
+	sz_out = the_rb->read1(sock_buf+1, sock_buf_sz);
+	the_rb->rel_lock();
 	if (sz_out == -1) 
 		return -E_RING_BUF_DATA;
+
 	if ((send(sock_log, &sz_out, 4, 0) == -1) || 
 	    (send(sock_ana, &sz_out, 4, 0) == -1))
 		return -E_SYSCALL;
-	/* then send the data */
+	if (the_rb == rb_evt)
+		sock_buf[0] = 2;
+	else if (the_rb == rb_scal)
+		sock_buf[0] = 1;
+
+	/* then send the type and data */
+	sz_out++;
 	ret = do_send(sock_log, sock_buf, sz_out, 0);
 	RET_IF_NONZERO(ret);
 	ret = do_send(sock_ana, sock_buf, sz_out, 0);
@@ -145,10 +169,33 @@ int ebd_sender::send_data()
 
 int ebd_sender::flush_buf()
 {
-	while (true) {
+	bool flag1, flag2;
+
+	flag1 = true;
+	flag2 = true;
+	while (flag1 || flag2) {
 		int32_t sz_in, sz_out, ret;
 		unsigned char* p_buf;
 
+		/* flush the scaler data */
+		if (rb_scal->get_lock())
+			return -E_SYSCALL;
+		sz_in = rb_scal->get_used1();
+		if (sz_in == 0) {
+			/* no data available */
+			if (rb_scal->rel_lock())
+				return -E_SYSCALL;
+			flag1 = false;
+		}
+		else {
+			/* Now we have some data, let's send them out (remember
+			 * that the lock is released in the send_data()
+			 * function */
+			ret = send_data(rb_scal);
+			RET_IF_NONZERO(ret);
+		}
+
+		/* flush the trigger data */
 		if (rb_evt->get_lock())
 			return -E_SYSCALL;
 		sz_in = rb_evt->get_used1();
@@ -156,13 +203,15 @@ int ebd_sender::flush_buf()
 			/* no data available */
 			if (rb_evt->rel_lock())
 				return -E_SYSCALL;
-			return 0;
+			flag2 = false;
 		}
-
-		/* Now we have some data, let's send them out (remember that
-		 * the lock is released in the send_data() function */
-		ret = send_data();
-		RET_IF_NONZERO(ret);
+		else {
+			/* Now we have some data, let's send them out (remember
+			 * that the lock is released in the send_data()
+			 * function */
+			ret = send_data(rb_evt);
+			RET_IF_NONZERO(ret);
+		}
 	}
 
 	return 0;
