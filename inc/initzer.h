@@ -177,6 +177,12 @@ public:
 	 * */
 	int get_log_recv_t_us();
 
+	/* get the data saving path */
+	std::string get_log_save_path();
+
+	/* get the buffer length of the logger save thread */
+	uint32_t get_log_save_buf_len();
+
 	/* get the server address of the frontend control thread
 	 *  */
 	std::string get_fe_ctl_svr_addr();

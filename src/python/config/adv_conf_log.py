@@ -47,6 +47,20 @@ class adv_conf_log(adv_conf):
                  'wid_type' : 'entry',
                  'comment' : None
                  })
+        # The data saving path
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'save_path',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
+        # The data saving buf len
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'save_buf_sz',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
 
 
 

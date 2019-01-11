@@ -1255,6 +1255,22 @@ static std::string decode_str(std::string& raw)
 	return ret;
 }
 
+std::string initzer::get_log_save_path()
+{
+	bool found;
+	std::string name("save_path");
+	std::string addr;
+
+	get_log_adv_var(name, found, &addr);
+	if (!found)
+		addr = DEF_SAVE_PATH_LOG;
+	else
+		addr = decode_str(addr);
+
+	return addr;
+
+}
+
 std::string initzer::get_fe_ctl_svr_addr()
 {
 	bool found;
@@ -1347,6 +1363,20 @@ uint32_t initzer::get_ebd_merge_merged_buf_sz()
 	int port;
 
 	port = get_ebd_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_EBD_MERGE_GLOM;
+
+}
+
+uint32_t initzer::get_log_save_buf_len()
+{
+	bool found;
+	std::string name("save_buf_sz");
+	int port;
+
+	port = get_log_adv_var(name, found);
 	if (found)
 		return port;
 	else

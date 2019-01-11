@@ -44,6 +44,8 @@
 #define DEF_RB_LOG_MSG (1024*2)
 /* scaler data */
 #define DEF_RB_LOG_SCAL (1024*1024*2)
+/* logger save buf */
+#define DEF_LOG_SAVE_BUF (1024*1024*2)
 
 
 /* default socket settings */
@@ -96,6 +98,7 @@
 #define DEF_NTRY_FE 1000 
 #define DEF_EBD_SORT_HZ 10000000
 #define DEF_EBD_MERGE_GLOM 10
+#define DEF_SAVE_PATH_LOG "."
 
 static inline int do_send(int sock, void* buf, int sz, int flag)
 {
