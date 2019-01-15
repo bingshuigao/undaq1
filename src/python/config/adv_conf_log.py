@@ -61,6 +61,27 @@ class adv_conf_log(adv_conf):
                  'wid_type' : 'entry',
                  'comment' : None
                  })
+        # The contrler socket buffer size
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'ctl_buf_sz',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
+        # The contrler server address
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'ctl_svr_addr',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
+        # The contrler time out of select syscall
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'ctl_t_us',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
 
 
 

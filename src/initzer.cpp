@@ -1068,6 +1068,19 @@ int initzer::get_ebd_ctl_t_us()
 		return DEF_T_US_CTL_FE;
 
 }
+int initzer::get_log_ctl_t_us()
+{
+	bool found;
+	std::string name("ctl_t_us");
+	int port;
+
+	port = get_log_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_T_US_CTL_FE;
+
+}
 int initzer::get_fe_ctl_t_us()
 {
 	bool found;
@@ -1119,6 +1132,18 @@ int initzer::get_fe_ctl_buf_sz()
 		return DEF_SOCK_BUF_FE_CTL; 
 }
 
+int initzer::get_log_ctl_buf_sz()
+{
+	bool found;
+	std::string name("ctl_buf_sz");
+	int port;
+
+	port = get_log_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_SOCK_BUF_FE_CTL; 
+}
 int initzer::get_ebd_ctl_buf_sz()
 {
 	bool found;
@@ -1292,6 +1317,20 @@ std::string initzer::get_ebd_ctl_svr_addr()
 	std::string addr;
 
 	get_ebd_adv_var(name, found, &addr);
+	if (!found)
+		addr = DEF_SVR_CTL_FE;
+	else
+		addr = decode_str(addr);
+
+	return addr;
+}
+std::string initzer::get_log_ctl_svr_addr()
+{
+	bool found;
+	std::string name("ctl_svr_addr");
+	std::string addr;
+
+	get_log_adv_var(name, found, &addr);
 	if (!found)
 		addr = DEF_SVR_CTL_FE;
 	else
