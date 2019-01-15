@@ -17,6 +17,7 @@ from tkinter import filedialog
 from frontend import frontend
 from ebd import ebd
 from log import log
+from ana import ana
 from ctl import ctl
 import xml.etree.ElementTree as et
 from xml.dom import minidom
@@ -68,6 +69,9 @@ class config:
         # create the logger tab
         self._create_logger(self.tab_ctrl)
 
+        # create the analyzer tab
+        self._create_analyzer(self.tab_ctrl)
+        
         # create the GUI controler tab
         self._create_ctl(self.tab_ctrl)
 
@@ -89,7 +93,12 @@ class config:
     def _create_logger(self, tab_ctrl):
         self.log = log(tab_ctrl)
         tab_ctrl.add(self.log.get_frm(), text='logger')
-    
+
+    # create the analyzer tab
+    def _create_analyzer(self, tab_ctrl):
+        self.ana = ana(tab_ctrl)
+        tab_ctrl.add(self.ana.get_frm(), text='analyzer')
+
     # create the GUI controller tab
     def _create_ctl(self, tab_ctrl):
         self.ctl = ctl(tab_ctrl)
@@ -153,12 +162,22 @@ class config:
 
         # create the elements of logger
         ele_log = et.SubElement(root, 'logger')
-        # the advanced settings for event builder
+        # the advanced settings for logger
         for name,val,com in self.log.get_adv_conf().get_conf():
             ele_adv = et.SubElement(ele_log, 'advanced_log')
             et.SubElement(ele_adv, 'name').text = name
             et.SubElement(ele_adv, 'value').text = val
             et.SubElement(ele_adv, 'comment').text = com
+
+        # create the elements of analyzer
+        ele_ana = et.SubElement(root, 'analyzer')
+        # the advanced settings for analyzer
+        for name,val,com in self.ana.get_adv_conf().get_conf():
+            ele_adv = et.SubElement(ele_ana, 'advanced_ana')
+            et.SubElement(ele_adv, 'name').text = name
+            et.SubElement(ele_adv, 'value').text = val
+            et.SubElement(ele_adv, 'comment').text = com
+
 
         ####################################
 
@@ -222,6 +241,12 @@ class config:
         log = root.find('logger')
         if log:
             self._parse_log(log)
+
+        # parse analyzer
+        ana = root.find('analyzer')
+        if ana:
+            self._parse_ana(ana)
+
         ####################
 
     # parse the GUI controller part of the cofnig file
@@ -243,7 +268,18 @@ class config:
             val  = adv_conf.find('value').text
             conf.append((name, val, ''))
         self.ebd.get_adv_conf().set_conf(conf)
-    
+
+    # parse the analyzer part of the cofnig file
+    def _parse_ana(self, ana):
+        # the advance settings (if any)
+        conf = []
+        for adv_conf in ana.findall('advanced_ana'):
+            name = adv_conf.find('name').text
+            val  = adv_conf.find('value').text
+            conf.append((name, val, ''))
+        self.ana.get_adv_conf().set_conf(conf)
+
+
     # parse the logger part of the cofnig file
     def _parse_log(self, log):
         # the advance settings (if any)

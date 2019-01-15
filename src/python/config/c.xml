@@ -161,11 +161,12 @@
         </advanced_ebd>
     </event_builder>
     <GUI_ctl/>
-    <logger>
-        <advanced_log>
-            <name>ring_buf_sz</name>
-            <value>1000000</value>
-            <comment>ring_buf_sz</comment>
-        </advanced_log>
-    </logger>
+    <logger/>
+    <analyzer>
+        <advanced_ana>
+            <name>buf_sz</name>
+            <value>10000000</value>
+            <comment>buf_sz</comment>
+        </advanced_ana>
+    </analyzer>
 </config>

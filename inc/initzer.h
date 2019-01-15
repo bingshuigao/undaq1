@@ -77,6 +77,9 @@ public:
 	 * */
 	ring_buf* get_log_rb(int id);
 
+	/* get the analyzer ring buffer */
+	ring_buf* get_ana_rb();
+
 	/* get the clock freqency */
 	uint32_t get_ebd_sort_clock_hz();
 
@@ -111,6 +114,9 @@ public:
 	 * id == 2 --> the scaler event ring buffer.
 	 *     */
 	int get_log_buf_sz(int id);
+
+	/* get the analyzer ring buffer size */
+	int get_ana_buf_sz();
 
 	/* get a vector of ring buffers. each element in the vector is a
 	 * pointer of a ring buffer dedicated to one vme module, the modules
@@ -182,6 +188,9 @@ public:
 	/* similar as the get_ebd_recv_t_us();
 	 * */
 	int get_log_recv_t_us();
+	/* similar as the get_ebd_recv_t_us();
+	 * */
+	int get_ana_recv_t_us();
 
 	/* get the data saving path */
 	std::string get_log_save_path();
@@ -204,6 +213,9 @@ public:
 	/* get the server address of the logger receiver server */
 	std::string get_log_recv_svr_addr();
 
+	/* get the server address of the analyzer receiver server */
+	std::string get_ana_recv_svr_addr();
+	
 	/* return NULL indicating errors */
 	char* get_slot_map() {return slot_map;}
 
@@ -235,6 +247,9 @@ private:
 	int get_log_adv_var(std::string& var_name, bool& found, 
 			std::string* value2 = NULL)
 	{return get_adv_var(4, var_name, found, value2); }
+	int get_ana_adv_var(std::string& var_name, bool& found, 
+			std::string* value2 = NULL)
+	{return get_adv_var(5, var_name, found, value2); }
 
 
 
@@ -295,6 +310,9 @@ private: xml_parser* p_parser;
 	ring_buf* rb_log0;
 	ring_buf* rb_log1;
 	ring_buf* rb_log2;
+
+	/* ring buffers for the analyzer */
+	ring_buf* rb_ana;
 	
 	/* see the comments in ebd_sort.h. Because 3-d arrays are very
 	 * difficult to handle, we use a 1d array instead.  */

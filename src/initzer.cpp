@@ -17,6 +17,7 @@ initzer::initzer()
 	rb_log0 = NULL;
 	rb_log1 = NULL;
 	rb_log2 = NULL;
+	rb_ana = NULL;
 }
 
 initzer::~initzer()
@@ -739,6 +740,32 @@ std::vector<ring_buf*> initzer::get_ebd_rbs()
 	return rbs_ebd;
 }
 
+ring_buf* initzer::get_ana_rb()
+{
+	uint32_t sz2;
+	ring_buf* p_rb;
+
+	sz2 = get_ana_buf_sz();
+	
+	/* first check if the ring buffer object already created */
+	RET_IF_NONZERO(rb_ana);
+	if (sz2 == 0)
+		sz2 = DEF_RB_ANA;
+	if (!p_parser)
+		return NULL;
+
+	/* create a new ring buffer since it does not exist */
+	p_rb = new ring_buf;
+	if (p_rb->init(sz2)) {
+		delete p_rb;
+		return NULL;
+	}
+	
+	rb_ana = p_rb;
+	return p_rb;
+}
+
+
 ring_buf* initzer::get_log_rb(int rb_id)
 {
 	uint32_t sz2;
@@ -1119,6 +1146,19 @@ int initzer::get_log_recv_t_us()
 	else
 		return DEF_T_US_RECV_EBD;
 }
+
+int initzer::get_ana_recv_t_us()
+{
+	bool found;
+	std::string name("recv_t_us");
+	int port;
+
+	port = get_ana_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_T_US_RECV_EBD;
+}
 int initzer::get_fe_ctl_buf_sz()
 {
 	bool found;
@@ -1194,6 +1234,20 @@ int initzer::get_log_buf_sz(int id)
 	else
 		return 0;
 }
+
+int initzer::get_ana_buf_sz()
+{
+	bool found;
+	std::string name("buf_sz");
+	int port;
+
+	port = get_ana_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return 0;
+}
+
 
 int initzer::get_ebd_buf_sz(int id)
 {
@@ -1346,6 +1400,21 @@ std::string initzer::get_ebd_recv_svr_addr()
 	std::string addr;
 
 	get_ebd_adv_var(name, found, &addr);
+	if (!found)
+		addr = DEF_SVR_RECV_EBD;
+	else
+		addr = decode_str(addr);
+
+	return addr;
+}
+
+std::string initzer::get_ana_recv_svr_addr()
+{
+	bool found;
+	std::string name("ebd_server_addr");
+	std::string addr;
+
+	get_ana_adv_var(name, found, &addr);
 	if (!found)
 		addr = DEF_SVR_RECV_EBD;
 	else

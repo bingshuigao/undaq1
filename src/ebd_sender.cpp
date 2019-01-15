@@ -142,9 +142,11 @@ int ebd_sender::send_data(ring_buf* the_rb)
 	int sz_out, ret;
 	
 	/* we need to let the receiver know if this is a scaler or a trigger
-	 * data. So we first send a size, then a type, then the data. if type
-	 * is 1, it is scaler data, if type is 2, it is trigger data.  */
-	sz_out = the_rb->read1(sock_buf+1, sock_buf_sz);
+	 * data. So we first send a size, then a type and the data (the type
+	 * and data are packed together, and the size does NOT include the
+	 * type). if type is 1, it is scaler data, if type is 2, it is trigger
+	 * data.  */
+	sz_out = the_rb->read1(sock_buf+1, sock_buf_sz-1);
 	the_rb->rel_lock();
 	if (sz_out == -1) 
 		return -E_RING_BUF_DATA;

@@ -59,13 +59,15 @@ public:
 	/* get the configruations of the vme modules (a vector of vectors). The
 	 * results are returned as a vector containing a vector of struct
 	 * conf_vme_mod for each vme module*/
-	std::vector<std::vector<struct conf_vme_mod> > get_conf_vme_mod(int& status);
+	std::vector<std::vector<struct conf_vme_mod> > 
+		get_conf_vme_mod(int& status);
 
 	/* Get the advanced configurations (if any)
 	 * @param id = 1 -> get advanced config of frontend
 	 * @param id = 2 -> get advanced config of event builder 
 	 * @param id = 3 -> get advanced config of GUI controler
 	 * @param id = 4 -> get advanced config of logger
+	 * @param id = 5 -> get advanced config of analyzer
 	 * @param status -> error code */
 	std::vector<struct conf_adv> get_conf_adv(int id, int& status);
 	
