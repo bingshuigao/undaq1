@@ -11,12 +11,14 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from adv_conf_ana import adv_conf_ana
+from ana_hist import ana_hist
 
 
 class ana:
     def __init__(self, parent):
         # the advanced settings
         self.adv_conf = adv_conf_ana()
+        self.hists = ana_hist()
        
        # main frame (to be added as a tab in a notebook widget)
         self.frm = tk.Frame(parent)
@@ -33,17 +35,31 @@ class ana:
         self.butt_adv = tk.Button(self.frm, text='advanced...',
                 command=self._adv_conf)
         self.butt_adv.place(x =560, y=400, width=100, height=25)
+        self.butt_hist = tk.Button(self.frm, text='histos...',
+                command=self._histos)
+        self.butt_hist.place(x =560, y=500, width=100, height=25)
 
     def _adv_conf(self):
         self.adv_conf.show_win()
         self.adv_conf.get_win().grab_set()
         self.frm.wait_window(self.adv_conf.get_win())
 
+    def _histos(self):
+        self.hists.show_win()
+        self.hists.get_win().grab_set()
+        self.frm.wait_window(self.hists.get_win())
+
     def _show_msg(self, msg, flag='info'):
         if flag == 'err':
             messagebox.showerror('error', msg, parent=self.frm)
         else:
             messagebox.showinfo('info', msg, parent=self.frm)
+
+    def get_ana_hist(self):
+        return self.hists
+            
+
+
 
             
 

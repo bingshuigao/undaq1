@@ -142,6 +142,147 @@
                 <comment>is_trig_mod</comment>
             </advance_var>
         </vme_module>
+        <vme_module>
+            <register>
+                <offset>0x6</offset>
+                <value>0xb</value>
+                <comment>irq mask</comment>
+            </register>
+            <global_var>
+                <name>crate_n</name>
+                <value>0</value>
+                <comment>crate number</comment>
+            </global_var>
+            <global_var>
+                <name>slot_n</name>
+                <value>0</value>
+                <comment>slot number</comment>
+            </global_var>
+            <global_var>
+                <name>base</name>
+                <value>0x00000000</value>
+                <comment>base address</comment>
+            </global_var>
+            <global_var>
+                <name>am_reg</name>
+                <value>0x0</value>
+                <comment>am used to access most of the registers</comment>
+            </global_var>
+            <global_var>
+                <name>type</name>
+                <value>T</value>
+                <comment>type of module (Trigg/Scal)</comment>
+            </global_var>
+            <global_var>
+                <name>period</name>
+                <value>1000</value>
+                <comment>period of reading for scaler type modules</comment>
+            </global_var>
+            <global_var>
+                <name>max_crate</name>
+                <value>1</value>
+                <comment>max crate</comment>
+            </global_var>
+            <global_var>
+                <name>name</name>
+                <value>V2718000</value>
+                <comment>name of the module</comment>
+            </global_var>
+        </vme_module>
+        <vme_module>
+            <register>
+                <offset>0x4000</offset>
+                <value>0x6f</value>
+                <comment>threshold 00</comment>
+            </register>
+            <global_var>
+                <name>crate_n</name>
+                <value>0</value>
+                <comment>crate number</comment>
+            </global_var>
+            <global_var>
+                <name>slot_n</name>
+                <value>1</value>
+                <comment>slot number</comment>
+            </global_var>
+            <global_var>
+                <name>base</name>
+                <value>0x10000000</value>
+                <comment>base address</comment>
+            </global_var>
+            <global_var>
+                <name>am_reg</name>
+                <value>0x0</value>
+                <comment>am used to access most of the registers</comment>
+            </global_var>
+            <global_var>
+                <name>type</name>
+                <value>T</value>
+                <comment>type of module (Trigg/Scal)</comment>
+            </global_var>
+            <global_var>
+                <name>period</name>
+                <value>1000</value>
+                <comment>period of reading for scaler type modules</comment>
+            </global_var>
+            <global_var>
+                <name>max_crate</name>
+                <value>1</value>
+                <comment>max crate</comment>
+            </global_var>
+            <global_var>
+                <name>name</name>
+                <value>MADC32000</value>
+                <comment>name of the module</comment>
+            </global_var>
+        </vme_module>
+        <vme_module>
+            <global_var>
+                <name>crate_n</name>
+                <value>0</value>
+                <comment>crate number</comment>
+            </global_var>
+            <global_var>
+                <name>slot_n</name>
+                <value>20</value>
+                <comment>slot number</comment>
+            </global_var>
+            <global_var>
+                <name>base</name>
+                <value>0x20000000</value>
+                <comment>base address</comment>
+            </global_var>
+            <global_var>
+                <name>am_reg</name>
+                <value>0x0</value>
+                <comment>am used to access most of the registers</comment>
+            </global_var>
+            <global_var>
+                <name>type</name>
+                <value>T</value>
+                <comment>type of module (Trigg/Scal)</comment>
+            </global_var>
+            <global_var>
+                <name>period</name>
+                <value>1000</value>
+                <comment>period of reading for scaler type modules</comment>
+            </global_var>
+            <global_var>
+                <name>max_crate</name>
+                <value>1</value>
+                <comment>max crate</comment>
+            </global_var>
+            <global_var>
+                <name>name</name>
+                <value>V977000</value>
+                <comment>name of the module</comment>
+            </global_var>
+            <advance_var>
+                <name>is_trig_mod</name>
+                <value>1</value>
+                <comment>is_trig_mod</comment>
+            </advance_var>
+        </vme_module>
         <advanced_fe>
             <name>ring_buf_sz</name>
             <value>123000</value>
@@ -168,5 +309,27 @@
             <value>10000000</value>
             <comment>buf_sz</comment>
         </advanced_ana>
+        <hist_ana>
+            <id>3</id>
+            <type>TH1D</type>
+            <name>h3</name>
+            <nbinsX>300</nbinsX>
+            <nbinsY>0</nbinsY>
+            <X_min>0.0</X_min>
+            <Y_min>0</Y_min>
+            <X_max>300.0</X_max>
+            <Y_max>0</Y_max>
+        </hist_ana>
+        <hist_ana>
+            <id>1</id>
+            <type>TH2D</type>
+            <name>h1</name>
+            <nbinsX>100</nbinsX>
+            <nbinsY>100</nbinsY>
+            <X_min>0.0</X_min>
+            <Y_min>0.0</Y_min>
+            <X_max>100.0</X_max>
+            <Y_max>100.0</Y_max>
+        </hist_ana>
     </analyzer>
 </config>

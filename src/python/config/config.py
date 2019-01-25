@@ -177,6 +177,35 @@ class config:
             et.SubElement(ele_adv, 'name').text = name
             et.SubElement(ele_adv, 'value').text = val
             et.SubElement(ele_adv, 'comment').text = com
+        # the histograms of the analyzer
+        for h in self.ana.get_ana_hist().get_all_hists():
+            xid = h[0]
+            xtype = h[1]
+            name = h[2]
+            nbinsX = h[3]
+            X_min = h[4]
+            X_max = h[5]
+            nbinsY = h[6]
+            Y_min = h[7]
+            Y_max = h[8]
+            xdel = h[9]
+            if xdel:
+                continue
+            ele_hist = et.SubElement(ele_ana, 'hist_ana')
+            if xtype == 'TH1D':
+                nbinsY = 0
+                Y_min = 0
+                Y_max = 0
+            et.SubElement(ele_hist, 'id').text = str(xid)
+            et.SubElement(ele_hist, 'type').text = xtype
+            et.SubElement(ele_hist, 'name').text = name
+            et.SubElement(ele_hist, 'nbinsX').text = str(nbinsX)
+            et.SubElement(ele_hist, 'nbinsY').text = str(nbinsY)
+            et.SubElement(ele_hist, 'X_min').text = str(X_min)
+            et.SubElement(ele_hist, 'Y_min').text = str(Y_min)
+            et.SubElement(ele_hist, 'X_max').text = str(X_max)
+            et.SubElement(ele_hist, 'Y_max').text = str(Y_max)
+
 
 
         ####################################
@@ -278,6 +307,21 @@ class config:
             val  = adv_conf.find('value').text
             conf.append((name, val, ''))
         self.ana.get_adv_conf().set_conf(conf)
+        # the histograms if any
+        hist = []
+        for h in ana.findall('hist_ana'):
+            xid = int(h.find('id').text)
+            xtype = h.find('type').text
+            name = h.find('name').text
+            nbinsX = int(h.find('nbinsX').text)
+            nbinsY = int(h.find('nbinsY').text)
+            X_min = float(h.find('X_min').text)
+            Y_min = float(h.find('Y_min').text)
+            X_max = float(h.find('X_max').text)
+            Y_max = float(h.find('Y_max').text)
+            hist.append((xid, xtype, name, nbinsX, X_min, X_max, nbinsY, Y_min,
+                Y_max, False))
+        self.ana.get_ana_hist().set_hist(hist)
 
 
     # parse the logger part of the cofnig file
