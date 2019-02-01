@@ -30,6 +30,8 @@ int ana_thread::ana_thread_init(my_thread* This, initzer* the_initzer)
 	ana_thread* ptr = reinterpret_cast<ana_thread*>(This);
 
 	/* initialize the ring buffers */
-	ptr->rb_evt = the_initzer->get_ana_rb();
+	ptr->rb_evt = the_initzer->get_ana_rb(0);
+	ptr->rb_msg = the_initzer->get_ana_rb(1);
+	ptr->rb_scal = the_initzer->get_ana_rb(2);
 	return 0;
 }

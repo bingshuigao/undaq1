@@ -11,6 +11,8 @@ xml_parser::xml_parser()
 	root = NULL;
 	fe = NULL;
 	ctl = NULL;
+	log = NULL;
+	ana = NULL;
 	cur_node = NULL;
 
 }
@@ -56,6 +58,8 @@ int xml_parser::parse(const char* f_name)
 	fe = doc.first_node("frontend");
 	ebd = doc.first_node("event_builder");
 	ctl = doc.first_node("GUI_ctl");
+	log = doc.first_node("logger");
+	ana = doc.first_node("analyzer");
 
 	return 0;
 }
@@ -133,17 +137,17 @@ std::vector<struct conf_adv> xml_parser::get_conf_adv(int id, int& status)
 		node_name = "advanced_ctl";
 	}
 	else if (id == 4) {
-		node = ctl;
+		node = log;
 		node_name = "advanced_log";
 	}
 	else if (id == 5) {
-		node = ctl;
+		node = ana;
 		node_name = "advanced_ana";
 	}
 	if (!node)
 		return vec_all;
 
-	/* Iterate all the nodes in the frontend node*/
+	/* Iterate all the nodes in the parent node*/
 	rapidxml::xml_node<>* it;
 	for (it=node->first_node(node_name.c_str()); it; 
 			it=it->next_sibling(node_name.c_str())) {
@@ -254,4 +258,31 @@ int xml_parser::get_adv_var(struct conf_vme_mod* conf)
 	conf->val.val_uint64 = strtol(str, NULL, 0);
 
 	return 0;
+}
+
+std::vector<hist_pars> xml_parser::get_ana_hists()
+{
+	rapidxml::xml_node<> * node = ana;
+	std::string node_name("hist_ana");
+	std::vector<hist_pars> vec_all;
+
+	/* Iterate all the nodes in the analyzer node*/
+	rapidxml::xml_node<>* it;
+	for (it=node->first_node(node_name.c_str()); it; 
+			it=it->next_sibling(node_name.c_str())) {
+		struct hist_pars hist_pars;
+		hist_pars.p_obj = NULL;
+		hist_pars.id = strtol(it->first_node("id")->value(), NULL, 10);
+		hist_pars.nbinsX = strtol(it->first_node("nbinsX")->value(), NULL, 10);
+		hist_pars.nbinsY = strtol(it->first_node("nbinsY")->value(), NULL, 10);
+		hist_pars.X_min = strtod(it->first_node("X_min")->value(), NULL);
+		hist_pars.Y_min = strtod(it->first_node("Y_min")->value(), NULL);
+		hist_pars.X_max = strtod(it->first_node("X_max")->value(), NULL);
+		hist_pars.Y_max = strtod(it->first_node("Y_max")->value(), NULL);
+		hist_pars.type = it->first_node("type")->value();
+		hist_pars.name = it->first_node("name")->value();
+		hist_pars.folder = it->first_node("folder")->value();
+		vec_all.push_back(hist_pars);
+	}
+	return vec_all;
 }

@@ -15,7 +15,19 @@ class adv_conf_ana(adv_conf):
         # the event ring buffer size (in bytes)
         self.var_lst.append({
                  'value' : 'default',
-                 'name' : 'buf_sz',
+                 'name' : 'trig_buf_sz',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'msg_buf_sz',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'scal_buf_sz',
                  'wid_type' : 'entry',
                  'comment' : None
                  })
@@ -30,6 +42,13 @@ class adv_conf_ana(adv_conf):
         self.var_lst.append({
                  'value' : 'default',
                  'name' : 'recv_t_us',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
+        # the max event length
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'main_buf_sz',
                  'wid_type' : 'entry',
                  'comment' : None
                  })

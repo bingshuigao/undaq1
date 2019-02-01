@@ -48,6 +48,7 @@
 #define DEF_LOG_SAVE_BUF (1024*1024*2)
 /* analyzer buffer */
 #define DEF_RB_ANA (1024*1024*10)
+#define DEF_MAX_EVT_LEN (1024*1024*2);
 
 
 /* default socket settings */

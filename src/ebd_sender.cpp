@@ -1,4 +1,5 @@
 #include "ebd_sender.h"
+#include <sys/select.h>
 
 ebd_sender::ebd_sender()
 {
@@ -12,6 +13,7 @@ ebd_sender::ebd_sender()
 
 ebd_sender::~ebd_sender()
 {
+	svr->destroy();
 	delete svr;
 	if (sock_buf)
 		delete sock_buf;
@@ -34,7 +36,7 @@ int ebd_sender::handle_msg(uint32_t* msg_body)
 {
 	/* The message type of the current thread are defined as following 
 	 * 1 --> run status transition
-	 * 2 --> to be defined
+	 * 2 --> the analyzer needs re-connect
 	 * */
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
 	switch (msg_type) {
@@ -42,6 +44,9 @@ int ebd_sender::handle_msg(uint32_t* msg_body)
 		/* run status transition
 		 * */
 		return switch_run(msg_body[1]);
+	case 2:
+		/* try to re-connect the analyzer (but do not block!) */
+		return re_conn_ana();
 	default:
 		return -E_MSG_TYPE;
 	}
@@ -54,11 +59,19 @@ int ebd_sender::start()
 
 	/* establish the connection between logger and analyzer (tcp
 	 * client) and the current thread(tcp server). */
-	if (sock_ana == -1) {
+	if (sock_log == -1) {
 		sock_log = svr->accept();
+//		svr->destroy();
+		if ((sock_log == -1))
+			return -E_SYSCALL;
+	}
+	
+	if (sock_ana == -1) {
 		sock_ana = svr->accept();
-		svr->destroy();
-		if ((sock_log == -1) || (sock_ana == -1))
+		/* we don't destroy the server because the analyzer may need to
+		 * re-connect if it goes wrong */
+//		svr->destroy();
+		if ((sock_ana == -1))
 			return -E_SYSCALL;
 	}
 
@@ -80,8 +93,13 @@ int ebd_sender::stop()
 	 * stop event. */
 	if (send(sock_log, &n, 4, 0) == -1)
 		return -E_SYSCALL;
-	if (send(sock_ana, &n, 4, 0) == -1)
-		return -E_SYSCALL;
+	if (sock_ana != -1) {
+		if (send(sock_ana, &n, 4, 0) == -1) {
+			sock_ana = -1;
+			ret = send_msg(4, 2, NULL, 0);
+			RET_IF_NONZERO(ret);
+		}
+	}
 
 	/* proporgate the stop message to the next thread */
 	return send_msg(5, 1, &acq_stat, 4);
@@ -151,9 +169,15 @@ int ebd_sender::send_data(ring_buf* the_rb)
 	if (sz_out == -1) 
 		return -E_RING_BUF_DATA;
 
-	if ((send(sock_log, &sz_out, 4, 0) == -1) || 
-	    (send(sock_ana, &sz_out, 4, 0) == -1))
+	if ((send(sock_log, &sz_out, 4, 0) == -1))
 		return -E_SYSCALL;
+	if (sock_ana != -1) {
+		if (send(sock_ana, &sz_out, 4, 0) == -1) {
+			sock_ana = -1;
+			ret = send_msg(4, 2, NULL, 0);
+			RET_IF_NONZERO(ret);
+		}
+	}
 	if (the_rb == rb_evt)
 		sock_buf[0] = 2;
 	else if (the_rb == rb_scal)
@@ -163,9 +187,17 @@ int ebd_sender::send_data(ring_buf* the_rb)
 	sz_out++;
 	ret = do_send(sock_log, sock_buf, sz_out, 0);
 	RET_IF_NONZERO(ret);
-	ret = do_send(sock_ana, sock_buf, sz_out, 0);
-	RET_IF_NONZERO(ret);
-
+	/* because the analyser calls user code, there is higher probability
+	 * that the analyzer may go wrong, so we should not stop the DAQ if
+	 * something goes wrong in the analyzer, instead we should let the
+	 * analyzer re-connect. */
+	if (sock_ana != -1) {
+		if (do_send(sock_ana, sock_buf, sz_out, 0)) {
+			sock_ana = -1;
+			send_msg(4, 2, NULL, 0);
+		}
+	}
+	
 	return 0;
 }
 
@@ -215,6 +247,30 @@ int ebd_sender::flush_buf()
 			RET_IF_NONZERO(ret);
 		}
 	}
+
+	return 0;
+}
+
+int ebd_sender::re_conn_ana()
+{
+        int ret; 
+	int sock;
+        fd_set readfds;
+        struct timeval timeout;
+        timeout.tv_sec=0;
+        timeout.tv_usec=0;
+	sock = svr->get_sock();
+        FD_ZERO(&readfds); 
+        FD_SET(sock, &readfds);
+        ret = select(sock+1, &readfds, NULL, NULL, &timeout);
+        if (ret <= 0) 
+		/* no connect request */
+		return send_msg(4, 2, NULL, 0);
+	
+	/* now there is incoming connect request. */
+	sock_ana = svr->accept();
+	if ((sock_ana == -1))
+		return -E_SYSCALL;
 
 	return 0;
 }

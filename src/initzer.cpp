@@ -17,7 +17,9 @@ initzer::initzer()
 	rb_log0 = NULL;
 	rb_log1 = NULL;
 	rb_log2 = NULL;
-	rb_ana = NULL;
+	rb_ana0 = NULL;
+	rb_ana1 = NULL;
+	rb_ana2 = NULL;
 }
 
 initzer::~initzer()
@@ -740,28 +742,52 @@ std::vector<ring_buf*> initzer::get_ebd_rbs()
 	return rbs_ebd;
 }
 
-ring_buf* initzer::get_ana_rb()
+ring_buf* initzer::get_ana_rb(int rb_id)
 {
 	uint32_t sz2;
 	ring_buf* p_rb;
 
-	sz2 = get_ana_buf_sz();
-	
-	/* first check if the ring buffer object already created */
-	RET_IF_NONZERO(rb_ana);
-	if (sz2 == 0)
-		sz2 = DEF_RB_ANA;
+	sz2 = get_ana_buf_sz(rb_id);
+	switch (rb_id) {
+	case 0:
+		/* first check if the ring buffer object already created */
+		RET_IF_NONZERO(rb_ana0);
+		if (sz2 == 0)
+			sz2 = DEF_RB_ANA;
+		break;
+	case 1:
+		/* first check if the ring buffer object already created */
+		RET_IF_NONZERO(rb_ana1);
+		if (sz2 == 0)
+			sz2 = DEF_RB_LOG_MSG;
+		break;
+	case 2:
+		RET_IF_NONZERO(rb_ana2);
+		if (sz2 == 0)
+			sz2 = DEF_RB_LOG_SCAL;
+		break;
+	default:
+		return NULL;
+	}
 	if (!p_parser)
 		return NULL;
 
-	/* create a new ring buffer since it does not exist */
 	p_rb = new ring_buf;
 	if (p_rb->init(sz2)) {
 		delete p_rb;
 		return NULL;
 	}
 	
-	rb_ana = p_rb;
+	switch (rb_id) {
+	case 0:
+		rb_ana0 = p_rb;
+		break;
+	case 1:
+		rb_ana1 = p_rb;
+		break;
+	case 2:
+		rb_ana2 = p_rb;
+	}
 	return p_rb;
 }
 
@@ -1147,6 +1173,18 @@ int initzer::get_log_recv_t_us()
 		return DEF_T_US_RECV_EBD;
 }
 
+int initzer::get_ana_main_buf_sz()
+{
+	bool found;
+	std::string name("main_buf_sz");
+	int port;
+
+	port = get_ana_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_MAX_EVT_LEN;
+}
 int initzer::get_ana_recv_t_us()
 {
 	bool found;
@@ -1235,11 +1273,23 @@ int initzer::get_log_buf_sz(int id)
 		return 0;
 }
 
-int initzer::get_ana_buf_sz()
+int initzer::get_ana_buf_sz(int id)
 {
 	bool found;
-	std::string name("buf_sz");
+	std::string name("trig_buf_sz");
 	int port;
+
+	switch (id) {
+	case 0:
+		name = "trig_buf_sz";
+		break;
+	case 1:
+		name = "msg_buf_sz";
+		break;
+	case 2:
+		name = "scal_buf_sz";
+		break;
+	}
 
 	port = get_ana_adv_var(name, found);
 	if (found)

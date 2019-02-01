@@ -21,13 +21,14 @@ class ana_hist:
         # hist[0] = id
         # hist[1] = type (TH1D, TH2D)
         # hist[2] = name (str)
-        # hist[3] = nbinsX
-        # hist[4] = X_min
-        # hist[5] = X_max
-        # hist[6] = nbinsY
-        # hist[7] = Y_min
-        # hist[8] = Y_max
-        # hist[9] = 'if delete (bool)'
+        # hist[3] = folder (str)
+        # hist[4] = nbinsX
+        # hist[5] = X_min
+        # hist[6] = X_max
+        # hist[7] = nbinsY
+        # hist[8] = Y_min
+        # hist[9] = Y_max
+        # hist[10] = 'if delete (bool)'
         self.hists = []
         self.widgets = []
 
@@ -46,33 +47,36 @@ class ana_hist:
     def _create_wid(self, h):
         wid = {}
         # the id
-        wid['id'] = tk.Entry(self.frm_set, width=10)
+        wid['id'] = tk.Entry(self.frm_set, width=5)
         wid['id'].insert(0, h[0])
         # the type
         wid['type'] = ttk.Combobox(self.frm_set, state='readonly', 
-                values=['TH1D', 'TH2D'])
+                values=['TH1D', 'TH2D'], width=8)
         wid['type'].set(h[1])
         # the name
         wid['name'] = tk.Entry(self.frm_set, width=10)
         wid['name'].insert(0, h[2])
+        # the folder
+        wid['folder'] = tk.Entry(self.frm_set, width=10)
+        wid['folder'].insert(0, h[3])
         # the nbinsX
-        wid['nbinsX'] = tk.Entry(self.frm_set, width=10)
-        wid['nbinsX'].insert(0, h[3])
+        wid['nbinsX'] = tk.Entry(self.frm_set, width=8)
+        wid['nbinsX'].insert(0, h[4])
         # the X_min
-        wid['X_min'] = tk.Entry(self.frm_set, width=10)
-        wid['X_min'].insert(0, h[4])
+        wid['X_min'] = tk.Entry(self.frm_set, width=8)
+        wid['X_min'].insert(0, h[5])
         # the X_max
-        wid['X_max'] = tk.Entry(self.frm_set, width=10)
-        wid['X_max'].insert(0, h[5])
+        wid['X_max'] = tk.Entry(self.frm_set, width=8)
+        wid['X_max'].insert(0, h[6])
         # the nbinsY
-        wid['nbinsY'] = tk.Entry(self.frm_set, width=10)
-        wid['nbinsY'].insert(0, h[6])
+        wid['nbinsY'] = tk.Entry(self.frm_set, width=8)
+        wid['nbinsY'].insert(0, h[7])
         # the Y_min
-        wid['Y_min'] = tk.Entry(self.frm_set, width=10)
-        wid['Y_min'].insert(0, h[7])
+        wid['Y_min'] = tk.Entry(self.frm_set, width=8)
+        wid['Y_min'].insert(0, h[8])
         # the Y_max
-        wid['Y_max'] = tk.Entry(self.frm_set, width=10)
-        wid['Y_max'].insert(0, h[8])
+        wid['Y_max'] = tk.Entry(self.frm_set, width=8)
+        wid['Y_max'].insert(0, h[9])
         # delete checkbox
         wid['var_del'] = tk.IntVar()
         wid['del'] = tk.Checkbutton(self.frm_set, text='delete',
@@ -114,7 +118,7 @@ class ana_hist:
         tmp = tk.Label(self.frm, bg='green', text='id')
         tmp.place(x=x_pos, y=0, width=x_width, height=50)
         x_pos += x_width + gap
-        x_width = 50
+        x_width = 60
         tmp = tk.Label(self.frm, bg='green', text='type')
         tmp.place(x=x_pos, y=0, width=x_width, height=50)
         x_pos += x_width + gap
@@ -122,27 +126,31 @@ class ana_hist:
         tmp = tk.Label(self.frm, bg='green', text='name')
         tmp.place(x=x_pos, y=0, width=x_width, height=50)
         x_pos += x_width + gap
-        x_width = 50
+        x_width = 85
+        tmp = tk.Label(self.frm, bg='green', text='folder')
+        tmp.place(x=x_pos, y=0, width=x_width, height=50)
+        x_pos += x_width + gap
+        x_width = 67
         tmp = tk.Label(self.frm, bg='green', text='nbinsX')
         tmp.place(x=x_pos, y=0, width=x_width, height=50)
         x_pos += x_width + gap
-        x_width = 50
+        x_width = 67
         tmp = tk.Label(self.frm, bg='green', text='X_min')
         tmp.place(x=x_pos, y=0, width=x_width, height=50)
         x_pos += x_width + gap
-        x_width = 50
+        x_width = 67
         tmp = tk.Label(self.frm, bg='green', text='X_max')
         tmp.place(x=x_pos, y=0, width=x_width, height=50)
         x_pos += x_width + gap
-        x_width = 50
+        x_width = 67
         tmp = tk.Label(self.frm, bg='green', text='nbinsY')
         tmp.place(x=x_pos, y=0, width=x_width, height=50)
         x_pos += x_width + gap
-        x_width = 50
+        x_width = 67
         tmp = tk.Label(self.frm, bg='green', text='Y_min')
         tmp.place(x=x_pos, y=0, width=x_width, height=50)
         x_pos += x_width + gap
-        x_width = 50
+        x_width = 67
         tmp = tk.Label(self.frm, bg='green', text='Y_max')
         tmp.place(x=x_pos, y=0, width=x_width, height=50)
 
@@ -174,6 +182,7 @@ class ana_hist:
             tmp.append(int(wid['id'].get()))
             tmp.append(wid['type'].get())
             tmp.append(wid['name'].get())
+            tmp.append(wid['folder'].get())
             tmp.append(int(wid['nbinsX'].get()))
             tmp.append(float(wid['X_min'].get()))
             tmp.append(float(wid['X_max'].get()))
@@ -197,8 +206,8 @@ class ana_hist:
     # add a hist
     def _add(self):
         self._update_hists()
-        h = ['id', 'type', 'name', 'nbinsX', 'X_min', 'X_max', 'nbinsY',
-                'Y_min', 'Y_max', False]
+        h = ['id', 'type', 'name', 'folder', 'nbinsX', 'X_min', 'X_max',
+                'nbinsY', 'Y_min', 'Y_max', False]
         self.add_hist(h)
         self._update_wid()
 
@@ -207,7 +216,7 @@ class ana_hist:
         self._rm_wid()
         self.widgets = []
         for h in self.hists:
-            if h[9]:
+            if h[10]:
                 continue
             self.widgets.append(self._create_wid(h))
 
@@ -221,6 +230,7 @@ class ana_hist:
             wid['id'].place(x=0,y=0,width=0,height=0)
             wid['type'].place(x=0,y=0,width=0,height=0)
             wid['name'].place(x=0,y=0,width=0,height=0)
+            wid['folder'].place(x=0,y=0,width=0,height=0)
             wid['nbinsX'].place(x=0,y=0,width=0,height=0)
             wid['X_min'].place(x=0,y=0,width=0,height=0)
             wid['X_max'].place(x=0,y=0,width=0,height=0)
@@ -235,13 +245,14 @@ class ana_hist:
         h['id'].grid(    row=row, column=1)
         h['type'].grid(  row=row, column=2)
         h['name'].grid(  row=row, column=3)
-        h['nbinsX'].grid(row=row, column=4)
-        h['X_min'].grid( row=row, column=5)
-        h['X_max'].grid( row=row, column=6)
-        h['nbinsY'].grid(row=row, column=7)
-        h['Y_min'].grid( row=row, column=8)
-        h['Y_max'].grid( row=row, column=9)
-        h['del'].grid(   row=row, column=10)
+        h['folder'].grid(row=row, column=4)
+        h['nbinsX'].grid(row=row, column=5)
+        h['X_min'].grid( row=row, column=6)
+        h['X_max'].grid( row=row, column=7)
+        h['nbinsY'].grid(row=row, column=8)
+        h['Y_min'].grid( row=row, column=9)
+        h['Y_max'].grid( row=row, column=10)
+        h['del'].grid(   row=row, column=11)
 
 
 

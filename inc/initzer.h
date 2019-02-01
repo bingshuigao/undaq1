@@ -13,6 +13,7 @@
 #include "v2718.h"
 #include "v1190.h"
 #include "v830.h"
+#include "hist_man.h"
 #include "imp_daq.h"
 #include <vector>
 #include <string>
@@ -77,8 +78,13 @@ public:
 	 * */
 	ring_buf* get_log_rb(int id);
 
-	/* get the analyzer ring buffer */
-	ring_buf* get_ana_rb();
+	/* get the analyzer ring buffer 
+	 * id == 0 --> The trigger event ring buffer
+	 * id == 1 --> the message ring buffer
+	 * id == 2 --> the scaler event ring buffer.
+	 *
+	 * */
+	ring_buf* get_ana_rb(int id);
 
 	/* get the clock freqency */
 	uint32_t get_ebd_sort_clock_hz();
@@ -106,6 +112,10 @@ public:
 	 *     */
 	int get_ebd_buf_sz(int id);
 
+	/* get a vector of histogram parameters */
+	std::vector<hist_pars> get_ana_hists() 
+	{return p_parser->get_ana_hists();}
+
 	/* Get the buffer size of logger, return 0 if the configuration
 	 * is not found in the config file.
 	 * @param id is the buffer type: 
@@ -116,7 +126,10 @@ public:
 	int get_log_buf_sz(int id);
 
 	/* get the analyzer ring buffer size */
-	int get_ana_buf_sz();
+	int get_ana_buf_sz(int id);
+	
+	/* get the analyzer event buffer size */
+	int get_ana_main_buf_sz();
 
 	/* get a vector of ring buffers. each element in the vector is a
 	 * pointer of a ring buffer dedicated to one vme module, the modules
@@ -311,8 +324,14 @@ private: xml_parser* p_parser;
 	ring_buf* rb_log1;
 	ring_buf* rb_log2;
 
-	/* ring buffers for the analyzer */
-	ring_buf* rb_ana;
+	/* ring buffers for the analyzer 
+	 * rb_ana0 --> trigger event ring buffer 
+	 * rb_ana1 --> message ring buffer 
+	 * rb_ana2 --> scaler event ring buffer 
+	 * */
+	ring_buf* rb_ana0;
+	ring_buf* rb_ana1;
+	ring_buf* rb_ana2;
 	
 	/* see the comments in ebd_sort.h. Because 3-d arrays are very
 	 * difficult to handle, we use a 1d array instead.  */

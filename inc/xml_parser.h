@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <vector>
 #include "err_code.h"
+#include "hist_man.h"
 #include "rapid_xml.hpp"
 #include "imp_daq.h"
 
@@ -77,6 +78,8 @@ public:
 	std::vector<struct conf_adv> get_conf_adv_ebd(int& status)
 	{ return get_conf_adv(2, status);}
 
+	/* get a list of histogram parameters (if any) */
+	std::vector<hist_pars> get_ana_hists();
 
 private:
 	/* get the register and global var from the current node, return 0 if
@@ -94,6 +97,8 @@ private:
 	rapidxml::xml_node<> * fe; /* the node of frontend */
 	rapidxml::xml_node<> * ebd;/* the node of event builder */
 	rapidxml::xml_node<> * ctl;/* the node of GUI controler */
+	rapidxml::xml_node<> * log;/* the node of logger */
+	rapidxml::xml_node<> * ana;/* the node of analyzer */
 	rapidxml::xml_node<> * cur_node; /* the current active node */
 };
 

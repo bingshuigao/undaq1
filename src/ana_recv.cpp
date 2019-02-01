@@ -90,9 +90,20 @@ int ana_recv::main_proc()
 			return send_msg(1, 1, &status, 4);
 		}
 
-		/* receive the type (trigger or scaler) and data, the +1 is
-		 * because the type and data are packed together. */
-		return read_sock_data(the_rb, sz+1);
+		/* check the data type (trigger or scaler) */
+		ret = recv(sock, &type, 1, MSG_WAITALL);
+		if (ret != 1)
+			return -E_SYSCALL;
+		if (type == 1)
+			the_rb = rb_scal;
+		else if (type == 2)
+			the_rb = rb_evt;
+		else
+			return -E_EVT_TYPE;
+
+
+		/* receive the data */
+		return read_sock_data(the_rb, sz);
 	}
 
 	/* no data available from socket, take a short break and return */

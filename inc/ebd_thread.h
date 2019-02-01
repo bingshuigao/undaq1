@@ -140,6 +140,8 @@
  *     ring buffers. The timestamp is the minimum of the timestamps of the
  *     fragments.
  *
+ *  Note: the scaler data are not merged, the final format of the scaler data
+ *  are the same as those in frontend (see comments in fe_thread.h).
  * 
  *
  *  The thread ids are defined as following:

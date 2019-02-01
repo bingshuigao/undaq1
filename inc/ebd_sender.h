@@ -42,6 +42,12 @@ private:
 	 * */
 	int send_data(ring_buf* rb);
 
+	/* reconnect the analyzer (do not block). If no connect request is
+	 * found, send another message to this thread (type 2). 
+	 * Return 0 if succeed, otherwise return error code.
+	 * */
+	int re_conn_ana();
+
 private:
 	/* listening socket*/
 	my_tcp_svr* svr;

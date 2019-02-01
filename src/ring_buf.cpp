@@ -166,6 +166,8 @@ int32_t ring_buf::read(void* dst, int32_t sz, bool peek, bool lock)
 int32_t ring_buf::write(void* src, int32_t sz, bool lock)
 {
 	uint32_t sz_write, sz_free;
+	if (sz == 0)
+		return 0;
 
 	if (lock) {
 		/* acquire the lock */

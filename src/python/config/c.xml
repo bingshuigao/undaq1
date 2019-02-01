@@ -313,6 +313,7 @@
             <id>3</id>
             <type>TH1D</type>
             <name>h3</name>
+            <folder>hist1d</folder>
             <nbinsX>300</nbinsX>
             <nbinsY>0</nbinsY>
             <X_min>0.0</X_min>
@@ -324,6 +325,7 @@
             <id>1</id>
             <type>TH2D</type>
             <name>h1</name>
+            <folder>hist</folder>
             <nbinsX>100</nbinsX>
             <nbinsY>100</nbinsY>
             <X_min>0.0</X_min>
