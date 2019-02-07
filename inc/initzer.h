@@ -130,6 +130,9 @@ public:
 	
 	/* get the analyzer event buffer size */
 	int get_ana_main_buf_sz();
+	
+	/* get the analyzer roody server listening port */
+	int get_ana_roody_svr_port();
 
 	/* get a vector of ring buffers. each element in the vector is a
 	 * pointer of a ring buffer dedicated to one vme module, the modules

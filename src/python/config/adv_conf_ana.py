@@ -52,6 +52,13 @@ class adv_conf_ana(adv_conf):
                  'wid_type' : 'entry',
                  'comment' : None
                  })
+        # the roody server port
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'roody_svr_port',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
 
 
 

@@ -60,6 +60,8 @@
 #define DEF_PORT_SEND_FE 9092
 /* event builder sender linsening port */
 #define DEF_PORT_SEND_EBD 9093
+/* The analyzer roody server port*/
+#define DEF_ANA_ROODY_SVR_PORT 9094
 /* server address of the event builder receiver thread */
 #define DEF_SVR_RECV_EBD "127.0.0.1"
 

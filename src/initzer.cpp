@@ -1173,6 +1173,18 @@ int initzer::get_log_recv_t_us()
 		return DEF_T_US_RECV_EBD;
 }
 
+int initzer::get_ana_roody_svr_port()
+{
+	bool found;
+	std::string name("roody_svr_port");
+	int port;
+
+	port = get_ana_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_ANA_ROODY_SVR_PORT;
+}
 int initzer::get_ana_main_buf_sz()
 {
 	bool found;
