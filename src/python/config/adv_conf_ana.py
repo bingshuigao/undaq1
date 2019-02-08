@@ -59,6 +59,27 @@ class adv_conf_ana(adv_conf):
                  'wid_type' : 'entry',
                  'comment' : None
                  })
+        # the control buffer size
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'ctl_buf_sz',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
+        # the control server address
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'ctl_svr_addr',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
+        # the timeout of the select syscall
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'ctl_t_us',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
 
 
 

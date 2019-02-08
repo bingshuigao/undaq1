@@ -177,6 +177,8 @@ public:
 	/* get the socket buffer size of the event builder control thread
 	 * */
 	int get_ebd_ctl_buf_sz();
+	/* get the socket buffer size of the analyzer control thread */
+	int get_ana_ctl_buf_sz();
 	/* get the socket buffer size of the logger control thread */
 	int get_log_ctl_buf_sz();
 
@@ -191,6 +193,9 @@ public:
 	 * thread
 	 *  */
 	int get_ebd_ctl_t_us();
+	/* get the time out (us) of the select syscall  of the analyzer control
+	 * thread */
+	int get_ana_ctl_t_us();
 	/* get the time out (us) of the select syscall  of the log control
 	 * thread
 	 *  */
@@ -220,6 +225,8 @@ public:
 	/* get the server address of the event builder control thread
 	 *  */
 	std::string get_ebd_ctl_svr_addr();
+	/* get the server address of the analyzer control thread */
+	std::string get_ana_ctl_svr_addr();
 	/* get the server address of the logger controler thread */
 	std::string get_log_ctl_svr_addr();
 
