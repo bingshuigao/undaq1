@@ -19,6 +19,13 @@ class adv_conf_ctl(adv_conf):
                  'wid_type' : 'entry',
                  'comment' : None
                  })
+        # the update interval (ms) 
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 't_ms',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
 
 
 

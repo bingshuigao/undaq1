@@ -77,7 +77,7 @@ public:
 		int i, ret;
 		for (i = 0; i < MAX_MODULE; i++) {
 			if (!mods[i])
-				continue;
+		 		continue;
 			ret = mods[i]->on_stop();
 			RET_IF_NONZERO(ret);
 		}
@@ -120,7 +120,8 @@ private:
 	int update_read_list();
 
 	/* Get the name of the vme controller */
-	std::string get_ctl_name();
+	std::string get_ctl_name() 
+	{return get_1st_mod()->get_ctl()->get_name();}
 
 	/* similar as the update_read_list, but this function dues with the
 	 * case when v2718 is the vme controller, and this function is called

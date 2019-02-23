@@ -93,12 +93,12 @@ int v1190::enable_cblt(uint32_t cblt_addr, int first, int last)
 	return -E_NOT_IMPLE;
 }
 
-int write_micro( uint16_t ope_code, uint16_t* p_pars, int n)
+int v1190::write_micro( uint16_t ope_code, uint16_t* p_pars, int n)
 {
 	/* not implemented, don't use! */
 	return -E_NOT_IMPLE;
 }
-int read_micro( uint16_t ope_code, uint16_t* p_pars, int n)
+int v1190::read_micro( uint16_t ope_code, uint16_t* p_pars, int n)
 {
 	/* not implemented, don't use! */
 	return -E_NOT_IMPLE;

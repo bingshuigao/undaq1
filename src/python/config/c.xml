@@ -301,14 +301,15 @@
             <comment>ring_buf_sz</comment>
         </advanced_ebd>
     </event_builder>
-    <GUI_ctl/>
+    <GUI_ctl>
+        <advanced_ctl>
+            <name>port</name>
+            <value>9999</value>
+            <comment>port</comment>
+        </advanced_ctl>
+    </GUI_ctl>
     <logger/>
     <analyzer>
-        <advanced_ana>
-            <name>buf_sz</name>
-            <value>10000000</value>
-            <comment>buf_sz</comment>
-        </advanced_ana>
         <hist_ana>
             <id>3</id>
             <type>TH1D</type>

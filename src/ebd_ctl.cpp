@@ -77,9 +77,11 @@ int ebd_ctl::handle_GUI_msg(unsigned char* msg)
 	uint32_t* p_msg = reinterpret_cast<uint32_t*>(msg);
 	uint32_t msg_type = p_msg[0];
 	int ret;
+	int stat;
+	unsigned char msg_send[128];
+	int* p;
 
 	switch (msg_type) {
-	int stat;
 	case 0:
 		/* a run status transition is requested. */
 		stat = p_msg[1];
@@ -107,6 +109,22 @@ int ebd_ctl::handle_GUI_msg(unsigned char* msg)
 			RET_IF_NONZERO(ret);
 			return 0;
 		}
+		break;
+	case 1:
+		/* query name */
+		p = reinterpret_cast<int32_t*>(msg_send);
+		p[0] = 1;
+		sprintf((char*)msg_send+4, "event builder");
+		ret = do_send(sock, msg_send, 128, 0);
+		RET_IF_NONZERO(ret);
+		break;
+	case 2:
+		/* query status  */
+		p = reinterpret_cast<int32_t*>(msg_send);
+		p[0] = 2;
+		p[1] = real_stat;
+		ret = do_send(sock, msg_send, 128, 0);
+		RET_IF_NONZERO(ret);
 		break;
 	default:
 		/* unknown message type */

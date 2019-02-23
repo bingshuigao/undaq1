@@ -76,7 +76,10 @@ int ctl_thread::ctl_main_proc()
 	 * The message type is defined as following:
 	 *     0-->run transition required. The new run status is contained in
 	 *     the following 4-byte word.
-	 *     1--> To be defined....
+	 *     1-->query name
+	 *     2--> query status
+	 *     3--> to be defined...
+	 *     1000 --> This is the continue of the previous message.
 	 *
 	 * The complementary information depends on the message type
 	 * The end of message mark: 
@@ -84,6 +87,21 @@ int ctl_thread::ctl_main_proc()
 	 *     1--> The message is incomplete, more information will be found
 	 *     in the following packets. The following packets has no message
 	 *     type, but still has the end of message mark.
+	 *
+	 *
+	 *  When sending messages to the GUI controller, similar formats are used:
+	 *      _________________________________________
+	 *      |  message type (4-byte int)            |
+	 *      |_______________________________________|
+	 *      |  complementary information (123 byte) |
+	 *      |_______________________________________|
+	 *      | end of message mark (1 byte)          |
+	 *      |_______________________________________|
+	 *      
+	 *      The definations of message types are :
+	 *      0--> A system message (warning or complaning...)
+	 *      1--> Respond to a query name
+	 *
 	 *
 	 *
 	 *      */

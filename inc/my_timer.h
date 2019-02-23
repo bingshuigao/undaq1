@@ -15,7 +15,7 @@ class my_timer
 {
 public:
 	my_timer() {clk_id = CLOCK_MONOTONIC_COARSE;}
-	~my_timer();
+	~my_timer() {};
 
 	/* reset the timer */
 	int reset() 

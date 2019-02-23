@@ -78,7 +78,7 @@ public:
 	 * Note: if any of the parameters are NULL, the corresponding
 	 * information won't be returned */
 	int get_cblt_conf(uint16_t* addr, int* cblt_enable, int* cblt_first,
-			int* cblt_last);
+			int* cblt_last) {return -E_NOT_IMPLE;}
 
 	/* The following functions privide read/write of specific registers,
 	 * their meanings are self-explained by the names, when in daubt,
