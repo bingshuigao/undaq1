@@ -45,6 +45,7 @@
 #define E_MERGE_BUF_SZ 36 /* the merged buffer size too small */
 #define E_OPEN_FILE 37 /* cannot open file*/
 #define E_CLOSE_FILE 38 /* cannot close file*/
+#define E_NOT_SUPPORT 39 /* not supported */
 
 
 

@@ -4,8 +4,8 @@
 
 
 int ana_usr_trig(void* p_evt, hist_man& hists)
-{return -E_NOT_IMPLE;}
+{return 0;}
 
 
 int ana_usr_scal(void* p_evt, hist_man& hists)
-{return -E_NOT_IMPLE;}
+{return 0;}

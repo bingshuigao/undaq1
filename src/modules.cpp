@@ -79,7 +79,7 @@ int modules::read_evtbuf(void* buf, int sz_in, int* sz_out)
 			/* there is really no reason to use the slow and
 			 * complecated single word read out, so we don't
 			 * implement it by now... */
-			return -E_NOT_IMPLE;
+			return -E_NOT_SUPPORT;
 		case 1:
 			ret = mods[get_1st_bit(mod_n[i])]->read_evt_blt(am[i], 
 				buf1, sz_in, &tmp_out, blt_addr[i], chain[i]);
@@ -127,7 +127,7 @@ int modules::update_read_list()
 		return update_read_list_v2718();
 	else
 		/* up to now no other vme controllers are supported */
-		return -E_NOT_IMPLE;
+		return -E_NOT_SUPPORT;
 }
 
 /* similar as the update_read_list, but this function dues with the

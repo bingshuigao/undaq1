@@ -76,8 +76,7 @@ int v1190::get_cblt_conf(uint16_t* addr, int* cblt_enable, int* cblt_first,
  * @return 0 if succeed, nonzero error codes if error. */
 int v1190::enable_mcst(uint32_t mcst_addr)
 {
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
+	return -E_NOT_SUPPORT;
 }
 
 /* Enable CBLT
@@ -89,238 +88,71 @@ int v1190::enable_mcst(uint32_t mcst_addr)
  * @return 0 if succeed, nonzero error codes if error.*/
 int v1190::enable_cblt(uint32_t cblt_addr, int first, int last)
 {
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
+	int ret;
+	uint16_t val;
+	
+	val = cblt_addr & 0xFF;
+	ret = write_reg(0x1010, 16, &val);
+	RET_IF_NONZERO(ret);
+
+	if (first & last)
+		return -E_NOT_SUPPORT;
+	else if (first & (!last))
+		val = 2;
+	else if ((!first) & last)
+		val = 1;
+	else if ((!first) & (!last))
+		val = 3;
+	return write_reg(0x1012, 16, &val);
 }
 
 int v1190::write_micro( uint16_t ope_code, uint16_t* p_pars, int n)
 {
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::read_micro( uint16_t ope_code, uint16_t* p_pars, int n)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
+	uint16_t micro_hnd= 0;
+	int ret;
+	// wait for micro register write ok
+	do {
+		ret = read_reg(0x1030, 16, &micro_hnd);
+		RET_IF_NONZERO(ret);
+	} while(!(micro_hnd & 0x1));
+	// write opcode to micro register
+	ret = write_reg(0x102e, 16, &ope_code);
+	RET_IF_NONZERO(ret);
+	// write ope cod
+	while(n--) {
+		// wait for micro register write ok
+		do {
+			ret = read_reg(0x1030, 16, &micro_hnd);
+			RET_IF_NONZERO(ret);
+		} while(!(micro_hnd & 0x1));
+		ret = write_reg(0x102e, 16, p_pars++);
+		RET_IF_NONZERO(ret);
+	}
+	return 0;
 }
 
-int v1190::set_control_reg( uint16_t val)
+int v1190::read_micro( uint16_t ope_code, uint16_t* p_pars, int n)
 {
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_control_reg( uint16_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_status_reg( uint16_t* status)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_int_lev( uint16_t lev)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_int_lev( uint16_t* lev)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_int_vec( uint16_t vec)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_int_vec( uint16_t* vec)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_geo_addr( uint16_t geo)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_geo_addr( uint16_t* geo)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_mcst_base( uint16_t mcst_base)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_mcst_base( uint16_t* mcst_base)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_mcst_control( uint16_t val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_mcst_control( uint16_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_mod_reset()
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_soft_clear()
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_soft_evt_reset()
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_soft_trig()
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_evt_counter( uint32_t* cnt)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_evt_stored( uint16_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_almost_full_lev( uint16_t lev)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_almost_full_lev( uint16_t* lev)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_blt_evt_num( uint16_t num)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_blt_evt_num( uint16_t* num)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_fw_ver( uint16_t* ver)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_test_reg( uint32_t val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_test_reg( uint32_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_output_prog_ctrl( uint16_t val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_output_prog_ctrl( uint16_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_micro_handshake( uint16_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_select_flash( uint16_t val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_select_flash( uint16_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_flash_mem( uint16_t val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_flash_mem( uint16_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_sram_page( uint16_t val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_sram_page( uint16_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_evt_fifo( uint32_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_evt_fifo_stored( uint16_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_evt_fifo_status( uint16_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_dummy32( uint32_t val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_dummy32( uint32_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::set_dummy16( uint16_t val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_dummy16( uint16_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_conf_rom( uint16_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
-}
-int v1190::get_com_sram( uint16_t* val)
-{
-	/* not implemented, don't use! */
-	return -E_NOT_IMPLE;
+	uint16_t micro_hnd= 0;
+	int ret;
+	// wait for micro register write ok
+	do {
+		ret = read_reg(0x1030, 16, &micro_hnd);
+		RET_IF_NONZERO(ret);
+	} while(!(micro_hnd & 0x2));
+	// write opcode to micro register
+	ret = write_reg(0x102e, 16, &ope_code);
+	RET_IF_NONZERO(ret);
+	// read ope code 
+	while(n--) {
+		// wait for micro register write ok
+		do {
+			ret = read_reg(0x1030, 16, &micro_hnd);
+			RET_IF_NONZERO(ret);
+		} while(!(micro_hnd & 0x2));
+		ret = read_reg(0x102e, 16, p_pars++);
+		RET_IF_NONZERO(ret);
+	}
+	return 0;
+	
 }

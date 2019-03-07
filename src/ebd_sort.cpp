@@ -458,5 +458,5 @@ int ebd_sort::save_evt(uint32_t* buf, uint32_t* evt, int evt_len_wd, uint64_t ts
 int ebd_sort::handle_single_evt_v830(uint32_t* evt, int& evt_len, int max_len)
 {
 	/* it has no timestamp, thus cannot be used as a trigger-type module */
-	return -E_NOT_IMPLE;
+	return -E_VME_GENERIC;
 }
