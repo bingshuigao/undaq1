@@ -101,6 +101,7 @@ int rd_fe::rd_fe_init(my_thread* ptr, initzer* the_initzer)
 		type = 'S';
 	ret = the_initzer->get_modules(type, This->mods);
 	RET_IF_NONZERO(ret);
+	This->rbs_ebd = the_initzer->get_rbs_ebd();
 
 	/* the blt_buf */
 	This->blt_buf_sz = the_initzer->get_fe_blt_buf_sz();

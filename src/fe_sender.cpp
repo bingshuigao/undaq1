@@ -67,7 +67,9 @@ int fe_sender::start()
 		if (sock == -1)
 			return -E_SYSCALL;
 		/* the first thing after connection established is to send the
-		 * slot map */
+		 * ring buffer parameters and slot map */
+		ret = send_mod_rb_par();
+		RET_IF_NONZERO(ret);
 		ret = send_slot_map();
 		RET_IF_NONZERO(ret);
 	}
@@ -76,6 +78,27 @@ int fe_sender::start()
 	return send_msg(2, 1, &acq_stat, 4);
 }
 
+int fe_sender::send_mod_rb_par()
+{
+	int ret;
+	int n, slot, crate;
+	
+	/* first, send the number of ring buffers */
+	n = rbs_ebd.size();
+	ret = do_send(sock, &n, 4, 0);
+	RET_IF_NONZERO(ret);
+
+	/* then send the parameters one by one */
+	for (auto it = rbs_ebd.begin(); it != rbs_ebd.end(); it++) {
+		slot = (*it).slot;
+		crate = (*it).crate;
+		ret = do_send(sock, &slot, 4, 0);
+		RET_IF_NONZERO(ret);
+		ret = do_send(sock, &crate, 4, 0);
+		RET_IF_NONZERO(ret);
+	}
+	return 0;
+}
 
 int fe_sender::send_slot_map()
 {

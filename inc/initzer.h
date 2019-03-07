@@ -8,11 +8,6 @@
 #include "err_code.h"
 #include "xml_parser.h"
 #include "ring_buf.h"
-#include "modules.h"
-#include "madc32.h"
-#include "v2718.h"
-#include "v1190.h"
-#include "v830.h"
 #include "imp_daq.h"
 #include <vector>
 #include <string>
@@ -20,6 +15,20 @@
 #ifdef MAKE_ANALYZER
 #include "hist_man.h"
 #endif
+
+#ifdef MAKE_FRONTEND
+#include "modules.h"
+#include "madc32.h"
+#include "v2718.h"
+#include "v1190.h"
+#include "v830.h"
+#endif
+
+struct mod_rb_par
+{
+	int crate;
+	int slot;
+};
 
 class initzer
 {
@@ -42,6 +51,29 @@ public:
 			conf = p_parser->get_conf_vme_mod(ret);
 		return ret;
 	}
+#ifdef MAKE_FRONTEND
+	std::vector<struct mod_rb_par> get_rbs_ebd() {return rbs_ebd;}
+	/* get the server address of the frontend control thread
+	 *  */
+	std::string get_fe_ctl_svr_addr();
+	
+	/* get the on_start_t_max of frontend */
+	int get_fe_on_start_t_max();
+
+	/* get the time out (us) of the select syscall  of the frontend control
+	 * thread
+	 *  */
+	int get_fe_ctl_t_us();
+	/* get the socket buffer size of the frontend control thread
+	 * */
+	int get_fe_ctl_buf_sz();
+	
+
+	/* get the interval of the frontend data sender on which it spends to
+	 * */
+	int get_fe_sender_itv();
+
+	
 	/* Get a list of trigger/scaler-type modules. Each element in the
 	 * vector is an object of class modules. We don't return individual vme
 	 * module, instead we return modules with which the readout is much
@@ -56,13 +88,44 @@ public:
 	/* Get the trigger module, return NULL if error or not found. */
 	module* get_trig_mod();
 
-
 	/* get the pointer of a ring buffer object (for data and message
 	 * sharing) for the frontend, return NULL in case of error.  The user
 	 * is responsible to delete the buffer. 
 	 * id == 1 --> the data ring buffer 
 	 * id == 2 --> the message ring buffer */
 	ring_buf* get_fe_rb(int id);
+
+	/* Get frontend buffer size. Return 0 if the configuration is not found
+	 * in the config file. 
+	 * @param id is the id of ring buffer: 1--> data ring buffer, 2-->
+	 * message ring buffer.*/
+	int get_fe_buf_sz(int id);
+
+	/* get the variable n_try,
+	 * */
+	int get_fe_ntry();
+
+#endif
+
+
+#ifdef MAKE_EVENT_BUILDER
+	/* get the server address of the event builder control thread
+	 *  */
+	std::string get_ebd_ctl_svr_addr();
+	/* get the timeout (us) of the select syscall of the event builder
+	 * receiver thread (how many micro seconds are spend to wait for
+	 * incoming data packet from frontend)*/
+	int get_ebd_recv_t_us();
+	
+	/* get the time out (us) of the select syscall  of the ebd control
+	 * thread
+	 *  */
+	int get_ebd_ctl_t_us();
+	
+	/* get the socket buffer size of the event builder control thread
+	 * */
+	int get_ebd_ctl_buf_sz();
+	
 
 	/* Similar as the get_fe_rb,
 	 * id == 5 --> The scaler event ring buffer, analog to those returned
@@ -73,21 +136,6 @@ public:
 	 * */
 	ring_buf* get_ebd_rb(int id);
 
-	/* Similar as the get_fe_rb,
-	 * id == 0 --> The trigger event ring buffer
-	 * id == 1 --> the message ring buffer
-	 * id == 2 --> the scaler event ring buffer.
-	 * */
-	ring_buf* get_log_rb(int id);
-
-	/* get the analyzer ring buffer 
-	 * id == 0 --> The trigger event ring buffer
-	 * id == 1 --> the message ring buffer
-	 * id == 2 --> the scaler event ring buffer.
-	 *
-	 * */
-	ring_buf* get_ana_rb(int id);
-
 	/* get the clock freqency */
 	uint32_t get_ebd_sort_clock_hz();
 
@@ -96,12 +144,6 @@ public:
 
 	/* get the buffer size for the merged events */
 	uint32_t get_ebd_merge_merged_buf_sz();
-
-	/* Get frontend buffer size. Return 0 if the configuration is not found
-	 * in the config file. 
-	 * @param id is the id of ring buffer: 1--> data ring buffer, 2-->
-	 * message ring buffer.*/
-	int get_fe_buf_sz(int id);
 
 	/* Get the buffer size of event builder, return 0 if the configuration
 	 * is not found in the config file.
@@ -114,11 +156,35 @@ public:
 	 *     */
 	int get_ebd_buf_sz(int id);
 
-#ifdef MAKE_ANALYZER
-	/* get a vector of histogram parameters */
-	std::vector<hist_pars> get_ana_hists() 
-	{return p_parser->get_ana_hists();}
+
 #endif
+
+#ifdef MAKE_LOGGER
+	/* get the server address of the logger controler thread */
+	std::string get_log_ctl_svr_addr();
+	/* get the data saving path */
+	std::string get_log_save_path();
+
+	/* get the buffer length of the logger save thread */
+	uint32_t get_log_save_buf_len();
+
+	/* similar as the get_ebd_recv_t_us();
+	 * */
+	int get_log_recv_t_us();
+	/* get the time out (us) of the select syscall  of the log control
+	 * thread
+	 *  */
+	int get_log_ctl_t_us();
+	
+	/* get the socket buffer size of the logger control thread */
+	int get_log_ctl_buf_sz();
+
+	/* Similar as the get_fe_rb,
+	 * id == 0 --> The trigger event ring buffer
+	 * id == 1 --> the message ring buffer
+	 * id == 2 --> the scaler event ring buffer.
+	 * */
+	ring_buf* get_log_rb(int id);
 
 	/* Get the buffer size of logger, return 0 if the configuration
 	 * is not found in the config file.
@@ -129,6 +195,33 @@ public:
 	 *     */
 	int get_log_buf_sz(int id);
 
+#endif
+
+
+#ifdef MAKE_ANALYZER
+	/* get the server address of the analyzer control thread */
+	std::string get_ana_ctl_svr_addr();
+	/* similar as the get_ebd_recv_t_us();
+	 * */
+	int get_ana_recv_t_us();
+	/* get the time out (us) of the select syscall  of the analyzer control
+	 * thread */
+	int get_ana_ctl_t_us();
+	/* get the socket buffer size of the analyzer control thread */
+	int get_ana_ctl_buf_sz();
+	
+	/* get a vector of histogram parameters */
+	std::vector<hist_pars> get_ana_hists() 
+	{return p_parser->get_ana_hists();}
+	
+	/* get the analyzer ring buffer 
+	 * id == 0 --> The trigger event ring buffer
+	 * id == 1 --> the message ring buffer
+	 * id == 2 --> the scaler event ring buffer.
+	 *
+	 * */
+	ring_buf* get_ana_rb(int id);
+
 	/* get the analyzer ring buffer size */
 	int get_ana_buf_sz(int id);
 	
@@ -138,16 +231,21 @@ public:
 	/* get the analyzer roody server listening port */
 	int get_ana_roody_svr_port();
 
-	/* get a vector of ring buffers. each element in the vector is a
-	 * pointer of a ring buffer dedicated to one vme module, the modules
-	 * are distinguished by their daq number, crate number and slot number.
-	 * */
-	std::vector<ring_buf*> get_ebd_rbs();
+#endif
 
-	/* get the variable n_try,
-	 * */
-	int get_fe_ntry();
 
+
+	/* get the variable blt_buf_sz,
+	 * */
+	int get_fe_blt_buf_sz();
+
+	/* get the socket buffer size of the event builder data sender.
+	 * */
+	int get_ebd_sender_buf_sz();
+
+	/* get the socket buffer size of the frontend data sender.
+	 * */
+	int get_fe_sender_buf_sz();
 
 	/* get the listening port of the frontend data sender 
 	 * */
@@ -159,80 +257,6 @@ public:
 	/* get the listening port of the GUI controler for frontend 
 	 * */
 	int get_ctl_port();
-
-	/* get the variable blt_buf_sz,
-	 * */
-	int get_fe_blt_buf_sz();
-
-	/* get the interval of the frontend data sender on which it spends to
-	 * */
-	int get_fe_sender_itv();
-
-	/* get the socket buffer size of the frontend data sender.
-	 * */
-	int get_fe_sender_buf_sz();
-	/* get the socket buffer size of the event builder data sender.
-	 * */
-	int get_ebd_sender_buf_sz();
-
-	/* get the socket buffer size of the frontend control thread
-	 * */
-	int get_fe_ctl_buf_sz();
-	/* get the socket buffer size of the event builder control thread
-	 * */
-	int get_ebd_ctl_buf_sz();
-	/* get the socket buffer size of the analyzer control thread */
-	int get_ana_ctl_buf_sz();
-	/* get the socket buffer size of the logger control thread */
-	int get_log_ctl_buf_sz();
-
-	/* get the on_start_t_max of frontend */
-	int get_fe_on_start_t_max();
-
-	/* get the time out (us) of the select syscall  of the frontend control
-	 * thread
-	 *  */
-	int get_fe_ctl_t_us();
-	/* get the time out (us) of the select syscall  of the ebd control
-	 * thread
-	 *  */
-	int get_ebd_ctl_t_us();
-	/* get the time out (us) of the select syscall  of the analyzer control
-	 * thread */
-	int get_ana_ctl_t_us();
-	/* get the time out (us) of the select syscall  of the log control
-	 * thread
-	 *  */
-	int get_log_ctl_t_us();
-
-	/* get the timeout (us) of the select syscall of the event builder
-	 * receiver thread (how many micro seconds are spend to wait for
-	 * incoming data packet from frontend)*/
-	int get_ebd_recv_t_us();
-	
-	/* similar as the get_ebd_recv_t_us();
-	 * */
-	int get_log_recv_t_us();
-	/* similar as the get_ebd_recv_t_us();
-	 * */
-	int get_ana_recv_t_us();
-
-	/* get the data saving path */
-	std::string get_log_save_path();
-
-	/* get the buffer length of the logger save thread */
-	uint32_t get_log_save_buf_len();
-
-	/* get the server address of the frontend control thread
-	 *  */
-	std::string get_fe_ctl_svr_addr();
-	/* get the server address of the event builder control thread
-	 *  */
-	std::string get_ebd_ctl_svr_addr();
-	/* get the server address of the analyzer control thread */
-	std::string get_ana_ctl_svr_addr();
-	/* get the server address of the logger controler thread */
-	std::string get_log_ctl_svr_addr();
 
 	/* get the server address of the event builder receiver server */
 	std::string get_ebd_recv_svr_addr();
@@ -247,9 +271,46 @@ public:
 	char* get_slot_map() {return slot_map;}
 
 private:
+#ifdef MAKE_FRONTEND
+	/* get a vector of ring buffers. 
+	 * NOTE: what we get here is NOT really ring buffers, but the
+	 * parameters that are needed to allocate these ring buffers. These
+	 * parameters will be sent to the event builder (as soon as the event
+	 * builder connects with the frontend), then these ring buffers will be
+	 * created by the event builder.
+	 * These ring buffers are distinguished by their daq number, crate
+	 * number and slot number.
+	 * Return 0 if succeed, otherwise return error code. 
+	 * */
+	int get_mod_rbs();
+	
 	/* find and init all the v2718 modules.
 	 * Return 0 if succeed, otherwise return error code. */
 	int init_v2718();
+	
+	/* Init the vme module according to its configurations. Return the
+	 * pointer to the vme object. Return NULL in case of error. */
+	v2718* do_init_v2718(std::vector<struct conf_vme_mod> &the_conf);
+
+
+	/* initialize the global variables of the given module 
+	 * return 0 if succeed, otherwise return error code. */
+	int init_global_var(module* mod, 
+			std::vector<struct conf_vme_mod> &the_conf);
+	
+	/* Initialize all vme modules that are found in the configuration file
+	 * (p_parser). 
+	 * In addition, this function also fills the slot maps of the vme
+	 * modules. (Why we need slot map ? see "ebd_sort.h")
+	 * Return 0 if succeed, otherwise return error code.*/
+	int init_vme_mod();
+
+	/* fill an entry in the slot map accroding to the settings of the
+	 * module 
+	 * return 0 if succeed, otherwise return error code. 
+	 * */
+	int fill_slot_map(module* mod);
+#endif
 
 	/* get the advanced variable (by name),
 	 * @param id ID number of the component whoes variable is going to be
@@ -280,35 +341,18 @@ private:
 
 
 
-	/* Init the vme module according to its configurations. Return the
-	 * pointer to the vme object. Return NULL in case of error. */
-	v2718* do_init_v2718(std::vector<struct conf_vme_mod> &the_conf);
-
-
-	/* initialize the global variables of the given module 
-	 * return 0 if succeed, otherwise return error code. */
-	int init_global_var(module* mod, 
-			std::vector<struct conf_vme_mod> &the_conf);
 	/* get the module name */
 	char* get_mod_name(std::vector<struct conf_vme_mod> &the_conf);
 
-	/* Initialize all vme modules that are found in the configuration file
-	 * (p_parser). 
-	 * In addition, this function also fills the slot maps of the vme
-	 * modules. (Why we need slot map ? see "ebd_sort.h")
-	 * Return 0 if succeed, otherwise return error code.*/
-	int init_vme_mod();
-
-	/* fill an entry in the slot map accroding to the settings of the
-	 * module 
-	 * return 0 if succeed, otherwise return error code. 
-	 * */
-	int fill_slot_map(module* mod);
 
 
-private: xml_parser* p_parser;
+private: 
+	xml_parser* p_parser;
+
+#ifdef MAKE_FRONTEND
 	std::vector<module*> p_module;
 	std::vector<v2718*> p_v2718;
+#endif
 	std::vector<std::vector<struct conf_vme_mod> > vme_conf;
 
 	bool vme_mod_inited;
@@ -326,7 +370,7 @@ private: xml_parser* p_parser;
 	ring_buf* rb_ebd2;
 	ring_buf* rb_ebd3;
 	ring_buf* rb_ebd5;
-	std::vector<ring_buf*> rbs_ebd; 
+	std::vector<struct mod_rb_par> rbs_ebd; 
 
 	/* ring buffers for the logger
 	 * rb_log0 --> trigger event ring buffer 
@@ -351,11 +395,6 @@ private: xml_parser* p_parser;
 	 * difficult to handle, we use a 1d array instead.  */
 	char slot_map[MAX_SLOT_MAP];
 	bool slot_map_inited;
-
-
-
-
-
 };
 
 

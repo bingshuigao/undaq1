@@ -54,15 +54,49 @@ int ebd_recv::start()
 
 	RET_IF_NONZERO(ret);
 	
-	/* receive the slot map if not yet.*/
+	/* receive the slot map and ring buffer data if not yet.*/
 	if (flag == -1) {
 		int sz = MAX_SLOT_MAP;
 		char* p_slot_map = slot_map;
+	
+		ret = init_rb_data();
+		RET_IF_NONZERO(ret);
+		
 		ret = recv(sock, slot_map, sz, MSG_WAITALL);
 		if (ret != sz)
 			return -E_SYSCALL;
 		/* tell the ebd_sort the address of the slot map */
 		return send_msg(EBD_SORT, 2, &p_slot_map, sizeof(p_slot_map));
+		
+	}
+	return 0;
+}
+
+int ebd_recv::init_rb_data()
+{
+	int ret, n, i, slot, crate;
+	ring_buf* p_rb;
+
+	ret = recv(sock, &n, 4, MSG_WAITALL);
+	RET_IF_NONZERO(ret);
+	for (i = 0; i < n; i++) {
+		ret = recv(sock, &slot, 4, MSG_WAITALL);
+		RET_IF_NONZERO(ret);
+		ret = recv(sock, &crate, 4, MSG_WAITALL);
+		RET_IF_NONZERO(ret);
+		p_rb = new ring_buf;
+		if (p_rb->init(rb_data_sz)) {
+			delete p_rb;
+			p_rb = NULL;
+		}
+		if (p_rb) {
+			 char* p_data = p_rb->get_usr_data();
+			 p_data[0] = crate;
+			 p_data[1] = slot;
+			 p_data[2] = 0; /* a marker used by ebd_merge
+                                               (can build or not) */
+		}
+		rb_data.push_back(p_rb);
 	}
 	return 0;
 }

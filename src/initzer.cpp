@@ -3,6 +3,60 @@
 #include "BigInteger.h"
 #include <stdlib.h>
 
+/* This function decodes the raw string to another string. The raw string
+ * represents a very long integer like
+ * '123456789998748578374847447483837363734638'. This integer is used to
+ * represent a string. It is generated according to the ascii codes of the
+ * charactors in the string. See file: adv_conf_fe.py (the comment).
+ * It's not trivial to deal with big integers. What we do here is to convert
+ * the big integer into hexdecimal form (by dividing 16 and get the remainder),
+ * then get convert each byte into its charactor value. We do the dividings by
+ * using the lib from https://github.com/panks/BigInteger. */
+static std::string decode_str(std::string& raw)
+{
+	std::string ret("");
+	std::string hex_int("");
+	BigInteger big_int(raw);
+	int i;
+	
+	while (big_int > 0) {
+		BigInteger rem = big_int % 16;
+		if (rem < 10)
+			hex_int += string(rem);
+		else if (rem == 10)
+			hex_int += "A";
+		else if (rem == 11)
+			hex_int += "B";
+		else if (rem == 12)
+			hex_int += "C";
+		else if (rem == 13)
+			hex_int += "D";
+		else if (rem == 14)
+			hex_int += "E";
+		else if (rem == 15)
+			hex_int += "F";
+		big_int /= 16;
+	}
+	if (hex_int.size() % 2)
+		hex_int += "0";
+
+	/* Now the hex_int has even number of charactors, two of which form a
+	 * byte */
+	char hex_byte[3];
+	char char_ascii[2];
+	hex_byte[2] = 0;
+	char_ascii[1] = 0;
+	for (i = 0; i < hex_int.size()/2; i++) {
+		hex_byte[0] = hex_int[i*2+1];
+		hex_byte[1] = hex_int[i*2];
+		char_ascii[0] = strtol(reinterpret_cast<const char*>(hex_byte), 
+				NULL, 16);
+		ret += reinterpret_cast<const char*>(char_ascii);
+	}
+
+	return ret;
+}
+
 initzer::initzer()
 {
 	p_parser = 0;
@@ -32,6 +86,198 @@ initzer::~initzer()
 		if (p_module[i])
 			delete p_module[i];
 */
+}
+
+#ifdef MAKE_FRONTEND
+
+int initzer::get_mod_rbs()
+{
+	std::vector<modules*> list_mod;
+	struct mod_rb_par mod_rb_par;
+	
+	/* check if the ring buffers are already initiated */
+	if (rbs_ebd.size() > 0) 
+		return 0;
+
+	/* create and initilize the ring buffers */
+	if (get_modules('T', list_mod))
+		return 0;
+	for (auto it = list_mod.begin(); it != list_mod.end(); it++) {
+		module** mods = (*it)->get_modules();
+		int i;
+		for (i = 0; i < MAX_MODULE; i++) {
+			module* p_mod = mods[i];
+			if (!p_mod)
+				continue;
+			
+			/* a vme module is found! */
+			mod_rb_par.crate = p_mod->get_crate();
+			mod_rb_par.slot = p_mod->get_slot();
+			rbs_ebd.push_back(mod_rb_par);
+		}
+	}
+
+	return 0;
+}
+std::string initzer::get_fe_ctl_svr_addr()
+{
+	bool found;
+	std::string name("ctl_svr_addr");
+	std::string addr;
+
+	get_fe_adv_var(name, found, &addr);
+	if (!found)
+		addr = DEF_SVR_CTL_FE;
+	else
+		addr = decode_str(addr);
+
+	return addr;
+}
+int initzer::get_fe_on_start_t_max()
+{
+	bool found;
+	std::string name("rd_start_t");
+	int port;
+
+	port = get_fe_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_RD_ON_START; 
+}
+
+int initzer::get_fe_ctl_buf_sz()
+{
+	bool found;
+	std::string name("ctl_buf_sz");
+	int port;
+
+	port = get_fe_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_SOCK_BUF_FE_CTL; 
+}
+
+int initzer::get_fe_ctl_t_us()
+{
+	bool found;
+	std::string name("ctl_t_us");
+	int port;
+
+	port = get_fe_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_T_US_CTL_FE;
+
+}
+int initzer::get_fe_buf_sz(int rb_id)
+{
+	bool found;
+	std::string name("ring_buf_sz");
+	int sz;
+
+	switch (rb_id) {
+	case 1:
+		name = "ring_buf_sz";
+		break;
+	case 2:
+		name = "ring_buf2_sz";
+		break;
+	}
+
+	sz = get_fe_adv_var(name, found);
+	if (found)
+		return sz;
+	else
+		return 0;
+}
+
+ring_buf* initzer::get_fe_rb(int rb_id)
+{
+	uint32_t sz2;
+	std::string var_name;
+	ring_buf* p_rb;
+
+	sz2 = get_fe_buf_sz(rb_id);
+	switch (rb_id) {
+	case 1:
+		/* first check if the ring buffer object already created */
+		RET_IF_NONZERO(rb_fe);
+		if (sz2 == 0)
+			sz2 = DEF_RB_FE_DATA;
+		break;
+	case 2:
+		/* first check if the ring buffer object already created */
+		RET_IF_NONZERO(rb_fe2);
+		if (sz2 == 0)
+			sz2 = DEF_RB_FE_MSG;
+		break;
+	default:
+		return NULL;
+	}
+	if (!p_parser)
+		return NULL;
+
+	p_rb = new ring_buf;
+	if (p_rb->init(sz2)) {
+		delete p_rb;
+		return NULL;
+	}
+	
+	switch (rb_id) {
+	case 1:
+		rb_fe = p_rb;
+		break;
+	case 2:
+		rb_fe2 = p_rb;
+		break;
+	}
+	return p_rb;
+}
+
+module* initzer::get_trig_mod()
+{
+	if (!vme_mod_inited) {
+		if (init_vme_mod())
+			return NULL;
+		vme_mod_inited = true;
+	}
+
+	for (auto it = p_module.begin(); it != p_module.end(); it++) {
+		if ((*it)->get_trig_mod()) 
+			return *it;
+	}
+
+	return NULL;
+}
+
+int initzer::get_fe_ntry()
+{
+	bool found;
+	std::string name("n_try");
+	int n_try;
+
+	n_try = get_fe_adv_var(name, found);
+	if (found)
+		return n_try;
+	else
+		return DEF_NTRY_FE;
+}
+
+
+int initzer::get_fe_sender_itv()
+{
+	bool found;
+	int itv;
+	std::string name("sender_itv");
+
+	itv = get_fe_adv_var(name, found);
+	if (found)
+		return itv;
+	else
+		return DEF_ITV_SEND_FE;
 }
 
 /* allocate new module, return 0 if succeed, otherwise return error code */
@@ -439,15 +685,6 @@ int initzer::init_v2718()
 	return 0;
 }
 
-char* initzer::get_mod_name(std::vector<struct conf_vme_mod> &the_conf)
-{
-	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
-		if ((*it).name == "name")
-			return (*it).val.val_str;
-	}
-	return NULL;
-}
-
 v2718* initzer::do_init_v2718(std::vector<struct conf_vme_mod> &the_conf)
 {
 	v2718* tmp_v2718 = new v2718;
@@ -694,153 +931,141 @@ int initzer::get_modules(char type, std::vector<modules*>& list_modules)
 	return 0;
 }
 
-std::vector<ring_buf*> initzer::get_ebd_rbs()
+#endif
+
+char* initzer::get_mod_name(std::vector<struct conf_vme_mod> &the_conf)
 {
-	std::vector<modules*> list_mod;
-	int sz, crate, slot;
-	ring_buf* p_rb;
-	
-	/* check if the ring buffers are already initiated */
-	if (rbs_ebd.size() > 0) 
-		return rbs_ebd;
-
-	/* get the size of ring buffers */
-	sz = get_ebd_buf_sz(4);
-	if (sz == 0)
-		sz = DEF_RB_EBD_MOD;
-
-	/* create and initilize the ring buffers */
-	if (get_modules('T', list_mod))
-		return rbs_ebd;
-	for (auto it = list_mod.begin(); it != list_mod.end(); it++) {
-		module** mods = (*it)->get_modules();
-		int i;
-		for (i = 0; i < MAX_MODULE; i++) {
-			module* p_mod = mods[i];
-			if (!p_mod)
-				continue;
-			
-			/* a vme module is found! */
-			crate = p_mod->get_crate();
-			slot = p_mod->get_slot();
-			p_rb = new ring_buf;
-			if (p_rb->init(sz)) {
-				delete p_rb;
-				p_rb = NULL;
-			}
-			if (p_rb) {
-				char* p_data = p_rb->get_usr_data();
-				p_data[0] = crate;
-				p_data[1] = slot;
-				p_data[2] = 0; /* a marker used by ebd_merge
-						  (can build or not) */
-			}
-			rbs_ebd.push_back(p_rb);
-		}
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name == "name")
+			return (*it).val.val_str;
 	}
-
-	return rbs_ebd;
-}
-
-ring_buf* initzer::get_ana_rb(int rb_id)
-{
-	uint32_t sz2;
-	ring_buf* p_rb;
-
-	sz2 = get_ana_buf_sz(rb_id);
-	switch (rb_id) {
-	case 0:
-		/* first check if the ring buffer object already created */
-		RET_IF_NONZERO(rb_ana0);
-		if (sz2 == 0)
-			sz2 = DEF_RB_ANA;
-		break;
-	case 1:
-		/* first check if the ring buffer object already created */
-		RET_IF_NONZERO(rb_ana1);
-		if (sz2 == 0)
-			sz2 = DEF_RB_LOG_MSG;
-		break;
-	case 2:
-		RET_IF_NONZERO(rb_ana2);
-		if (sz2 == 0)
-			sz2 = DEF_RB_LOG_SCAL;
-		break;
-	default:
-		return NULL;
-	}
-	if (!p_parser)
-		return NULL;
-
-	p_rb = new ring_buf;
-	if (p_rb->init(sz2)) {
-		delete p_rb;
-		return NULL;
-	}
-	
-	switch (rb_id) {
-	case 0:
-		rb_ana0 = p_rb;
-		break;
-	case 1:
-		rb_ana1 = p_rb;
-		break;
-	case 2:
-		rb_ana2 = p_rb;
-	}
-	return p_rb;
+	return NULL;
 }
 
 
-ring_buf* initzer::get_log_rb(int rb_id)
+#ifdef MAKE_EVENT_BUILDER
+uint32_t initzer::get_ebd_sort_clock_hz()
 {
-	uint32_t sz2;
-	ring_buf* p_rb;
+	bool found;
+	std::string name("sort_freq");
+	int port;
 
-	sz2 = get_log_buf_sz(rb_id);
-	switch (rb_id) {
-	case 0:
-		/* first check if the ring buffer object already created */
-		RET_IF_NONZERO(rb_log0);
-		if (sz2 == 0)
-			sz2 = DEF_RB_LOG_TRIG;
-		break;
-	case 1:
-		/* first check if the ring buffer object already created */
-		RET_IF_NONZERO(rb_log1);
-		if (sz2 == 0)
-			sz2 = DEF_RB_LOG_MSG;
-		break;
-	case 2:
-		RET_IF_NONZERO(rb_log2);
-		if (sz2 == 0)
-			sz2 = DEF_RB_LOG_SCAL;
-		break;
-	default:
-		return NULL;
-	}
-	if (!p_parser)
-		return NULL;
-
-	p_rb = new ring_buf;
-	if (p_rb->init(sz2)) {
-		delete p_rb;
-		return NULL;
-	}
-	
-	switch (rb_id) {
-	case 0:
-		rb_log0 = p_rb;
-		break;
-	case 1:
-		rb_log1 = p_rb;
-		break;
-	case 2:
-		rb_log2 = p_rb;
-	}
-	return p_rb;
+	port = get_ebd_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_EBD_SORT_HZ;
 }
 
+uint32_t initzer::get_ebd_merge_glom()
+{
+	bool found;
+	std::string name("merge_glom");
+	int port;
+
+	port = get_ebd_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_EBD_MERGE_GLOM;
+
+}
+
+uint32_t initzer::get_ebd_merge_merged_buf_sz()
+{
+	bool found;
+	std::string name("merge_buf_sz");
+	int port;
+
+	port = get_ebd_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_EBD_MERGE_GLOM;
+
+}
+std::string initzer::get_ebd_ctl_svr_addr()
+{
+	bool found;
+	std::string name("ctl_svr_addr");
+	std::string addr;
+
+	get_ebd_adv_var(name, found, &addr);
+	if (!found)
+		addr = DEF_SVR_CTL_FE;
+	else
+		addr = decode_str(addr);
+
+	return addr;
+}
+int initzer::get_ebd_buf_sz(int id)
+{
+	bool found;
+	std::string name("ring_buf_sz");
+	int port;
+
+	switch (id) {
+	case 1:
+		name = "ring_buf_sz";
+		break;
+	case 2:
+		name = "ring_buf2_sz";
+		break;
+	case 3:
+		name = "ring_buf3_sz";
+		break;
+	case 4:
+		name = "ring_bufs_sz";
+		break;
+	case 5:
+		name = "ring_buf5_sz";
+		break;
+	}
+
+	port = get_ebd_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return 0;
+
+}
+int initzer::get_ebd_ctl_buf_sz()
+{
+	bool found;
+	std::string name("ctl_buf_sz");
+	int port;
+
+	port = get_ebd_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_SOCK_BUF_FE_CTL; 
+}
+int initzer::get_ebd_recv_t_us()
+{
+	bool found;
+	std::string name("recv_t_us");
+	int port;
+
+	port = get_ebd_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_T_US_RECV_EBD;
+}
+int initzer::get_ebd_ctl_t_us()
+{
+	bool found;
+	std::string name("ctl_t_us");
+	int port;
+
+	port = get_ebd_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_T_US_CTL_FE;
+
+}
 ring_buf* initzer::get_ebd_rb(int rb_id)
 {
 	uint32_t sz2;
@@ -895,297 +1120,59 @@ ring_buf* initzer::get_ebd_rb(int rb_id)
 	}
 	return p_rb;
 }
+#endif
 
-int initzer::get_fe_buf_sz(int rb_id)
+#ifdef MAKE_ANALYZER
+std::string initzer::get_ana_ctl_svr_addr()
 {
 	bool found;
-	std::string name("ring_buf_sz");
-	int sz;
+	std::string name("ctl_svr_addr");
+	std::string addr;
 
-	switch (rb_id) {
+	get_ana_adv_var(name, found, &addr);
+	if (!found)
+		addr = DEF_SVR_CTL_FE;
+	else
+		addr = decode_str(addr);
+
+	return addr;
+}
+int initzer::get_ana_buf_sz(int id)
+{
+	bool found;
+	std::string name("trig_buf_sz");
+	int port;
+
+	switch (id) {
+	case 0:
+		name = "trig_buf_sz";
+		break;
 	case 1:
-		name = "ring_buf_sz";
+		name = "msg_buf_sz";
 		break;
 	case 2:
-		name = "ring_buf2_sz";
+		name = "scal_buf_sz";
 		break;
 	}
 
-	sz = get_fe_adv_var(name, found);
+	port = get_ana_adv_var(name, found);
 	if (found)
-		return sz;
+		return port;
 	else
 		return 0;
 }
-
-ring_buf* initzer::get_fe_rb(int rb_id)
-{
-	uint32_t sz2;
-	std::string var_name;
-	ring_buf* p_rb;
-
-	sz2 = get_fe_buf_sz(rb_id);
-	switch (rb_id) {
-	case 1:
-		/* first check if the ring buffer object already created */
-		RET_IF_NONZERO(rb_fe);
-		if (sz2 == 0)
-			sz2 = DEF_RB_FE_DATA;
-		break;
-	case 2:
-		/* first check if the ring buffer object already created */
-		RET_IF_NONZERO(rb_fe2);
-		if (sz2 == 0)
-			sz2 = DEF_RB_FE_MSG;
-		break;
-	default:
-		return NULL;
-	}
-	if (!p_parser)
-		return NULL;
-
-	p_rb = new ring_buf;
-	if (p_rb->init(sz2)) {
-		delete p_rb;
-		return NULL;
-	}
-	
-	switch (rb_id) {
-	case 1:
-		rb_fe = p_rb;
-		break;
-	case 2:
-		rb_fe2 = p_rb;
-		break;
-	}
-	return p_rb;
-}
-
-module* initzer::get_trig_mod()
-{
-	if (!vme_mod_inited) {
-		if (init_vme_mod())
-			return NULL;
-		vme_mod_inited = true;
-	}
-
-	for (auto it = p_module.begin(); it != p_module.end(); it++) {
-		if ((*it)->get_trig_mod()) 
-			return *it;
-	}
-
-	return NULL;
-}
-
-int initzer::get_adv_var(int id, std::string& var_name, bool& found, 
-		std::string* value2)
-{
-	int ret;
-
-	if (!p_parser) {
-		found = false;
-		return 0;
-	}
-
-	auto adv_conf = p_parser->get_conf_adv(id, ret);
-	for (auto it = adv_conf.begin(); it != adv_conf.end(); it++) {
-		if ((*it).name == var_name) {
-			ret = (*it).value;
-			if (value2)
-				*value2 = (*it).value2;
-			goto found;
-		}
-	}
-
-	/* not found: */
-	found = false;
-	return 0;
-
-found:
-	found = true;
-	return ret;
-}
-
-int initzer::get_fe_ntry()
+int initzer::get_ana_ctl_buf_sz()
 {
 	bool found;
-	std::string name("n_try");
-	int n_try;
-
-	n_try = get_fe_adv_var(name, found);
-	if (found)
-		return n_try;
-	else
-		return DEF_NTRY_FE;
-}
-
-int initzer::get_fe_blt_buf_sz()
-{
-	bool found;
-	std::string name("blt_buf_sz");
-	int sz;
-
-	sz = get_fe_adv_var(name, found);
-	if (found)
-		return sz;
-	else
-		return 0;
-}
-
-int initzer::get_fe_sender_itv()
-{
-	bool found;
-	int itv;
-	std::string name("sender_itv");
-
-	itv = get_fe_adv_var(name, found);
-	if (found)
-		return itv;
-	else
-		return DEF_ITV_SEND_FE;
-}
-
-int initzer::get_fe_sender_port()
-{
-	bool found;
-	std::string name("sender_port");
-	int port;
-
-	port = get_fe_adv_var(name, found);
-	if (found)
-		return port;
-	else
-		return DEF_PORT_SEND_FE;
-}
-
-int initzer::get_ebd_sender_port()
-{
-	bool found;
-	std::string name("sender_port");
-	int port;
-
-	port = get_ebd_adv_var(name, found);
-	if (found)
-		return port;
-	else
-		return DEF_PORT_SEND_EBD;
-}
-int initzer::get_ctl_port()
-{
-	bool found;
-	std::string name("port");
-	int port;
-
-	port = get_ctl_adv_var(name, found);
-	if (found)
-		return port;
-	else
-		return DEF_PORT_CTL;
-}
-int initzer::get_fe_sender_buf_sz()
-{
-	bool found;
-	std::string name("sender_buf_sz");
-	int port;
-
-	port = get_fe_adv_var(name, found);
-	if (found)
-		return port;
-	else
-		return DEF_SOCK_BUF_FE_SEND;
-
-}
-int initzer::get_ebd_sender_buf_sz()
-{
-	bool found;
-	std::string name("sender_buf_sz");
-	int port;
-
-	port = get_ebd_adv_var(name, found);
-	if (found)
-		return port;
-	else
-		return DEF_SOCK_BUF_EBD_SEND;
-
-}
-int initzer::get_ana_ctl_t_us()
-{
-	bool found;
-	std::string name("ctl_t_us");
+	std::string name("ctl_buf_sz");
 	int port;
 
 	port = get_ana_adv_var(name, found);
 	if (found)
 		return port;
 	else
-		return DEF_T_US_CTL_FE;
-
+		return DEF_SOCK_BUF_FE_CTL; 
 }
-int initzer::get_ebd_ctl_t_us()
-{
-	bool found;
-	std::string name("ctl_t_us");
-	int port;
-
-	port = get_ebd_adv_var(name, found);
-	if (found)
-		return port;
-	else
-		return DEF_T_US_CTL_FE;
-
-}
-int initzer::get_log_ctl_t_us()
-{
-	bool found;
-	std::string name("ctl_t_us");
-	int port;
-
-	port = get_log_adv_var(name, found);
-	if (found)
-		return port;
-	else
-		return DEF_T_US_CTL_FE;
-
-}
-int initzer::get_fe_ctl_t_us()
-{
-	bool found;
-	std::string name("ctl_t_us");
-	int port;
-
-	port = get_fe_adv_var(name, found);
-	if (found)
-		return port;
-	else
-		return DEF_T_US_CTL_FE;
-
-}
-int initzer::get_ebd_recv_t_us()
-{
-	bool found;
-	std::string name("recv_t_us");
-	int port;
-
-	port = get_ebd_adv_var(name, found);
-	if (found)
-		return port;
-	else
-		return DEF_T_US_RECV_EBD;
-}
-
-int initzer::get_log_recv_t_us()
-{
-	bool found;
-	std::string name("recv_t_us");
-	int port;
-
-	port = get_log_adv_var(name, found);
-	if (found)
-		return port;
-	else
-		return DEF_T_US_RECV_EBD;
-}
-
 int initzer::get_ana_roody_svr_port()
 {
 	bool found;
@@ -1222,69 +1209,112 @@ int initzer::get_ana_recv_t_us()
 	else
 		return DEF_T_US_RECV_EBD;
 }
-int initzer::get_fe_ctl_buf_sz()
+int initzer::get_ana_ctl_t_us()
 {
 	bool found;
-	std::string name("ctl_buf_sz");
-	int port;
-
-	port = get_fe_adv_var(name, found);
-	if (found)
-		return port;
-	else
-		return DEF_SOCK_BUF_FE_CTL; 
-}
-
-int initzer::get_log_ctl_buf_sz()
-{
-	bool found;
-	std::string name("ctl_buf_sz");
-	int port;
-
-	port = get_log_adv_var(name, found);
-	if (found)
-		return port;
-	else
-		return DEF_SOCK_BUF_FE_CTL; 
-}
-int initzer::get_ana_ctl_buf_sz()
-{
-	bool found;
-	std::string name("ctl_buf_sz");
+	std::string name("ctl_t_us");
 	int port;
 
 	port = get_ana_adv_var(name, found);
 	if (found)
 		return port;
 	else
-		return DEF_SOCK_BUF_FE_CTL; 
+		return DEF_T_US_CTL_FE;
+
 }
-int initzer::get_ebd_ctl_buf_sz()
+ring_buf* initzer::get_ana_rb(int rb_id)
+{
+	uint32_t sz2;
+	ring_buf* p_rb;
+
+	sz2 = get_ana_buf_sz(rb_id);
+	switch (rb_id) {
+	case 0:
+		/* first check if the ring buffer object already created */
+		RET_IF_NONZERO(rb_ana0);
+		if (sz2 == 0)
+			sz2 = DEF_RB_ANA;
+		break;
+	case 1:
+		/* first check if the ring buffer object already created */
+		RET_IF_NONZERO(rb_ana1);
+		if (sz2 == 0)
+			sz2 = DEF_RB_LOG_MSG;
+		break;
+	case 2:
+		RET_IF_NONZERO(rb_ana2);
+		if (sz2 == 0)
+			sz2 = DEF_RB_LOG_SCAL;
+		break;
+	default:
+		return NULL;
+	}
+	if (!p_parser)
+		return NULL;
+
+	p_rb = new ring_buf;
+	if (p_rb->init(sz2)) {
+		delete p_rb;
+		return NULL;
+	}
+	
+	switch (rb_id) {
+	case 0:
+		rb_ana0 = p_rb;
+		break;
+	case 1:
+		rb_ana1 = p_rb;
+		break;
+	case 2:
+		rb_ana2 = p_rb;
+	}
+	return p_rb;
+}
+#endif
+
+#ifdef MAKE_LOGGER
+uint32_t initzer::get_log_save_buf_len()
 {
 	bool found;
-	std::string name("ctl_buf_sz");
+	std::string name("save_buf_sz");
 	int port;
 
-	port = get_ebd_adv_var(name, found);
+	port = get_log_adv_var(name, found);
 	if (found)
 		return port;
 	else
-		return DEF_SOCK_BUF_FE_CTL; 
+		return DEF_EBD_MERGE_GLOM;
+
 }
-int initzer::get_fe_on_start_t_max()
+std::string initzer::get_log_ctl_svr_addr()
 {
 	bool found;
-	std::string name("rd_start_t");
-	int port;
+	std::string name("ctl_svr_addr");
+	std::string addr;
 
-	port = get_fe_adv_var(name, found);
-	if (found)
-		return port;
+	get_log_adv_var(name, found, &addr);
+	if (!found)
+		addr = DEF_SVR_CTL_FE;
 	else
-		return DEF_RD_ON_START; 
+		addr = decode_str(addr);
+
+	return addr;
 }
+std::string initzer::get_log_save_path()
+{
+	bool found;
+	std::string name("save_path");
+	std::string addr;
 
+	get_log_adv_var(name, found, &addr);
+	if (!found)
+		addr = DEF_SAVE_PATH_LOG;
+	else
+		addr = decode_str(addr);
 
+	return addr;
+
+}
 int initzer::get_log_buf_sz(int id)
 {
 	bool found;
@@ -1309,190 +1339,156 @@ int initzer::get_log_buf_sz(int id)
 	else
 		return 0;
 }
-
-int initzer::get_ana_buf_sz(int id)
+int initzer::get_log_ctl_buf_sz()
 {
 	bool found;
-	std::string name("trig_buf_sz");
+	std::string name("ctl_buf_sz");
 	int port;
 
-	switch (id) {
-	case 0:
-		name = "trig_buf_sz";
-		break;
-	case 1:
-		name = "msg_buf_sz";
-		break;
-	case 2:
-		name = "scal_buf_sz";
-		break;
-	}
-
-	port = get_ana_adv_var(name, found);
+	port = get_log_adv_var(name, found);
 	if (found)
 		return port;
 	else
-		return 0;
+		return DEF_SOCK_BUF_FE_CTL; 
 }
-
-
-int initzer::get_ebd_buf_sz(int id)
+int initzer::get_log_recv_t_us()
 {
 	bool found;
-	std::string name("ring_buf_sz");
+	std::string name("recv_t_us");
 	int port;
 
-	switch (id) {
+	port = get_log_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_T_US_RECV_EBD;
+}
+int initzer::get_log_ctl_t_us()
+{
+	bool found;
+	std::string name("ctl_t_us");
+	int port;
+
+	port = get_log_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_T_US_CTL_FE;
+
+}
+ring_buf* initzer::get_log_rb(int rb_id)
+{
+	uint32_t sz2;
+	ring_buf* p_rb;
+
+	sz2 = get_log_buf_sz(rb_id);
+	switch (rb_id) {
+	case 0:
+		/* first check if the ring buffer object already created */
+		RET_IF_NONZERO(rb_log0);
+		if (sz2 == 0)
+			sz2 = DEF_RB_LOG_TRIG;
+		break;
 	case 1:
-		name = "ring_buf_sz";
+		/* first check if the ring buffer object already created */
+		RET_IF_NONZERO(rb_log1);
+		if (sz2 == 0)
+			sz2 = DEF_RB_LOG_MSG;
 		break;
 	case 2:
-		name = "ring_buf2_sz";
+		RET_IF_NONZERO(rb_log2);
+		if (sz2 == 0)
+			sz2 = DEF_RB_LOG_SCAL;
 		break;
-	case 3:
-		name = "ring_buf3_sz";
-		break;
-	case 4:
-		name = "ring_bufs_sz";
-		break;
-	case 5:
-		name = "ring_buf5_sz";
-		break;
+	default:
+		return NULL;
 	}
+	if (!p_parser)
+		return NULL;
+
+	p_rb = new ring_buf;
+	if (p_rb->init(sz2)) {
+		delete p_rb;
+		return NULL;
+	}
+	
+	switch (rb_id) {
+	case 0:
+		rb_log0 = p_rb;
+		break;
+	case 1:
+		rb_log1 = p_rb;
+		break;
+	case 2:
+		rb_log2 = p_rb;
+	}
+	return p_rb;
+}
+#endif
+
+
+
+int initzer::get_adv_var(int id, std::string& var_name, bool& found, 
+		std::string* value2)
+{
+	int ret;
+
+	if (!p_parser) {
+		found = false;
+		return 0;
+	}
+
+	auto adv_conf = p_parser->get_conf_adv(id, ret);
+	for (auto it = adv_conf.begin(); it != adv_conf.end(); it++) {
+		if ((*it).name == var_name) {
+			ret = (*it).value;
+			if (value2)
+				*value2 = (*it).value2;
+			goto found;
+		}
+	}
+
+	/* not found: */
+	found = false;
+	return 0;
+
+found:
+	found = true;
+	return ret;
+}
+
+int initzer::get_ebd_sender_port()
+{
+	bool found;
+	std::string name("sender_port");
+	int port;
 
 	port = get_ebd_adv_var(name, found);
 	if (found)
 		return port;
 	else
-		return 0;
-
+		return DEF_PORT_SEND_EBD;
 }
-/* This function decodes the raw string to another string. The raw string
- * represents a very long integer like
- * '123456789998748578374847447483837363734638'. This integer is used to
- * represent a string. It is generated according to the ascii codes of the
- * charactors in the string. See file: adv_conf_fe.py (the comment).
- * It's not trivial to deal with big integers. What we do here is to convert
- * the big integer into hexdecimal form (by dividing 16 and get the remainder),
- * then get convert each byte into its charactor value. We do the dividings by
- * using the lib from https://github.com/panks/BigInteger. */
-static std::string decode_str(std::string& raw)
-{
-	std::string ret("");
-	std::string hex_int("");
-	BigInteger big_int(raw);
-	int i;
-	
-	while (big_int > 0) {
-		BigInteger rem = big_int % 16;
-		if (rem < 10)
-			hex_int += string(rem);
-		else if (rem == 10)
-			hex_int += "A";
-		else if (rem == 11)
-			hex_int += "B";
-		else if (rem == 12)
-			hex_int += "C";
-		else if (rem == 13)
-			hex_int += "D";
-		else if (rem == 14)
-			hex_int += "E";
-		else if (rem == 15)
-			hex_int += "F";
-		big_int /= 16;
-	}
-	if (hex_int.size() % 2)
-		hex_int += "0";
-
-	/* Now the hex_int has even number of charactors, two of which form a
-	 * byte */
-	char hex_byte[3];
-	char char_ascii[2];
-	hex_byte[2] = 0;
-	char_ascii[1] = 0;
-	for (i = 0; i < hex_int.size()/2; i++) {
-		hex_byte[0] = hex_int[i*2+1];
-		hex_byte[1] = hex_int[i*2];
-		char_ascii[0] = strtol(reinterpret_cast<const char*>(hex_byte), 
-				NULL, 16);
-		ret += reinterpret_cast<const char*>(char_ascii);
-	}
-
-	return ret;
-}
-
-std::string initzer::get_log_save_path()
+int initzer::get_ctl_port()
 {
 	bool found;
-	std::string name("save_path");
-	std::string addr;
+	std::string name("port");
+	int port;
 
-	get_log_adv_var(name, found, &addr);
-	if (!found)
-		addr = DEF_SAVE_PATH_LOG;
+	port = get_ctl_adv_var(name, found);
+	if (found)
+		return port;
 	else
-		addr = decode_str(addr);
-
-	return addr;
-
+		return DEF_PORT_CTL;
 }
 
-std::string initzer::get_fe_ctl_svr_addr()
-{
-	bool found;
-	std::string name("ctl_svr_addr");
-	std::string addr;
 
-	get_fe_adv_var(name, found, &addr);
-	if (!found)
-		addr = DEF_SVR_CTL_FE;
-	else
-		addr = decode_str(addr);
 
-	return addr;
-}
-std::string initzer::get_ana_ctl_svr_addr()
-{
-	bool found;
-	std::string name("ctl_svr_addr");
-	std::string addr;
 
-	get_ana_adv_var(name, found, &addr);
-	if (!found)
-		addr = DEF_SVR_CTL_FE;
-	else
-		addr = decode_str(addr);
 
-	return addr;
-}
-std::string initzer::get_ebd_ctl_svr_addr()
-{
-	bool found;
-	std::string name("ctl_svr_addr");
-	std::string addr;
 
-	get_ebd_adv_var(name, found, &addr);
-	if (!found)
-		addr = DEF_SVR_CTL_FE;
-	else
-		addr = decode_str(addr);
 
-	return addr;
-}
-std::string initzer::get_log_ctl_svr_addr()
-{
-	bool found;
-	std::string name("ctl_svr_addr");
-	std::string addr;
 
-	get_log_adv_var(name, found, &addr);
-	if (!found)
-		addr = DEF_SVR_CTL_FE;
-	else
-		addr = decode_str(addr);
-
-	return addr;
-}
 
 std::string initzer::get_ebd_recv_svr_addr()
 {
@@ -1538,57 +1534,54 @@ std::string initzer::get_log_recv_svr_addr()
 
 	return addr;
 }
-uint32_t initzer::get_ebd_sort_clock_hz()
+
+int initzer::get_fe_sender_buf_sz()
 {
 	bool found;
-	std::string name("sort_freq");
+	std::string name("sender_buf_sz");
+	int port;
+
+	port = get_fe_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_SOCK_BUF_FE_SEND;
+
+}
+int initzer::get_ebd_sender_buf_sz()
+{
+	bool found;
+	std::string name("sender_buf_sz");
 	int port;
 
 	port = get_ebd_adv_var(name, found);
 	if (found)
 		return port;
 	else
-		return DEF_EBD_SORT_HZ;
-}
+		return DEF_SOCK_BUF_EBD_SEND;
 
-uint32_t initzer::get_ebd_merge_glom()
+}
+int initzer::get_fe_blt_buf_sz()
 {
 	bool found;
-	std::string name("merge_glom");
+	std::string name("blt_buf_sz");
+	int sz;
+
+	sz = get_fe_adv_var(name, found);
+	if (found)
+		return sz;
+	else
+		return 0;
+}
+int initzer::get_fe_sender_port()
+{
+	bool found;
+	std::string name("sender_port");
 	int port;
 
-	port = get_ebd_adv_var(name, found);
+	port = get_fe_adv_var(name, found);
 	if (found)
 		return port;
 	else
-		return DEF_EBD_MERGE_GLOM;
-
-}
-
-uint32_t initzer::get_ebd_merge_merged_buf_sz()
-{
-	bool found;
-	std::string name("merge_buf_sz");
-	int port;
-
-	port = get_ebd_adv_var(name, found);
-	if (found)
-		return port;
-	else
-		return DEF_EBD_MERGE_GLOM;
-
-}
-
-uint32_t initzer::get_log_save_buf_len()
-{
-	bool found;
-	std::string name("save_buf_sz");
-	int port;
-
-	port = get_log_adv_var(name, found);
-	if (found)
-		return port;
-	else
-		return DEF_EBD_MERGE_GLOM;
-
+		return DEF_PORT_SEND_FE;
 }

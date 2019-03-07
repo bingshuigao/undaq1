@@ -58,6 +58,13 @@ protected:
 	 * */
 	int send_slot_map();
 
+	/* send the mod_rb_par to the event builder. The event builder will
+	 * need these data to create the dedicated ring buffers for each
+	 * module.
+	 * Return 0 if succeed, otherwise return error code.
+	 * */
+	int send_mod_rb_par();
+
 private:
 	static int fe_sender_init(my_thread* This, initzer* the_initzer);
 	

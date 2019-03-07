@@ -31,6 +31,12 @@ private:
 	int quit();
 	int main_proc();
 
+	/* init the individual ring buffers for each vme module. We need to
+	 * receive the parameters of these ring buffers from frontend, then
+	 * crate these ring buffers. 
+	 * return 0 if succeed, otherwise return error code.
+	 * */
+	int init_rb_data();
 
 private:
 	char slot_map[MAX_SLOT_MAP];

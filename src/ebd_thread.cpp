@@ -33,13 +33,9 @@ int ebd_thread::ebd_thread_init(my_thread* This, initzer* the_initzer)
 	ebd_thread* ptr = reinterpret_cast<ebd_thread*>(This);
 
 	/* initialize the ring buffers */
-	ptr->rb_data = the_initzer->get_ebd_rbs();
-	if (ptr->rb_data.size() == 0)
-		return -E_RING_BUF_DATA;
-	for (auto it = ptr->rb_data.begin(); it != ptr->rb_data.end(); it++) {
-		if ((*it) == NULL)
-			return -E_RING_BUF_DATA;
-	}
+	ptr->rb_data_sz = the_initzer->get_ebd_buf_sz(4);
+	if (ptr->rb_data_sz == 0)
+		ptr->rb_data_sz = DEF_RB_EBD_MOD;
 	ptr->rb_fe = the_initzer->get_ebd_rb(1);
 	if (!ptr->rb_fe)
 		return -E_RING_BUF_DATA;
