@@ -139,7 +139,7 @@ int v1190::read_micro( uint16_t ope_code, uint16_t* p_pars, int n)
 	do {
 		ret = read_reg(0x1030, 16, &micro_hnd);
 		RET_IF_NONZERO(ret);
-	} while(!(micro_hnd & 0x2));
+	} while(!(micro_hnd & 0x1));
 	// write opcode to micro register
 	ret = write_reg(0x102e, 16, &ope_code);
 	RET_IF_NONZERO(ret);

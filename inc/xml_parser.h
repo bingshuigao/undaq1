@@ -13,9 +13,12 @@
 #include <stdint.h>
 #include <vector>
 #include "err_code.h"
-#include "hist_man.h"
 #include "rapid_xml.hpp"
 #include "imp_daq.h"
+
+#ifdef MAKE_ANALYZER
+#include "hist_man.h"
+#endif
 
 /* This structure represents a configuration parameters for a vme module. */
 struct conf_vme_mod
@@ -78,8 +81,10 @@ public:
 	std::vector<struct conf_adv> get_conf_adv_ebd(int& status)
 	{ return get_conf_adv(2, status);}
 
+#ifdef MAKE_ANALYZER
 	/* get a list of histogram parameters (if any) */
 	std::vector<hist_pars> get_ana_hists();
+#endif
 
 private:
 	/* get the register and global var from the current node, return 0 if

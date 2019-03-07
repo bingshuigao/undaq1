@@ -13,11 +13,13 @@
 #include "v2718.h"
 #include "v1190.h"
 #include "v830.h"
-#include "hist_man.h"
 #include "imp_daq.h"
 #include <vector>
 #include <string>
 
+#ifdef MAKE_ANALYZER
+#include "hist_man.h"
+#endif
 
 class initzer
 {
@@ -112,9 +114,11 @@ public:
 	 *     */
 	int get_ebd_buf_sz(int id);
 
+#ifdef MAKE_ANALYZER
 	/* get a vector of histogram parameters */
 	std::vector<hist_pars> get_ana_hists() 
 	{return p_parser->get_ana_hists();}
+#endif
 
 	/* Get the buffer size of logger, return 0 if the configuration
 	 * is not found in the config file.

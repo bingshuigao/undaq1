@@ -260,6 +260,7 @@ int xml_parser::get_adv_var(struct conf_vme_mod* conf)
 	return 0;
 }
 
+#ifdef MAKE_ANALYZER
 std::vector<hist_pars> xml_parser::get_ana_hists()
 {
 	rapidxml::xml_node<> * node = ana;
@@ -286,3 +287,4 @@ std::vector<hist_pars> xml_parser::get_ana_hists()
 	}
 	return vec_all;
 }
+#endif
