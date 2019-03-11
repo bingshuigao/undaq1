@@ -22,7 +22,7 @@ class listen_svr:
         except BlockingIOError:
             return (None, None)
         # Now we established the connection, let's check the name of the client
-        msg_type = (2).to_bytes(length=4, byteorder='little')
+        msg_type = (1).to_bytes(length=4, byteorder='little')
         msg_body = bytes([0 for i in range(124)])
         msg = msg_type + msg_body
         conn.sendall(msg)

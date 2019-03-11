@@ -68,6 +68,11 @@ int ebd_ctl::ebd_ctl_init(my_thread* ptr, initzer* the_initzer)
 	 * quit. */
 	This->acq_stat = 1;
 
+	/* Now we should connect the GUI */
+	This->sock = my_tcp_clt::connect(This->port, This->svr_addr.c_str());
+	if (This->sock == -1)
+		return -E_SYSCALL;
+
 	return 0;
 }
 

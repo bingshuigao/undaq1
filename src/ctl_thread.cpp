@@ -100,7 +100,14 @@ int ctl_thread::ctl_main_proc()
 	 *      
 	 *      The definations of message types are :
 	 *      0--> A system message (warning or complaning...)
+	 *           The complementary information contains the null-terminated
+	 *           string.
 	 *      1--> Respond to a query name
+	 *           The complementary information contains the name
+	 *           (null-terminated string)
+	 *      2--> Respond to a query status
+	 *           The complementary information contains the status (uint32)
+	 *
 	 *
 	 *
 	 *

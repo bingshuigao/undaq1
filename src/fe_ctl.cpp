@@ -19,7 +19,8 @@ int fe_ctl::handle_msg(uint32_t* msg_body)
 {
          /* The message type of the current thread are defined as following:
           * msg_type == 1 --> run status transition.                        
-          * msg_type == 2 --> to be defined yet */                          
+          * msg_type == 2 --> to be defined yet 
+	  * msg_type == 3 --> A warning message*/                          
 
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
 
@@ -63,6 +64,11 @@ int fe_ctl::fe_ctl_init(my_thread* ptr, initzer* the_initzer)
 	This->sock_buf = new unsigned char[This->sock_buf_sz];
 	This->svr_addr = the_initzer->get_fe_ctl_svr_addr();
 	This->t_us = the_initzer->get_fe_ctl_t_us();
+
+	/* Now we need to connect to the GUI */
+	This->sock = my_tcp_clt::connect(This->port, This->svr_addr.c_str());
+	if (This->sock == -1)
+		return -E_SYSCALL;
 
 	/* the control thread needs always be in running status unless when to
 	 * quit. */

@@ -124,7 +124,7 @@ int rd_fe::send_warning(int id, const char* msg)
 	p_int[0] = id;
 	p_int[0] = (p_int[0] << 24) + len;
 	p_int[1] = thread_id;
-	p_int[1] = (p_int[1] << 24) + 1;
+	p_int[1] = (p_int[1] << 24) + 3;
 	memcpy(buf + 8, msg, len-8);
 	ret = rb_msg->write(buf, len);
 

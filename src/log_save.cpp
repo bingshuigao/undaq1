@@ -41,8 +41,10 @@ int log_save::handle_msg(uint32_t* msg_body)
 	case 1:
 		/* run status transition
 		 * */
-		run_num = msg_body[2];
-		save = msg_body[3];
+		if (msg_body[1] == DAQ_RUN) {
+			run_num = msg_body[2];
+			save = msg_body[3];
+		}
 		return switch_run(msg_body[1]);
 	default:
 		return -E_MSG_TYPE;

@@ -51,8 +51,10 @@ finish:
 int daq_thread::switch_run(uint32_t status)
 {
 	/* if the acq_stat == status, no action needed */
-	if (acq_stat == status) 
-		return 0;
+	/* we comment this part out because for the control thread, we should
+	 * compare the values of real_stat and status, not qcq_stat...*/
+//	if (acq_stat == status) 
+//		return 0;
 	
 	switch (status) {
 	case 0:
@@ -72,10 +74,10 @@ int daq_thread::send_msg(int id, int type, void* msg, int len)
 {
 	uint32_t h[2];
 	h[0] = id;
-	h[0] <<= 3;
+	h[0] <<= 24;
 	h[0] |= len + 8;
 	h[1] = thread_id;
-	h[1] <<= 3;
+	h[1] <<= 24;
 	h[1] |= type;
 	
 	if (rb_msg->get_lock())

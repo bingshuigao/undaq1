@@ -252,6 +252,8 @@ class config:
         except:
             messagebox.showerror('error', 'cannot parse file!',
                     parent=self.root_win)
+        # allow only open file once, or else you will confuse me!
+        self.butt_open.config(state=tk.DISABLED)
 
     # parse a config file and sets the variables accrodingly
     def _parse_file(self):

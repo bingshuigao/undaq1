@@ -1,5 +1,6 @@
 #include "ebd_thread.h"
 
+std::vector<ring_buf*> ebd_thread::rb_data;
 ebd_thread::ebd_thread()
 {
 	rb_evt = NULL;

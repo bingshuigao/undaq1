@@ -89,7 +89,7 @@ int ebd_sort::handle_msg(uint32_t* msg_body)
 		 * */
 		return switch_run(msg_body[1]);
 	case 2:
-		slot_map = reinterpret_cast<char**>(msg_body+1)[0];
+		slot_map = (reinterpret_cast<char**>(msg_body+1))[0];
 		return 0;
 	default:
 		return -E_MSG_TYPE;

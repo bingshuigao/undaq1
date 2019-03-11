@@ -177,7 +177,7 @@ protected:
 	 * ...
 	 *
 	 * */
-	std::vector<ring_buf*> rb_data;
+	static std::vector<ring_buf*> rb_data;
 	int rb_data_sz;
 
 	/* This is for data sharing of scaler */

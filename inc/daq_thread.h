@@ -28,9 +28,85 @@
  *              |    true body  |
  *              |_______________|
  *
-  *
-  *
-  *
+ * Here is a summary of the message types:
+ * Frontend:
+ * rd_trig: 1--> status transition. The new status is contained in the first
+ *               4-byte word of the true body.
+ *          2--> To be defined
+ *          3--> A warning message. The message is a null-terminated string
+ *               which is contained in the true body.
+ * rd_scal: 1--> The same as rd_trig
+ *          2--> To be defined
+ *          3--> The same as rd_trig
+ * fe_sender: 1--> The same as rd_trig
+ *            2--> To be defined
+ *            3--> The same as rd_trig
+ * fe_ctl: 1--> The same as rd_trig
+ *         2--> To be defined
+ *         3--> The same as rd_trig
+ *
+ * Event builder:
+ * ebd_recv: 1--> The same as rd_trig
+ *           2--> To be defined
+ *           3--> The same as rd_trig
+ * ebd_sort:
+ *   1--> The same as rd_trig
+ *   2--> The slot_map. The pointer of the slot_map is contained in the first
+ *                      8-byte word of the true body.
+ *   3--> The same as rd_trig
+ * ebd_merge:
+ *   1--> The same as rd_trig
+ *   2--> To be defined
+ *   3--> The same as rd_trig
+ * ebd_sender:
+ *   1--> The same as rd_trig
+ *   2--> the analyzer needs re-connect. The true body is meaningless
+ *   3--> The same as rd_trig
+ * ebd_ctl:
+ *   1--> The same as rd_trig
+ *   2--> To be defined
+ *   3--> The same as rd_trig
+ *
+ *
+ * Logger:
+ * log_recv: 
+ *   1--> The same as rd_trig
+ *   2--> To be defined
+ *   3--> The same as rd_trig
+ * log_save:
+ *   1--> Run status transition. The new status is in the first 4-byte of the
+ *         true body. If the new status is DAQ_RUN, then the second 4-byte word
+ *         of the true body contains the run number and the
+ *         third 4-byte word the if_save flag.
+ *   2--> To be defined
+ *   3--> The same as rd_trig
+ * log_ctl:
+ *   1--> The same as rd_trig
+ *   2--> To be defined
+ *   3--> The same as rd_trig
+ * 
+ * Analyzer:
+ * ana_recv:
+ *   1--> The same as rd_trig
+ *   2--> To be defined
+ *   3--> The same as rd_trig
+ * ana_main:
+ *   1--> The same as rd_trig
+ *   2--> To be defined
+ *   3--> The same as rd_trig
+ * ana_roody_svr:
+ *   1--> The same as rd_trig
+ *   2--> Need to establish the connection with roody (The true body is
+ *         meaningless)
+ *   3--> The same as rd_trig
+ * ana_ctl:
+ *   1--> The same as rd_trig
+ *   2--> To be defined
+ *   3--> The same as rd_trig
+ * 
+ *   
+ *
+ *
  * By B.Gao Oct. 2018 */
 
 #ifndef DAQ_THREAD_HHH

@@ -55,11 +55,11 @@ int xml_parser::parse(const char* f_name)
 
 	/* get the root node and child nodes*/
 	root = doc.first_node();
-	fe = doc.first_node("frontend");
-	ebd = doc.first_node("event_builder");
-	ctl = doc.first_node("GUI_ctl");
-	log = doc.first_node("logger");
-	ana = doc.first_node("analyzer");
+	fe = root->first_node("frontend");
+	ebd = root->first_node("event_builder");
+	ctl = root->first_node("GUI_ctl");
+	log = root->first_node("logger");
+	ana = root->first_node("analyzer");
 
 	return 0;
 }
@@ -87,9 +87,9 @@ xml_parser::get_conf_vme_mod(int& status)
 				it2=it2->next_sibling("register")) {
 			cur_node = it2;
 			if (err_code = get_register(&conf))
-				tmp.push_back(conf);
-			else
 				status = -E_GENERIC;
+			else
+				tmp.push_back(conf);
 		}
 		/* Iterate all the global_var nodes in the node of the current
 		 * module*/
@@ -97,9 +97,9 @@ xml_parser::get_conf_vme_mod(int& status)
 				it2=it2->next_sibling("global_var")) {
 			cur_node = it2;
 			if (err_code = get_global_var(&conf))
-				tmp.push_back(conf);
-			else
 				status = -E_GENERIC;
+			else
+				tmp.push_back(conf);
 		}
 		/* Iterate all the advance_var nodes in the node of the current
 		 * module */
@@ -107,9 +107,9 @@ xml_parser::get_conf_vme_mod(int& status)
 				it2=it2->next_sibling("advance_var")) {
 			cur_node = it2;
 			if (err_code = get_adv_var(&conf))
-				tmp.push_back(conf);
-			else
 				status = -E_GENERIC;
+			else
+				tmp.push_back(conf);
 		}
 		vec_all.push_back(tmp);
 	}
