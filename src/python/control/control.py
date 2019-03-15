@@ -70,6 +70,7 @@ class control:
                 .place(x=0, y=600, width=80, height=25)
         self.run_num_entry = tk.Entry(self.root_win)
         self.run_num_entry.place(x=81, y=600, width=49, height=25)
+        self.run_num_entry.insert(tk.END, 1)
         # the if save flag
         self.save_flag_var = tk.IntVar()
         tk.Checkbutton(self.root_win, text='Save', bg='#f0f0f0', 
@@ -117,7 +118,7 @@ class control:
         # The listening port
         tmp = parser.get_par('port')
         if not tmp:
-            tmp = 9999
+            tmp = 9090
         self.port = tmp
         # the update interval
         tmp = parser.get_par('t_ms')
@@ -264,7 +265,7 @@ class control:
         if_save = self.save_flag_var.get().to_bytes(length=4,
                 byteorder='little')
         msg_tail = bytes([0 for i in range(112)])
-        msg = msg_type + run_stat + run_num + if_save
+        msg = msg_type + run_stat + run_num + if_save + msg_tail
         self.svr_log.send_all(msg)
         
 
@@ -328,5 +329,5 @@ class control:
         self._clock()
         self.root_win.mainloop()
 
-app = control('c.xml')
+app = control('conf.xml')
 app.run()

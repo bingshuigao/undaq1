@@ -2,6 +2,7 @@
 #include "err_code.h"
 #include <unistd.h>
 #include <string.h>
+#include <stdio.h>
 
 
 daq_thread::daq_thread()
@@ -18,11 +19,12 @@ daq_thread::~daq_thread()
 void* daq_thread::main_loop(void* arg)
 {
 	int* p_ret = reinterpret_cast<int*>(ret_val);
+	int ret;
 	while (true) {
 begin:
-		if (rd_msg()) {
+		if (ret = rd_msg()) {
 			/* error in the (message) ring buffer communication */
-			*p_ret = -E_RING_BUF_MSG;
+			*p_ret = ret;
 			goto finish;
 		}
 		if (acq_stat == 2) {
@@ -44,6 +46,7 @@ begin:
 	}
 
 finish:
+	printf("thread (%d) exits with return code (%d)\n", thread_id, *p_ret);
 	return ret_val;
 }
 

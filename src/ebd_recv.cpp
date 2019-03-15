@@ -78,12 +78,15 @@ int ebd_recv::init_rb_data()
 	ring_buf* p_rb;
 
 	ret = recv(sock, &n, 4, MSG_WAITALL);
-	RET_IF_NONZERO(ret);
+	if (ret != 4)
+		return -E_SYSCALL;
 	for (i = 0; i < n; i++) {
 		ret = recv(sock, &slot, 4, MSG_WAITALL);
-		RET_IF_NONZERO(ret);
+		if (ret != 4)
+			return -E_SYSCALL;
 		ret = recv(sock, &crate, 4, MSG_WAITALL);
-		RET_IF_NONZERO(ret);
+		if (ret != 4)
+			return -E_SYSCALL;
 		p_rb = new ring_buf;
 		if (p_rb->init(rb_data_sz)) {
 			delete p_rb;

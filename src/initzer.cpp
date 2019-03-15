@@ -891,7 +891,7 @@ static modules* get_one_modules(std::vector<module*>& mods, char type)
 	}
 
 	
-	for (auto it = mods.begin(); it != mods.end(); it++) {
+	for (auto it = mods.begin(); it != mods.end();) {
 		if ((*it)->get_type() == type && (*it)->get_crate() == crate &&
 				(*it)->get_name() == name) {
 			/* For scaler-type, addtional requirements exist */
@@ -899,13 +899,18 @@ static modules* get_one_modules(std::vector<module*>& mods, char type)
 				if ((*it)->get_period() == t) {
 					the_modules->add_mod(*it);
 					mods.erase(it);
+					continue;
 				}
 			}
 			else {
 				the_modules->add_mod(*it);
 				mods.erase(it);
+				continue;
 			}
 		}
+		/* if erased, the iterator automatically points to the next
+		 * item, no it++ needed. */
+		it++;
 	}
 
 	return the_modules;

@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
 		std::cerr<<"error code: "<<(*p_ret)<<std::endl;
 	}
 	else {
-		std::cerr<<"thread ctl exited succesfully";
+		std::cerr<<"thread ctl exited succesfully"<<std::endl;
 	}
 	if (main_proc->join((void**)&p_ret))
 		std::cerr<<"cannot join thread!"<<std::endl;
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 		std::cerr<<"error code: "<<(*p_ret)<<std::endl;
 	}
 	else {
-		std::cerr<<"thread main_proc exited succesfully";
+		std::cerr<<"thread main_proc exited succesfully"<<std::endl;
 	}
 	if (receiver->join((void**)&p_ret))
 		std::cerr<<"cannot join thread!"<<std::endl;
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 		std::cerr<<"error code: "<<(*p_ret)<<std::endl;
 	}
 	else {
-		std::cerr<<"thread receiver exited succesfully";
+		std::cerr<<"thread receiver exited succesfully"<<std::endl;
 	}
 	if (roody_svr->join((void**)&p_ret))
 		std::cerr<<"cannot join thread!"<<std::endl;
@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
 		std::cerr<<"error code: "<<(*p_ret)<<std::endl;
 	}
 	else {
-		std::cerr<<"thread roody_svr exited succesfully";
+		std::cerr<<"thread roody_svr exited succesfully"<<std::endl;
 	}
 
 	return 0;

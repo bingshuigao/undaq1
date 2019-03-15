@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
 		std::cerr<<"error code: "<<(*p_ret)<<std::endl;
 	}
 	else {
-		std::cerr<<"thread ctl exited succesfully";
+		std::cerr<<"thread ctl exited succesfully"<<std::endl;
 	}
 	if (sender->join((void**)&p_ret))
 		std::cerr<<"cannot join thread!"<<std::endl;
@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
 		std::cerr<<"error code: "<<(*p_ret)<<std::endl;
 	}
 	else {
-		std::cerr<<"thread sender exited succesfully";
+		std::cerr<<"thread sender exited succesfully"<<std::endl;
 	}
 	if (receiver->join((void**)&p_ret))
 		std::cerr<<"cannot join thread!"<<std::endl;
@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
 		std::cerr<<"error code: "<<(*p_ret)<<std::endl;
 	}
 	else {
-		std::cerr<<"thread receiver exited succesfully";
+		std::cerr<<"thread receiver exited succesfully"<<std::endl;
 	}
 	if (merger->join((void**)&p_ret))
 		std::cerr<<"cannot join thread!"<<std::endl;
@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
 		std::cerr<<"error code: "<<(*p_ret)<<std::endl;
 	}
 	else {
-		std::cerr<<"thread merger exited succesfully";
+		std::cerr<<"thread merger exited succesfully"<<std::endl;
 	}
 	if (sorter->join((void**)&p_ret))
 		std::cerr<<"cannot join thread!"<<std::endl;
@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
 		std::cerr<<"error code: "<<(*p_ret)<<std::endl;
 	}
 	else {
-		std::cerr<<"thread sorter exited succesfully";
+		std::cerr<<"thread sorter exited succesfully"<<std::endl;
 	}
 
 	return 0;

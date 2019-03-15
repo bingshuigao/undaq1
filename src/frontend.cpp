@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
 		std::cerr<<"error code: "<<(*p_ret)<<std::endl;
 	}
 	else {
-		std::cerr<<"thread rd_trig exited succesfully";
+		std::cerr<<"thread rd_trig exited succesfully"<<std::endl;
 	}
 	if (rd_s->join(reinterpret_cast<void**>(&p_ret)))
 		std::cerr<<"cannot join thread!"<<std::endl;
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 		std::cerr<<"error code: "<<(*p_ret)<<std::endl;
 	}
 	else {
-		std::cerr<<"thread rd_scal exited succesfully";
+		std::cerr<<"thread rd_scal exited succesfully"<<std::endl;
 	}
 	if (sender->join(reinterpret_cast<void**>(&p_ret)))
 		std::cerr<<"cannot join thread!"<<std::endl;
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 		std::cerr<<"error code: "<<(*p_ret)<<std::endl;
 	}
 	else {
-		std::cerr<<"thread sender exited succesfully";
+		std::cerr<<"thread sender exited succesfully"<<std::endl;
 	}
 	if (ctl->join(reinterpret_cast<void**>(&p_ret)))
 		std::cerr<<"cannot join thread!"<<std::endl;
@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
 		std::cerr<<"error code: "<<(*p_ret)<<std::endl;
 	}
 	else {
-		std::cerr<<"thread ctl exited succesfully";
+		std::cerr<<"thread ctl exited succesfully"<<std::endl;
 	}
 
 	return 0;

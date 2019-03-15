@@ -90,6 +90,9 @@ int log_ctl::handle_GUI_msg(unsigned char* msg)
 	unsigned char msg_send[128];
 	int* p;
 
+#ifdef DEBUG___
+	printf("received msg type: %d\n", msg_type);
+#endif
 	switch (msg_type) {
 	case 0:
 		/* a run status transition is requested. */
