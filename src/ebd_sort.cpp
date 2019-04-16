@@ -187,7 +187,7 @@ int ebd_sort::handle_evt()
 
 int ebd_sort::handle_EOR()
 {
-	uint32_t eor[2];
+	uint32_t eor[3];
 
 	/* If we see a end of run mark, we place it in each of the individual
 	 * ring buffers. */
