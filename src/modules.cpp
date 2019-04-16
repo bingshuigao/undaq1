@@ -18,10 +18,14 @@ int get_am_mblt(int am)
 		return VME_A24_S_MBLT;
 	if (am == VME_A24_U_DATA)
 		return VME_A24_U_MBLT;
+
+	/* for now we use BLT instead of MBLT, because MBLT does not work for
+	 * some unknown reason. If use MBLT, also change the functions:
+	 * add_mblt() and add_cmblt()*/
 	if (am == VME_A32_S_DATA)
 		return VME_A32_S_BLT;
 	if (am == VME_A32_U_DATA)
-		return VME_A32_U_MBLT;
+		return VME_A32_U_BLT;
 
 	return -1;
 }
@@ -187,9 +191,12 @@ void modules::add_mblt(int n)
 	uint32_t msk = 1;
 
 	am.push_back(am_mblts[n]);
-	dw.push_back(64);
+	/* we use BLT, not MBLT*/
+//	dw.push_back(64);
+//	read_fun.push_back(2);
+	dw.push_back(32);
+	read_fun.push_back(1);
 	mod_n.push_back(msk<<n);
-	read_fun.push_back(2);
 	blt_addr.push_back(mods[n]->get_base());
 	chain.push_back(0);
 }
@@ -205,9 +212,12 @@ void modules::add_cmblt(int n, uint32_t addr, int len)
 
 
 	am.push_back(am_cmblts[n]);
-	dw.push_back(64);
+	/* we use BLT, not MBLT*/
+//	dw.push_back(64);
+//	read_fun.push_back(2);
+	dw.push_back(32);
+	read_fun.push_back(1);
 	mod_n.push_back(msk);
-	read_fun.push_back(2);
 	blt_addr.push_back(addr);
 	chain.push_back(1);
 }

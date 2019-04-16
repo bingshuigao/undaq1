@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <unistd.h>
+#include <iostream>
 
 ebd_recv::ebd_recv()
 {
@@ -80,6 +81,8 @@ int ebd_recv::init_rb_data()
 	ret = recv(sock, &n, 4, MSG_WAITALL);
 	if (ret != 4)
 		return -E_SYSCALL;
+	/* debug ...*/
+//	std::cout<<n<<std::endl;
 	for (i = 0; i < n; i++) {
 		ret = recv(sock, &slot, 4, MSG_WAITALL);
 		if (ret != 4)
@@ -101,6 +104,9 @@ int ebd_recv::init_rb_data()
 		}
 		rb_data.push_back(p_rb);
 	}
+	/* debug ...*/
+//	std::cout<<"printed from receiver  "<<rb_data.size()<<std::endl;
+//	std::cout<<rb_data[0]<<std::endl;
 	return 0;
 }
 

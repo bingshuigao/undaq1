@@ -52,7 +52,13 @@ public:
 		return ret;
 	}
 #ifdef MAKE_FRONTEND
-	std::vector<struct mod_rb_par> get_rbs_ebd() {return rbs_ebd;}
+	std::vector<struct mod_rb_par> get_rbs_ebd(int& ret) 
+	{
+		ret = 0;
+		if (get_mod_rbs())
+			ret = -E_GENERIC;
+		return rbs_ebd;
+	}
 	/* get the server address of the frontend control thread
 	 *  */
 	std::string get_fe_ctl_svr_addr();

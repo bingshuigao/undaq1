@@ -4,6 +4,7 @@
 #include <string.h>
 
 
+std::vector<struct mod_rb_par> fe_thread::rbs_ebd; 
 fe_thread::fe_thread()
 {
 	rb_data = NULL;

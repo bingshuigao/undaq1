@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <iostream>
 
 
 rd_fe::rd_fe()
@@ -101,7 +102,10 @@ int rd_fe::rd_fe_init(my_thread* ptr, initzer* the_initzer)
 		type = 'S';
 	ret = the_initzer->get_modules(type, This->mods);
 	RET_IF_NONZERO(ret);
-	This->rbs_ebd = the_initzer->get_rbs_ebd();
+	This->rbs_ebd = the_initzer->get_rbs_ebd(ret);
+	RET_IF_NONZERO(ret);
+	/* debug */
+//	std::cout<<This->rbs_ebd.size()<<std::endl;
 
 	/* the blt_buf */
 	This->blt_buf_sz = the_initzer->get_fe_blt_buf_sz();
@@ -153,7 +157,8 @@ int rd_fe::do_rd_mods(modules* the_mods, int m_type)
 	 * the implementation of the class modules.
 	 * The items in the ring buffer*/
 	discard = false;
-	head_sz = comp_head(NULL, NULL, head_sz, 0); /* get header size */
+	ret = comp_head(NULL, NULL, head_sz, 0); /* get header size */
+	RET_IF_NONZERO(ret);
 begin:
 	/* read event buffer from modules */
 	sz_in = blt_buf_sz - head_sz;

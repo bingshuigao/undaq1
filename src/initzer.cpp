@@ -355,6 +355,11 @@ do_init_v830(v830* mod, std::vector<struct conf_vme_mod> &the_conf)
 static int 
 do_init_madc32(madc32* mod, std::vector<struct conf_vme_mod> &the_conf)
 {
+	uint16_t dum = 0;
+	/* First, we need to soft-reset all settings */
+	if (mod->write_reg(0x6008, 16, &dum))
+		return -E_INIT_MADC32;
+	/* then init all registers with non-default values */
 	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
 		if ((*it).name != "") 
 			continue;
@@ -1576,7 +1581,7 @@ int initzer::get_fe_blt_buf_sz()
 	if (found)
 		return sz;
 	else
-		return 0;
+		return DEF_BLT_BUF_FE;
 }
 int initzer::get_fe_sender_port()
 {
