@@ -66,7 +66,7 @@ int log_save::start()
 		sprintf(buf, "run%05d.scal", run_num);
 		f_name = path + '/' + buf;
 		fp_scal = fopen(f_name.c_str(), "wb");
-		if ((!fp_scal) || (!fp_scal))
+		if ((!fp_trig) || (!fp_scal))
 			return -E_OPEN_FILE;
 	}
 
@@ -113,7 +113,7 @@ int log_save::save_data(ring_buf* rb, bool& flag)
 			fp = fp_trig;
 		else if (rb == rb_scal)
 			fp = fp_scal;
-		ret = fwrite(data_buf, 1, sz, fp_scal);
+		ret = fwrite(data_buf, 1, sz, fp);
 		if (ret != sz) 
 			return -E_SYSCALL;
 	}
