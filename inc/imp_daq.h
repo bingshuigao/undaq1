@@ -26,6 +26,8 @@
 #define DEF_RB_EBD_SCL (1024*1024)
 /* event builder sender socket buffer size */
 #define DEF_SOCK_BUF_EBD_SEND (1024*1024)
+/* merged event buffer size */
+#define DEF_EBD_MERGED_BUF_SZ (1024*1024*8)
 /********** frontend buffers *************/
 /* data sharing */
 #define DEF_RB_FE_DATA (1024*1024*40)

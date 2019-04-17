@@ -100,6 +100,9 @@ private:
 	/* the size of the merged_buf (4-byte word) */
 	uint32_t merged_buf_sz;
 
+	/* check if the rb_data is ready */
+	bool rb_data_ready;
+
 
 };
 

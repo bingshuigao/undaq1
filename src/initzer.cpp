@@ -991,7 +991,7 @@ uint32_t initzer::get_ebd_merge_merged_buf_sz()
 	if (found)
 		return port;
 	else
-		return DEF_EBD_MERGE_GLOM;
+		return DEF_EBD_MERGED_BUF_SZ;
 
 }
 std::string initzer::get_ebd_ctl_svr_addr()
@@ -1293,7 +1293,7 @@ uint32_t initzer::get_log_save_buf_len()
 	if (found)
 		return port;
 	else
-		return DEF_EBD_MERGE_GLOM;
+		return DEF_LOG_SAVE_BUF;
 
 }
 std::string initzer::get_log_ctl_svr_addr()
