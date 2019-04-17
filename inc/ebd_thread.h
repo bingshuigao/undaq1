@@ -169,7 +169,8 @@ protected:
 	 * pointers. Because each vme module has a dedicated ring buffer, so we
 	 * use vectors to manage the ring buffers. These ring buffers contain
 	 * data before built into a complete event. 
-	 * The user data of the ring buffers are heavily used. They are defined as following:
+	 * The user data of the ring buffers are heavily used. They are defined
+	 * as following:
 	 * p_byte[0] --> crate;
 	 * p_byte[1] --> slot;
 	 * p_byte[2] --> can_build flag;

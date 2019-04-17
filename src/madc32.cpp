@@ -114,3 +114,38 @@ int madc32::get_cblt_conf(uint16_t* addr, int* cblt_enable, int* cblt_first,
 	return 0;
 }
 
+int madc32::if_trig(bool& x)
+{
+	uint16_t data_ready;
+	int ret;
+
+	ret = read_reg(0x603e, 16, &data_ready);
+	RET_IF_NONZERO(ret);
+	if (data_ready)
+		x = true;
+	else
+		x = false;
+
+	return 0;
+}
+
+int madc32::on_start()
+{
+	/* clear the fifo */
+	uint16_t dum = 0;
+	int ret = write_reg(0x603c, 16, &dum);
+	RET_IF_NONZERO(ret);
+
+	/* start acq */
+	dum = 1;
+	ret = write_reg(0x603a, 16, &dum);
+	RET_IF_NONZERO(ret);
+
+	/* readout reset */
+	dum = 0;
+	ret = write_reg(0x6034, 16, &dum);
+	RET_IF_NONZERO(ret);
+
+	//printf("debuf\n");
+	return 0;
+}

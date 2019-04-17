@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <unistd.h>
+#include <iostream>
 
 ebd_recv::ebd_recv()
 {
@@ -78,12 +79,17 @@ int ebd_recv::init_rb_data()
 	ring_buf* p_rb;
 
 	ret = recv(sock, &n, 4, MSG_WAITALL);
-	RET_IF_NONZERO(ret);
+	if (ret != 4)
+		return -E_SYSCALL;
+	/* debug ...*/
+//	std::cout<<n<<std::endl;
 	for (i = 0; i < n; i++) {
 		ret = recv(sock, &slot, 4, MSG_WAITALL);
-		RET_IF_NONZERO(ret);
+		if (ret != 4)
+			return -E_SYSCALL;
 		ret = recv(sock, &crate, 4, MSG_WAITALL);
-		RET_IF_NONZERO(ret);
+		if (ret != 4)
+			return -E_SYSCALL;
 		p_rb = new ring_buf;
 		if (p_rb->init(rb_data_sz)) {
 			delete p_rb;
@@ -98,6 +104,9 @@ int ebd_recv::init_rb_data()
 		}
 		rb_data.push_back(p_rb);
 	}
+	/* debug ...*/
+//	std::cout<<"printed from receiver  "<<rb_data.size()<<std::endl;
+//	std::cout<<rb_data[0]<<std::endl;
 	return 0;
 }
 

@@ -25,6 +25,7 @@ int ana_roody_svr::ana_roody_svr_init(my_thread* This, initzer* the_initzer)
 	ptr->port = the_initzer->get_ana_roody_svr_port();
 	ptr->tlsock = new TServerSocket(ptr->port, true);
 	ptr->tlsock->SetOption(kNoBlock, 1);
+	ptr->acq_stat = DAQ_RUN;
 	
 	return 0;
 }
@@ -68,7 +69,6 @@ int ana_roody_svr::conn_roody()
 int ana_roody_svr::start()
 {
 	int ret;
-	acq_stat = DAQ_RUN;
 	real_stat = DAQ_RUN;
 	
 	/* we need to establish the connectiong between the client and current
@@ -83,13 +83,13 @@ int ana_roody_svr::start()
 	}
 
 	/* proporgate the 'start' message to next thread. */
-	return send_msg(2, 1, &acq_stat, 4);
+	return send_msg(2, 1, &real_stat, 4);
 }
 
 int ana_roody_svr::stop()
 {
 	real_stat = DAQ_STOP;
-	return send_msg(4, 1, &acq_stat, 4);
+	return send_msg(4, 1, &real_stat, 4);
 }
 
 int ana_roody_svr::quit()

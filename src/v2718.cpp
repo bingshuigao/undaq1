@@ -125,7 +125,7 @@ int v2718::blt_read(unsigned long addr, void* buf, int sz_in, int* sz_out)
 {
 	int ret;
 
-	ret = CAENVME_BLTReadCycle(handle, addr, buf, sz_in,
+	ret = CAENVME_FIFOBLTReadCycle(handle, addr, buf, sz_in,
 			static_cast<CVAddressModifier>(am), caen_dw(),
 			sz_out);
 	return error_code(ret);
@@ -134,7 +134,7 @@ int v2718::mblt_read(unsigned long addr, void* buf, int sz_in, int* sz_out)
 {
 	int ret;
 
-	ret = CAENVME_MBLTReadCycle(handle, addr, buf, sz_in,
+	ret = CAENVME_FIFOMBLTReadCycle(handle, addr, buf, sz_in,
 			static_cast<CVAddressModifier>(am), sz_out);
 	return error_code(ret);
 }

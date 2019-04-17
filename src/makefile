@@ -1,4 +1,4 @@
-CFLAGS = -g -O0
+CFLAGS = -g -O0 -DDEBUG___
 
 .PHONY: all
 all: frontend event_builder logger analyzer

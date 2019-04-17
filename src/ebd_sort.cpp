@@ -1,6 +1,7 @@
 #include "ebd_sort.h"
 #include <unistd.h>
 #include <string.h>
+#include <iostream>
 
 
 ebd_sort::ebd_sort()
@@ -53,8 +54,10 @@ int ebd_sort::ebd_sort_init(my_thread* This, initzer* the_initzer)
 	ptr->hz = the_initzer->get_ebd_sort_clock_hz();
 	ret = the_initzer->get_conf_vme_mod(ptr->conf);
 	RET_IF_NONZERO(ret);
-	ret = ptr->init_rb_map();
-	RET_IF_NONZERO(ret);
+	/* the inialization of the rb_map should be done in the event handler
+	 * because presently the rb_data is still empty. */
+//	ret = ptr->init_rb_map();
+//	RET_IF_NONZERO(ret);
 	ret = ptr->init_mask_to_slot();
 	RET_IF_NONZERO(ret);
 
@@ -63,6 +66,8 @@ int ebd_sort::ebd_sort_init(my_thread* This, initzer* the_initzer)
 
 int ebd_sort::init_rb_map()
 {
+	/* debug ... */
+//	std::cout<<"printed from sorter "<<rb_data.size()<<std::endl;
 	for (auto it = rb_data.begin(); it != rb_data.end(); it++) {
 		char* p_udata = (*it)->get_usr_data();
 		int crate = p_udata[0];
@@ -80,7 +85,7 @@ int ebd_sort::handle_msg(uint32_t* msg_body)
 {
 	/* The message type of the current thread are defined as following 
 	 * 1 --> run status transition
-	 * 2 --> slot map
+	 * 2 --> slot map and init_rb_map
 	 * */
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
 	switch (msg_type) {
@@ -90,7 +95,7 @@ int ebd_sort::handle_msg(uint32_t* msg_body)
 		return switch_run(msg_body[1]);
 	case 2:
 		slot_map = (reinterpret_cast<char**>(msg_body+1))[0];
-		return 0;
+		return init_rb_map();
 	default:
 		return -E_MSG_TYPE;
 	}
@@ -124,6 +129,10 @@ int ebd_sort::quit()
 int ebd_sort::main_proc()
 {
 	uint32_t buf_len, evt_len;
+	
+	/* One should check if the slot_map has been inited. */
+	if (!slot_map)
+		return 0;
 
 	/* We need to look into the ring buffer of raw data rb_fe. The data
 	 * format in the rb_fe is documented in fe_thread.h */
@@ -178,7 +187,7 @@ int ebd_sort::handle_evt()
 
 int ebd_sort::handle_EOR()
 {
-	uint32_t eor[2];
+	uint32_t eor[3];
 
 	/* If we see a end of run mark, we place it in each of the individual
 	 * ring buffers. */
@@ -275,6 +284,7 @@ void ebd_sort::set_slot_mask(uint32_t mask)
 
 	/* first, count the number of set bits (from
 	 * https://www.geeksforgeeks.org/count-set-bits-in-an-integer/) */
+	uint32_t mask_old = mask;
 	while (mask) {
 		mask &= (mask - 1);
 		n++;
@@ -286,7 +296,7 @@ void ebd_sort::set_slot_mask(uint32_t mask)
 
 	/* now only 1 bit is set, let's find which bit, to make the process
 	 * faster, we trade off the memory space.*/
-	slot = mask_to_slot[mask];
+	slot = mask_to_slot[mask_old];
 }
 
 uint64_t ebd_sort::get_mono_ts(uint64_t ts, int n_bit)
@@ -338,22 +348,19 @@ int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 		slot = slot_map[SLOT_MAP_IDX(crate,mod_id,(evt[0]>>16)&0xFF)];
 
 	/* get time stamp */
-	sig = evt[evt_len_w] >> 30;
+	sig = evt[evt_len_w-1] >> 30;
 	if (sig != 0x3)
 		goto err_data;
 	ts = evt[evt_len_w] & 0x3FFFFFFF;
+
 	/* now try to find the extended ts */
-	idx = evt_len_w - 1;
-begin:
-	if (idx > 0) {
-		sig = evt[idx] >> 21;
-		if (sig == 0) {
-			idx--;
-			goto begin;
-		}
-		if (sig == 0x24) 
-			has_et = true;
-	}
+	idx = evt_len_w - 2;
+	if (evt[idx] == 0)
+		/* this is a filler */
+		idx--;
+	sig = evt[idx] >> 21;
+	if (sig == 0x24)
+		has_et = true;
 	if (has_et) {
 		ts_hi = evt[idx] & 0xFFFF;
 		ts += ts_hi;

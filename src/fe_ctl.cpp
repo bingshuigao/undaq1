@@ -85,6 +85,9 @@ int fe_ctl::handle_GUI_msg(unsigned char* msg)
 	int ret, stat;
 	unsigned char msg_send[128];
 	int *p;
+#ifdef DEBUG___
+	printf("received msg type: %d\n", msg_type);
+#endif
 
 	switch (msg_type) {
 	case 0:

@@ -37,6 +37,14 @@ public:
 		return module::write_reg(addr, dw, val);
 	}
 
+	/* See if DAQ triggers (only makes sence for trigger module)
+	 * return 0 if succeed, otherwise return error code.
+	 * */
+	virtual int if_trig(bool& x);
+
+	/* see comments in module.h */
+	virtual int on_start();
+
 	/* get the GEO of the module. 
 	 * @return return the GEO */
 	int get_geo()

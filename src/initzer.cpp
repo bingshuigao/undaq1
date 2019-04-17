@@ -355,6 +355,11 @@ do_init_v830(v830* mod, std::vector<struct conf_vme_mod> &the_conf)
 static int 
 do_init_madc32(madc32* mod, std::vector<struct conf_vme_mod> &the_conf)
 {
+	uint16_t dum = 0;
+	/* First, we need to soft-reset all settings */
+	if (mod->write_reg(0x6008, 16, &dum))
+		return -E_INIT_MADC32;
+	/* then init all registers with non-default values */
 	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
 		if ((*it).name != "") 
 			continue;
@@ -891,7 +896,7 @@ static modules* get_one_modules(std::vector<module*>& mods, char type)
 	}
 
 	
-	for (auto it = mods.begin(); it != mods.end(); it++) {
+	for (auto it = mods.begin(); it != mods.end();) {
 		if ((*it)->get_type() == type && (*it)->get_crate() == crate &&
 				(*it)->get_name() == name) {
 			/* For scaler-type, addtional requirements exist */
@@ -899,13 +904,18 @@ static modules* get_one_modules(std::vector<module*>& mods, char type)
 				if ((*it)->get_period() == t) {
 					the_modules->add_mod(*it);
 					mods.erase(it);
+					continue;
 				}
 			}
 			else {
 				the_modules->add_mod(*it);
 				mods.erase(it);
+				continue;
 			}
 		}
+		/* if erased, the iterator automatically points to the next
+		 * item, no it++ needed. */
+		it++;
 	}
 
 	return the_modules;
@@ -1571,7 +1581,7 @@ int initzer::get_fe_blt_buf_sz()
 	if (found)
 		return sz;
 	else
-		return 0;
+		return DEF_BLT_BUF_FE;
 }
 int initzer::get_fe_sender_port()
 {

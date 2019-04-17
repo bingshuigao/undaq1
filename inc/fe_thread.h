@@ -80,7 +80,7 @@ private:
 
 protected:
 	ring_buf* rb_data;
-	std::vector<struct mod_rb_par> rbs_ebd; 
+	static	std::vector<struct mod_rb_par> rbs_ebd; 
 };
 
 
