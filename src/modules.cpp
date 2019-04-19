@@ -23,8 +23,10 @@ int get_am_mblt(int am)
 	 * some unknown reason. If use MBLT, also change the functions:
 	 * add_mblt() and add_cmblt()*/
 	if (am == VME_A32_S_DATA)
+//		return VME_A32_S_MBLT;
 		return VME_A32_S_BLT;
 	if (am == VME_A32_U_DATA)
+//		return VME_A32_U_MBLT;
 		return VME_A32_U_BLT;
 
 	return -1;

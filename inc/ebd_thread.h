@@ -121,7 +121,7 @@
  *
  *  Finally, the merged events has the following format:
  *         _____________________________________________
- *         | Number of fragments                       |
+ *         | inclusive length (number of 4-byte words) |
  *         |___________________________________________|
  *         | timestamp high                            | 
  *         |___________________________________________|

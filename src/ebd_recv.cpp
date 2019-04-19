@@ -66,6 +66,8 @@ int ebd_recv::start()
 		ret = recv(sock, slot_map, sz, MSG_WAITALL);
 		if (ret != sz)
 			return -E_SYSCALL;
+		/* tell the ebd_merge that the rb_data is ready */
+		ret = send_msg(EBD_MERG, 2, &p_slot_map, 0);
 		/* tell the ebd_sort the address of the slot map */
 		return send_msg(EBD_SORT, 2, &p_slot_map, sizeof(p_slot_map));
 		
@@ -97,10 +99,13 @@ int ebd_recv::init_rb_data()
 		}
 		if (p_rb) {
 			 char* p_data = p_rb->get_usr_data();
+			 uint32_t *p_int32 = reinterpret_cast<uint32_t*>(p_data);
 			 p_data[0] = crate;
 			 p_data[1] = slot;
 			 p_data[2] = 0; /* a marker used by ebd_merge
                                                (can build or not) */
+			 p_int32[1] = 0; /* the cur_rd number */
+
 		}
 		rb_data.push_back(p_rb);
 	}

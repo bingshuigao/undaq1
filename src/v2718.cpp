@@ -1,6 +1,7 @@
 #include "v2718.h"
 #include "CAENVMElib.h"
 #include "err_code.h"
+#include <iostream>
 
 
 
@@ -137,4 +138,31 @@ int v2718::mblt_read(unsigned long addr, void* buf, int sz_in, int* sz_out)
 	ret = CAENVME_FIFOMBLTReadCycle(handle, addr, buf, sz_in,
 			static_cast<CVAddressModifier>(am), sz_out);
 	return error_code(ret);
+}
+
+int v2718::send_pulse(bool invt)
+{
+	int ret, val;
+//	std::cout<<"in v2718"<<std::endl;
+	val = 0xc;
+	ret = write_reg(0xc, &val);
+	RET_IF_NONZERO(ret);
+	val = 0x800;
+	if (invt)
+		ret = write_reg(0x0c, &val);
+	else
+		ret = write_reg(0x12, &val);
+	RET_IF_NONZERO(ret);
+
+	val = 0x80;
+	ret = write_reg(0x10, &val);
+	RET_IF_NONZERO(ret);
+	val = 0x80;
+	ret = write_reg(0x0a, &val);
+	RET_IF_NONZERO(ret);
+	val = 0x80;
+	ret = write_reg(0x10, &val);
+	RET_IF_NONZERO(ret);
+
+	return 0;
 }

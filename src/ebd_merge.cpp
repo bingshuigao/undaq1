@@ -7,6 +7,7 @@
 ebd_merge::ebd_merge()
 {
 	thread_id = 3;
+	rb_data_ready = false;
 	init_fun.push_back(&ebd_merge_init);
 }
 
@@ -30,7 +31,7 @@ int ebd_merge::handle_msg(uint32_t* msg_body)
 {
 	/* The message type of the current thread are defined as following 
 	 * 1 --> run status transition
-	 * 2 --> to be defined
+	 * 2 --> rb_data is ready
 	 * */
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
 	switch (msg_type) {
@@ -38,6 +39,10 @@ int ebd_merge::handle_msg(uint32_t* msg_body)
 		/* run status transition
 		 * */
 		return switch_run(msg_body[1]);
+	case 2:
+		/* rb_data is ready. */
+		rb_data_ready = true;
+		return 0;
 	default:
 		return -E_MSG_TYPE;
 	}
@@ -89,6 +94,11 @@ int ebd_merge::main_proc()
 	int n_try = 0;
 	int ret;
 	bool y_n;
+
+	/* we should make sure the rb_data is already initialized before doing
+	 * anything. */
+	if (!rb_data_ready)
+		return 0;
 begin:
 	ret = can_build(y_n);
 	if (y_n) {
@@ -191,7 +201,7 @@ start:
 	/* second, pull out events from ring buffers whose timestamps are close
 	 * enough to the minimum, and then merge them into a complete event. */
 	tot_len_wd = 3; /* the header */
-	merged_buf[0] = 0;
+//	merged_buf[0] = 4;
 	merged_buf[1] = ts_min >> 32;
 	merged_buf[2] = ts_min & 0xFFFFFFFF;
 	for (auto it = rb_data.begin(); it != rb_data.end(); it++) {
@@ -221,11 +231,11 @@ start:
 		(*it)->rel_lock();
 		set_clr_can_build(*it, (*it)->get_usr_data(), set);
 		tot_len_wd += len_wd;
-		merged_buf[0]++;
 	}
+	merged_buf[0] = tot_len_wd;
 
 	/* if no fragments any more, we should return. */
-	if (merged_buf[0] == 0) {
+	if (merged_buf[0] == 3) {
 		all_clr = true;
 		return 0;
 	}

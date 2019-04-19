@@ -348,10 +348,11 @@ int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 		slot = slot_map[SLOT_MAP_IDX(crate,mod_id,(evt[0]>>16)&0xFF)];
 
 	/* get time stamp */
-	sig = evt[evt_len_w-1] >> 30;
+	idx = evt_len_w - 1;
+	sig = evt[idx] >> 30;
 	if (sig != 0x3)
 		goto err_data;
-	ts = evt[evt_len_w] & 0x3FFFFFFF;
+	ts = evt[idx] & 0x3FFFFFFF;
 
 	/* now try to find the extended ts */
 	idx = evt_len_w - 2;

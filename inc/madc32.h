@@ -44,6 +44,7 @@ public:
 
 	/* see comments in module.h */
 	virtual int on_start();
+	virtual int on_stop();
 
 	/* get the GEO of the module. 
 	 * @return return the GEO */

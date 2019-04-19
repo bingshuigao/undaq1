@@ -63,6 +63,7 @@ int ana_roody_svr::conn_roody()
 	else if (tsock == NULL) {
 		return -E_SYSCALL;
 	}
+//	tsock->SetOption(kNoBlock, 1);
 
 	return 0;
 }

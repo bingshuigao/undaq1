@@ -43,7 +43,7 @@
  *
  * For trigger events:
  *         _____________________________________________
- *         | Number of fragments                       |
+ *         | inclusive length (number of 4-byte words) |
  *         |___________________________________________|
  *         | timestamp high                            | 
  *         |___________________________________________|

@@ -65,6 +65,9 @@ public:
 	 * @return 0 if succeed, non-zero error codes in case of error. */
 	int blt_read(unsigned long addr, void* buf, int sz_in, int* sz_out);
 	int mblt_read(unsigned long addr, void* buf, int sz_in, int* sz_out);
+	
+	/* the out port 1 (the second port) will be used */
+	virtual int send_pulse(bool invt);
 
 private:
 	/* convert the dw to the data width code consistant with those defined
