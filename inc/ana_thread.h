@@ -59,8 +59,9 @@
  *         |___________________________________________|
  *
  *     Each fragment has exactly the same format as those in the individual
- *     ring buffers. The timestamp is the minimum of the timestamps of the
- *     fragments.
+ *     ring buffers except that each fragment is preceded by a word containing
+ *     the slot#, crate# and daq# from low to high byte. The timestamp is the
+ *     minimum of the timestamps of the fragments.
  *     Format of the individual buffers:
  *         _____________________________________________
  *         | inclusive event length (number of 4-byte words |
