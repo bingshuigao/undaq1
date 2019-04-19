@@ -199,7 +199,7 @@ class madc32(vme_mod):
                 {'off' : 0x6090,
                  'value' : 'default',
                  'name' : 'rst ctr',
-                 'nbit' : 2,
+                 'nbit' : 4,
                  'has_set_wid' : True,
                  'set_wid_type' : 'entry',
                  })

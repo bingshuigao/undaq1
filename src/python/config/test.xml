@@ -275,6 +275,16 @@
                 <comment>nim g1 osc</comment>
             </register>
             <register>
+                <offset>0x606c</offset>
+                <value>0x1</value>
+                <comment>nim fc res</comment>
+            </register>
+            <register>
+                <offset>0x6090</offset>
+                <value>0xc</value>
+                <comment>rst ctr</comment>
+            </register>
+            <register>
                 <offset>0x6096</offset>
                 <value>0x3</value>
                 <comment>ts src</comment>
@@ -317,6 +327,268 @@
             <global_var>
                 <name>name</name>
                 <value>MADC32000</value>
+                <comment>name of the module</comment>
+            </global_var>
+            <advance_var>
+                <name>is_trig_mod</name>
+                <value>1</value>
+                <comment>is_trig_mod</comment>
+            </advance_var>
+        </vme_module>
+        <vme_module>
+            <register>
+                <offset>0x4000</offset>
+                <value>0x0</value>
+                <comment>threshold 00</comment>
+            </register>
+            <register>
+                <offset>0x4002</offset>
+                <value>0x64</value>
+                <comment>threshold 01</comment>
+            </register>
+            <register>
+                <offset>0x4004</offset>
+                <value>0x64</value>
+                <comment>threshold 02</comment>
+            </register>
+            <register>
+                <offset>0x4006</offset>
+                <value>0x64</value>
+                <comment>threshold 03</comment>
+            </register>
+            <register>
+                <offset>0x4008</offset>
+                <value>0x64</value>
+                <comment>threshold 04</comment>
+            </register>
+            <register>
+                <offset>0x400a</offset>
+                <value>0x64</value>
+                <comment>threshold 05</comment>
+            </register>
+            <register>
+                <offset>0x400c</offset>
+                <value>0x64</value>
+                <comment>threshold 06</comment>
+            </register>
+            <register>
+                <offset>0x400e</offset>
+                <value>0x64</value>
+                <comment>threshold 07</comment>
+            </register>
+            <register>
+                <offset>0x4010</offset>
+                <value>0x64</value>
+                <comment>threshold 08</comment>
+            </register>
+            <register>
+                <offset>0x4012</offset>
+                <value>0x64</value>
+                <comment>threshold 09</comment>
+            </register>
+            <register>
+                <offset>0x4014</offset>
+                <value>0x64</value>
+                <comment>threshold 10</comment>
+            </register>
+            <register>
+                <offset>0x4016</offset>
+                <value>0x64</value>
+                <comment>threshold 11</comment>
+            </register>
+            <register>
+                <offset>0x4018</offset>
+                <value>0x64</value>
+                <comment>threshold 12</comment>
+            </register>
+            <register>
+                <offset>0x401a</offset>
+                <value>0x64</value>
+                <comment>threshold 13</comment>
+            </register>
+            <register>
+                <offset>0x401c</offset>
+                <value>0x64</value>
+                <comment>threshold 14</comment>
+            </register>
+            <register>
+                <offset>0x401e</offset>
+                <value>0x64</value>
+                <comment>threshold 15</comment>
+            </register>
+            <register>
+                <offset>0x4020</offset>
+                <value>0x64</value>
+                <comment>threshold 16</comment>
+            </register>
+            <register>
+                <offset>0x4022</offset>
+                <value>0x64</value>
+                <comment>threshold 17</comment>
+            </register>
+            <register>
+                <offset>0x4024</offset>
+                <value>0x64</value>
+                <comment>threshold 18</comment>
+            </register>
+            <register>
+                <offset>0x4026</offset>
+                <value>0x64</value>
+                <comment>threshold 19</comment>
+            </register>
+            <register>
+                <offset>0x4028</offset>
+                <value>0x64</value>
+                <comment>threshold 20</comment>
+            </register>
+            <register>
+                <offset>0x402a</offset>
+                <value>0x64</value>
+                <comment>threshold 21</comment>
+            </register>
+            <register>
+                <offset>0x402c</offset>
+                <value>0x64</value>
+                <comment>threshold 22</comment>
+            </register>
+            <register>
+                <offset>0x402e</offset>
+                <value>0x64</value>
+                <comment>threshold 23</comment>
+            </register>
+            <register>
+                <offset>0x4030</offset>
+                <value>0x6e</value>
+                <comment>threshold 24</comment>
+            </register>
+            <register>
+                <offset>0x4032</offset>
+                <value>0x64</value>
+                <comment>threshold 25</comment>
+            </register>
+            <register>
+                <offset>0x4034</offset>
+                <value>0x64</value>
+                <comment>threshold 26</comment>
+            </register>
+            <register>
+                <offset>0x4036</offset>
+                <value>0x64</value>
+                <comment>threshold 27</comment>
+            </register>
+            <register>
+                <offset>0x4038</offset>
+                <value>0x64</value>
+                <comment>threshold 28</comment>
+            </register>
+            <register>
+                <offset>0x403a</offset>
+                <value>0x64</value>
+                <comment>threshold 29</comment>
+            </register>
+            <register>
+                <offset>0x403c</offset>
+                <value>0x64</value>
+                <comment>threshold 30</comment>
+            </register>
+            <register>
+                <offset>0x403e</offset>
+                <value>0x64</value>
+                <comment>threshold 31</comment>
+            </register>
+            <register>
+                <offset>0x6004</offset>
+                <value>0x2</value>
+                <comment>module id</comment>
+            </register>
+            <register>
+                <offset>0x601a</offset>
+                <value>0x0</value>
+                <comment>max trans data</comment>
+            </register>
+            <register>
+                <offset>0x6020</offset>
+                <value>0x55</value>
+                <comment>cblt&amp;mcst ctrl</comment>
+            </register>
+            <register>
+                <offset>0x6036</offset>
+                <value>0x3</value>
+                <comment>multi event</comment>
+            </register>
+            <register>
+                <offset>0x6038</offset>
+                <value>0x3</value>
+                <comment>marking type</comment>
+            </register>
+            <register>
+                <offset>0x6042</offset>
+                <value>0x4</value>
+                <comment>adc res</comment>
+            </register>
+            <register>
+                <offset>0x6060</offset>
+                <value>0x2</value>
+                <comment>input range</comment>
+            </register>
+            <register>
+                <offset>0x606a</offset>
+                <value>0x1</value>
+                <comment>nim g1 osc</comment>
+            </register>
+            <register>
+                <offset>0x606c</offset>
+                <value>0x1</value>
+                <comment>nim fc res</comment>
+            </register>
+            <register>
+                <offset>0x6090</offset>
+                <value>0xc</value>
+                <comment>rst ctr</comment>
+            </register>
+            <register>
+                <offset>0x6096</offset>
+                <value>0x3</value>
+                <comment>ts src</comment>
+            </register>
+            <global_var>
+                <name>crate_n</name>
+                <value>0</value>
+                <comment>crate number</comment>
+            </global_var>
+            <global_var>
+                <name>slot_n</name>
+                <value>5</value>
+                <comment>slot number</comment>
+            </global_var>
+            <global_var>
+                <name>base</name>
+                <value>0x00030000</value>
+                <comment>base address</comment>
+            </global_var>
+            <global_var>
+                <name>am_reg</name>
+                <value>0xd</value>
+                <comment>am used to access most of the registers</comment>
+            </global_var>
+            <global_var>
+                <name>type</name>
+                <value>T</value>
+                <comment>type of module (Trigg/Scal)</comment>
+            </global_var>
+            <global_var>
+                <name>period</name>
+                <value>1000</value>
+                <comment>period of reading for scaler type modules</comment>
+            </global_var>
+            <global_var>
+                <name>max_crate</name>
+                <value>1</value>
+                <comment>max crate</comment>
+            </global_var>
+            <global_var>
+                <name>name</name>
+                <value>MADC32001</value>
                 <comment>name of the module</comment>
             </global_var>
             <advance_var>

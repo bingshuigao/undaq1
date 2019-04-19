@@ -322,6 +322,10 @@ static int get_v830_reg_dmod(uint32_t off)
 static int 
 do_init_v830(v830* mod, std::vector<struct conf_vme_mod> &the_conf)
 {
+	uint16_t reg_val = 0;
+	/* reset */
+	if (mod->write_reg(0x1120, 16, &reg_val))
+		return -E_INIT_V830;
 	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
 		if ((*it).name != "")
 			continue;
@@ -571,6 +575,11 @@ static int set_v1190_micro(v1190* mod, uint32_t off, uint64_t val)
 static int 
 do_init_v1190(v1190* mod, std::vector<struct conf_vme_mod> &the_conf)
 {
+	/* first reset all registers */
+	uint16_t reg_val = 0;
+	if (mod->write_reg(0x1014, 16, &reg_val))
+		return -E_INIT_V1190;
+	/* then init all the registers based on config file settings */
 	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
 		if ((*it).name != "") 
 			continue;
@@ -694,6 +703,7 @@ v2718* initzer::do_init_v2718(std::vector<struct conf_vme_mod> &the_conf)
 {
 	v2718* tmp_v2718 = new v2718;
 	int crate = -1;
+	uint16_t reg_val;
 
 	/* get the crate number */
 	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
@@ -716,6 +726,13 @@ v2718* initzer::do_init_v2718(std::vector<struct conf_vme_mod> &the_conf)
 		goto fail;
 		
 	/* Now it's open, let initialize the registers */
+	/* first, reset all registers */
+	if (tmp_v2718->read_reg(0x1, &reg_val))
+			goto fail;
+	reg_val &= 0x80;
+	if (tmp_v2718->write_reg(0x1, &reg_val))
+		goto fail;
+	/* init the register values based on the config file */
 	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
 		if ((*it).name == "") {
 			/* this is a register setting */

@@ -30,12 +30,21 @@ int rd_fe::start()
 	n_byte = 0;
 	acq_stat = 1;
 	struct timespec ts1, ts2;
+	int ret;
+
+	/* first, syncronize the timestamps by sending a reset signal */
+	for (auto it = mods.begin(); it != mods.end(); it++) {
+		if (thread_id != 1)
+			break;
+		ret = (*it)->get_1st_mod()->get_ctl()->send_pulse(false);
+		RET_IF_NONZERO(ret);
+		break;
+	}
 
 	/* get the time stamp before the on_start() functions */
 	clock_gettime(CLOCK_MONOTONIC_COARSE, &ts1);
 
 	for (auto it = mods.begin(); it != mods.end(); it++) {
-		int ret;
 		ret = (*it)->on_start();
 		RET_IF_NONZERO(ret);
 	}
@@ -44,6 +53,11 @@ int rd_fe::start()
 	clock_gettime(CLOCK_MONOTONIC_COARSE, &ts2);
 	if (thread_id == 1) {
 		if (ts2.tv_sec - ts1.tv_sec >= on_start_t_max) 
+			/* why we need this? It is related to the global
+			 * monotonic clock used by vent builder. If the modules
+			 * took too long time for initialization, then the
+			 * global monotonic clock is uncertain regarding the
+			 * zero time (the starting time). */
 			return -E_ON_START_TOUT;
 		/* send a begin of run mark (to event builder) */
 		do_rd_mods(NULL, 1);
@@ -101,6 +115,8 @@ int rd_fe::rd_fe_init(my_thread* ptr, initzer* the_initzer)
 	else
 		type = 'S';
 	ret = the_initzer->get_modules(type, This->mods);
+	/* debug...*/
+//	std::cout<<"number of moduless "<<This->mods.size()<<std::endl;
 	RET_IF_NONZERO(ret);
 	This->rbs_ebd = the_initzer->get_rbs_ebd(ret);
 	RET_IF_NONZERO(ret);

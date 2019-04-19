@@ -108,6 +108,12 @@ public:
 	virtual int mblt_read(unsigned long addr, void* buf, int sz_in, int*
 			sz_out) = 0;
 
+	/* send a single pulse.
+	 * @param invt direct or inverted output.
+	 * @return 0 if succeed, non-zero error codes in case of error. 
+	 * */
+	virtual int send_pulse(bool invt) = 0;
+
 protected:
 	int am; /* address modifier */
 	int dw; /* data width (dw = 16, or 32, or 64) */

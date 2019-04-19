@@ -149,3 +149,14 @@ int madc32::on_start()
 	//printf("debuf\n");
 	return 0;
 }
+
+int madc32::on_stop()
+{
+	/* reset timestamp */
+	uint16_t dum = 0xc;
+	int ret;
+	ret = write_reg(0x6090, 16, &dum);
+	RET_IF_NONZERO(ret);
+
+	return 0;
+}
