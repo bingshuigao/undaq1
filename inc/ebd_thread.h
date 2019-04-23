@@ -137,7 +137,9 @@
  *         |___________________________________________|
  *
  *     Each fragment has exactly the same format as those in the individual
- *     ring buffers. The timestamp is the minimum of the timestamps of the
+ *     ring buffers except that each fragment is preceded by a word containing
+ *     the slot#, crate# and daq# from low to high byte. The timestamp is the
+ *     minimum of the timestamps of the
  *     fragments.
  *
  *  Note: the scaler data are not merged, the final format of the scaler data

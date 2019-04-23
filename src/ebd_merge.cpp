@@ -223,14 +223,19 @@ start:
 		/* now we should pull the event out and merge*/
 		len_wd = head[0];
 		/* check the length to make sure our buffer is big enough */
-		if ((tot_len_wd + len_wd) > merged_buf_sz) 
+		if ((tot_len_wd + len_wd + 1) > merged_buf_sz) 
 			return -E_MERGE_BUF_SZ;
+		/* we fill the daq#, crate# and slot# before filling the
+		 * fragment data */
+		merged_buf[tot_len_wd] = (*it)->get_usr_data()[0];
+		merged_buf[tot_len_wd] <<= 8;
+		merged_buf[tot_len_wd] += (*it)->get_usr_data()[1];
 		ret = (*it)->get_lock();
 		RET_IF_NONZERO(ret);
-		(*it)->read1(merged_buf+tot_len_wd, len_wd*4);
+		(*it)->read1(merged_buf+tot_len_wd+1, len_wd*4);
 		(*it)->rel_lock();
 		set_clr_can_build(*it, (*it)->get_usr_data(), set);
-		tot_len_wd += len_wd;
+		tot_len_wd += len_wd+1;
 	}
 	merged_buf[0] = tot_len_wd;
 
