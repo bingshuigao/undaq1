@@ -359,6 +359,10 @@ do_init_v830(v830* mod, std::vector<struct conf_vme_mod> &the_conf)
 static int 
 do_init_madc32(madc32* mod, std::vector<struct conf_vme_mod> &the_conf)
 {
+	/* special attention should be paid to the 0x6090 register. If set to
+	 * 0xc, one must first send a pulse to the fc/res port before writing
+	 * 0xc to this register, or else the result of the register will be 8
+	 * instead of 0xc (a bug???) */
 	uint16_t dum = 0;
 	/* First, we need to soft-reset all settings */
 	if (mod->write_reg(0x6008, 16, &dum))
