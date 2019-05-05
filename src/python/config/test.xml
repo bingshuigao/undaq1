@@ -563,7 +563,7 @@
             </global_var>
             <global_var>
                 <name>base</name>
-                <value>0x00030000</value>
+                <value>0x30030000</value>
                 <comment>base address</comment>
             </global_var>
             <global_var>

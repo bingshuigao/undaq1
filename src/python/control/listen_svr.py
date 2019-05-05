@@ -11,7 +11,7 @@ class listen_svr:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setblocking(False)
         self.sock.bind(('127.0.0.1', port))
-        self.sock.listen()
+        self.sock.listen(10)
 
     def try_accept(self):
         # try to accept a connection request (in non-blocking mode), if

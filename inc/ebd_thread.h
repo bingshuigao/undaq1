@@ -138,9 +138,22 @@
  *
  *     Each fragment has exactly the same format as those in the individual
  *     ring buffers except that each fragment is preceded by a word containing
- *     the slot#, crate# and daq# from low to high byte. The timestamp is the
- *     minimum of the timestamps of the
- *     fragments.
+ *     the slot#, crate# and daq# from low to high byte (see below). The
+ *     timestamp is the minimum of the timestamps of the fragments.
+ *         _____________________________________________
+ *         | b0 = slot#; b1 = crate#; b2 = daq#        |
+ *         |___________________________________________|
+ *         | inclusive event length (number of 4-byte words), 
+ *         | not including the word above              |
+ *         |___________________________________________|
+ *         |  data type = 0                            |
+ *         |___________________________________________|
+ *         |  monotonic_ts_high (clock tick)           |
+ *         |___________________________________________|
+ *         |  monotonic_ts_low                         |
+ *         |___________________________________________|
+ *         | raw event data from vme module            |
+ *         |___________________________________________|
  *
  *  Note: the scaler data are not merged, the final format of the scaler data
  *  are the same as those in frontend (see comments in fe_thread.h).
