@@ -242,9 +242,9 @@ int ebd_sort::handle_data_block(uint32_t* ptr)
 
 	tot_len = ptr[0];
 	sum = 0;
-	set_slot_mask(ptr[1]);
 	while (sum < tot_len - 8) {
 		int evt_len;
+		set_slot_mask(ptr[1]);
 		ret = handle_single_evt(ptr + 2 + sum/4, evt_len, 
 				(tot_len-8-sum)/4);
 		RET_IF_NONZERO(ret);

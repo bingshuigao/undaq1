@@ -246,7 +246,7 @@
             </register>
             <register>
                 <offset>0x6020</offset>
-                <value>0x55</value>
+                <value>0x26</value>
                 <comment>cblt&amp;mcst ctrl</comment>
             </register>
             <register>
@@ -338,7 +338,7 @@
         <vme_module>
             <register>
                 <offset>0x4000</offset>
-                <value>0x0</value>
+                <value>0x64</value>
                 <comment>threshold 00</comment>
             </register>
             <register>
@@ -508,7 +508,7 @@
             </register>
             <register>
                 <offset>0x6020</offset>
-                <value>0x55</value>
+                <value>0x1a</value>
                 <comment>cblt&amp;mcst ctrl</comment>
             </register>
             <register>
