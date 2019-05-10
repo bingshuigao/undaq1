@@ -31,7 +31,7 @@ class frontend:
         # number of crates
         self.n_crate = 1 
         # list of supported modules
-        self.sup_mods_lst = ['V2718', 'MADC32', 'V1190B', 'V830', 'V977']
+        self.sup_mods_lst = ['V2718', 'MADC32', 'V1190A', 'V830', 'V977']
         # list of selected modules (note: the element is an object of the
         # vme_mod class, not a string as in the sup_mods_list)
         self.sel_mods_lst = []
@@ -123,7 +123,7 @@ class frontend:
         # supported modules here if needed.
         if name == 'MADC32':
             tmp = madc32(self._get_uniq_name(name), mod)
-        elif name == 'V1190B':
+        elif name == 'V1190A':
             tmp = v1190(self._get_uniq_name(name), mod)
         elif name == 'V830':
             tmp = v830(self._get_uniq_name(name), mod)

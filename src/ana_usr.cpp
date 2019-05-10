@@ -13,6 +13,8 @@ int ana_usr_trig(void* p_evt, hist_man& hists)
 	uint32_t len_tot = p_dw[0];
 	int i, slot, idx;
 	idx = 3;
+
+	std::cout<<"total len: "<<len_tot<<" ts low: "<<p_dw[2]<<" ts hi: "<<p_dw[1]<<std::endl;
 begin:
 	if (idx == len_tot)
 		goto end;

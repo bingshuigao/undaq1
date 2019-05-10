@@ -1,4 +1,5 @@
 #include "v1190.h"
+#include <iostream>
 
 v1190::v1190()
 {
@@ -155,4 +156,31 @@ int v1190::read_micro( uint16_t ope_code, uint16_t* p_pars, int n)
 	}
 	return 0;
 	
+}
+
+int v1190::on_start()
+{
+	/* clear the fifo, we do it by reading all data out, we don't use the
+	 * software clear because that also resets the coase time counter,
+	 * which is not wanted. */
+	int ret, sz_in, sz_out;
+	char dst[8192];
+
+	/* Note: berr has to be enabled,*/
+	sz_in = 8192;
+	do {
+		/* am = A32_S_BLT is assumed. */
+		ret = read_evt_blt(0x0f, dst, sz_in, &sz_out, 0, 0);
+		if (ret != -E_VME_BUS)
+			RET_IF_NONZERO(ret);
+		/* debug...*/
+		std::cout<<"sz_out = "<<sz_out<<std::endl;
+		
+	} while (sz_out != 0);
+	return 0;
+}
+
+int v1190::on_stop()
+{
+	return 0;
 }

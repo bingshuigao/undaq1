@@ -593,12 +593,150 @@
             </global_var>
             <advance_var>
                 <name>is_trig_mod</name>
-                <value>1</value>
+                <value>0</value>
                 <comment>is_trig_mod</comment>
             </advance_var>
         </vme_module>
+        <vme_module>
+            <register>
+                <offset>0x0</offset>
+                <value>0x0</value>
+                <comment>acq mode</comment>
+            </register>
+            <register>
+                <offset>0x1</offset>
+                <value>0x96</value>
+                <comment>window width</comment>
+            </register>
+            <register>
+                <offset>0x2</offset>
+                <value>0xff88</value>
+                <comment>window offset</comment>
+            </register>
+            <register>
+                <offset>0x3</offset>
+                <value>0xa</value>
+                <comment>ex search</comment>
+            </register>
+            <register>
+                <offset>0x4</offset>
+                <value>0x5</value>
+                <comment>reject</comment>
+            </register>
+            <register>
+                <offset>0x5</offset>
+                <value>0x0</value>
+                <comment>sub trig T</comment>
+            </register>
+            <register>
+                <offset>0x6</offset>
+                <value>0x2</value>
+                <comment>edge detect</comment>
+            </register>
+            <register>
+                <offset>0x7</offset>
+                <value>0x2</value>
+                <comment>LSB</comment>
+            </register>
+            <register>
+                <offset>0x8</offset>
+                <value>0x0</value>
+                <comment>pair res.</comment>
+            </register>
+            <register>
+                <offset>0xa</offset>
+                <value>0x0</value>
+                <comment>tdc h&amp;tr</comment>
+            </register>
+            <register>
+                <offset>0x10</offset>
+                <value>0xffffffff</value>
+                <comment>enable msk0</comment>
+            </register>
+            <register>
+                <offset>0x11</offset>
+                <value>0x0</value>
+                <comment>enable msk1</comment>
+            </register>
+            <register>
+                <offset>0x12</offset>
+                <value>0x0</value>
+                <comment>enable msk2</comment>
+            </register>
+            <register>
+                <offset>0x13</offset>
+                <value>0x0</value>
+                <comment>enable msk3</comment>
+            </register>
+            <register>
+                <offset>0x1f4</offset>
+                <value>0xa01</value>
+                <comment>ctrl bit set</comment>
+            </register>
+            <register>
+                <offset>0x100e</offset>
+                <value>0x1</value>
+                <comment>geo</comment>
+            </register>
+            <register>
+                <offset>0x1024</offset>
+                <value>0x0</value>
+                <comment>blt evt N</comment>
+            </register>
+            <global_var>
+                <name>crate_n</name>
+                <value>0</value>
+                <comment>crate number</comment>
+            </global_var>
+            <global_var>
+                <name>slot_n</name>
+                <value>8</value>
+                <comment>slot number</comment>
+            </global_var>
+            <global_var>
+                <name>base</name>
+                <value>0x40040000</value>
+                <comment>base address</comment>
+            </global_var>
+            <global_var>
+                <name>am_reg</name>
+                <value>0xd</value>
+                <comment>am used to access most of the registers</comment>
+            </global_var>
+            <global_var>
+                <name>type</name>
+                <value>T</value>
+                <comment>type of module (Trigg/Scal)</comment>
+            </global_var>
+            <global_var>
+                <name>period</name>
+                <value>1000</value>
+                <comment>period of reading for scaler type modules</comment>
+            </global_var>
+            <global_var>
+                <name>max_crate</name>
+                <value>1</value>
+                <comment>max crate</comment>
+            </global_var>
+            <global_var>
+                <name>name</name>
+                <value>V1190A000</value>
+                <comment>name of the module</comment>
+            </global_var>
+        </vme_module>
+        <advanced_fe>
+            <name>rd_start_t</name>
+            <value>100000</value>
+            <comment>rd_start_t</comment>
+        </advanced_fe>
     </frontend>
-    <event_builder/>
+    <event_builder>
+        <advanced_ebd>
+            <name>sort_freq</name>
+            <value>40000000</value>
+            <comment>sort_freq</comment>
+        </advanced_ebd>
+    </event_builder>
     <GUI_ctl/>
     <logger/>
     <analyzer>

@@ -174,7 +174,7 @@ class v1190(vme_mod):
                  'off' : 2,
                  'value' : 'default',
                  'name' : 'window offset',
-                 'nbit' : 12,
+                 'nbit' : 16,
                  'has_set_wid' : True,
                  'set_wid_type' : 'entry',
                  })

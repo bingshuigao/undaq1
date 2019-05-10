@@ -286,7 +286,7 @@ static int create_mod(std::string& name, module*& mod)
 	if (name.find("MADC32") != std::string::npos) {
 		mod = new madc32;
 	}
-	else if (name.find("V1190B") != std::string::npos) {
+	else if (name.find("V1190A") != std::string::npos) {
 		mod = new v1190; 
 	}
 	else if (name.find("V830") != std::string::npos) {

@@ -364,7 +364,7 @@ int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 		has_et = true;
 	if (has_et) {
 		ts_hi = evt[idx] & 0xFFFF;
-		ts += ts_hi;
+		ts += (ts_hi<<30);
 	}
 
 	/* calculate the monotonic time stamp */
@@ -391,8 +391,12 @@ int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
 
 	/* first, make sure the first word is the header. */
 	sig = evt[0] >> 27;
-	if (sig != 0x08)
+	if (sig != 0x08) {
+		/* debug...*/
+		std::cout<<"error 1"<<std::endl;
+
 		goto err_data;
+	}
 
 	/* get geo and slot number */
 	geo = evt[0] & 0x1F;
@@ -409,18 +413,32 @@ int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
 		}
 		else if (sig == 0x10) {
 			/* trailer */
-			if (!has_ettt) 
+			if (!has_ettt) {
+				/* debug...*/
+				std::cout<<"error 2"<<std::endl;
+			
 				goto err_data;
+			}
 			ts += evt[i] & 0x1F;
 			/* check the word count */
 			evt_len_wd = ((evt[i]>>5) & 0xFFFF);
-			if (((i+1) != evt_len_wd) || (evt_len_wd >= 196))
+			if (((i+1) != evt_len_wd) || (evt_len_wd >= 196)) {
+				/* debug...*/
+				std::cout<<"error 3"<<std::endl;
+				
 				goto err_data;
+			}
 			evt_len = evt_len_wd * 4;
+			/* a complete event is found, we should stop here */
+			break;
 		}
 	}
-	if (!has_ettt)
+	if (!has_ettt) {
+		/* debug...*/
+		std::cout<<"error 4"<<std::endl;
+	
 		goto err_data;
+	}
 
 	/* calculate the monotonic time stamp */
 	if (hz != 40000000)

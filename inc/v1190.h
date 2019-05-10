@@ -57,6 +57,11 @@ public:
 	int write_micro( uint16_t ope_code, uint16_t* p_pars, int n);
 	int read_micro( uint16_t ope_code, uint16_t* p_pars, int n);
 
+	/* see comments in module.h */
+	virtual int on_start();
+	virtual int on_stop();
+
+
 	/* Get the configurations of cblt registers
 	 * @param addr [out] cblt address
 	 * @param cblt_enable [out] =1 if cblt is enabled, else = 0; 
