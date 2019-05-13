@@ -2,6 +2,7 @@
 #include "err_code.h"
 #include <unistd.h>
 #include <string.h>
+#include <iostream>
 
 
 rd_scal::rd_scal()
@@ -60,6 +61,9 @@ int rd_scal::try_rd_fe()
 		if (a_mod->time_out()) {
 			a_mod->reset_timer();
 			ret = do_rd_mods(*it);
+			/* debug...*/
+//			std::cout<<"reading scaler!"<<std::endl;
+
 			RET_IF_NONZERO(ret);
 		}
 	}

@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include "err_code.h"
+#include <iostream>
 
 /* default sizes for buffers, please note that the actual size of the ring
  *  * buffer is only half of the defined values below.  */

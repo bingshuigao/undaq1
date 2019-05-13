@@ -331,17 +331,16 @@ do_init_v830(v830* mod, std::vector<struct conf_vme_mod> &the_conf)
 			continue;
 		/* this is a register setting */
 		uint32_t off = (*it).offset;
-		uint16_t val = (*it).val.val_uint64;
+		uint16_t val16 = (*it).val.val_uint64;
+		uint32_t val32 = (*it).val.val_uint64;
 		if ((off >= 0x1000) && (off <= 0x1132)) {
 			/* this is a physical register */
 			int dw = get_v830_reg_dmod(off);
-			uint32_t val_32 = val;
-			uint16_t val_16 = val;
 			void *p_data;
 			if (dw == 32) 
-				p_data = &val_32;
+				p_data = &val32;
 			else
-				p_data = &val_16;
+				p_data = &val16;
 			if (mod->write_reg(off, dw, p_data))
 				return -E_INIT_V830;
 		}
@@ -830,7 +829,7 @@ int initzer::init_global_var(module* mod,
 
 	/* get peroid (only makes sense for scaler-type modules */
 	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
-		if ((*it).name == "peroid") {
+		if ((*it).name == "period") {
 			mod->set_period((*it).val.val_uint64);
 			break;
 		}
@@ -1125,6 +1124,7 @@ ring_buf* initzer::get_ebd_rb(int rb_id)
 		RET_IF_NONZERO(rb_ebd5);
 		if (sz2 == 0)
 			sz2 = DEF_RB_EBD_SCL;
+		break;
 	default:
 		return NULL;
 	}
@@ -1146,6 +1146,7 @@ ring_buf* initzer::get_ebd_rb(int rb_id)
 		break;
 	case 3:
 		rb_ebd3 = p_rb;
+		break;
 	case 5:
 		rb_ebd5 = p_rb;
 	}

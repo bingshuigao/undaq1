@@ -115,9 +115,13 @@ int ana_main::try_do_analysis(int id, bool& success)
 	buf_sz = rb->get_used1();
 	if (buf_sz >= 4) {
 		ret = rb->read1(&evt_sz, 4, true);
-		evt_sz *= 4;
+		/* Please note the that data formats are different for trig and
+		 * scal events. */
+		if (id == 1)
+			evt_sz *= 4;
 		/* debug ... */
-//		std::cout<<"evt size: "<<evt_sz<<std::endl;
+		std::cout<<"evt size: "<<evt_sz<<std::endl;
+
 		if (ret < 4) {
 			rb->rel_lock();
 			return -E_RING_BUF_DATA;

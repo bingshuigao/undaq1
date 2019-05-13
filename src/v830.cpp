@@ -88,3 +88,18 @@ int v830::enable_cblt(uint32_t cblt_addr, int first, int last)
 
 }
 
+int v830::on_start()
+{
+	/* reset the counters and mem buffer */
+	uint16_t dum = 0;
+	int ret = write_reg(0x1122, 16, &dum);
+	RET_IF_NONZERO(ret);
+
+	return 0;
+}
+
+int v830::on_stop()
+{
+	std::cout<<"v830 stopped"<<std::endl;
+	return 0;
+}

@@ -724,6 +724,68 @@
                 <comment>name of the module</comment>
             </global_var>
         </vme_module>
+        <vme_module>
+            <register>
+                <offset>0x1100</offset>
+                <value>0xffffffff</value>
+                <comment>ch enable</comment>
+            </register>
+            <register>
+                <offset>0x1104</offset>
+                <value>0x2625a0</value>
+                <comment>Dwell T</comment>
+            </register>
+            <register>
+                <offset>0x110a</offset>
+                <value>0xb2</value>
+                <comment>ctrl bit set</comment>
+            </register>
+            <global_var>
+                <name>crate_n</name>
+                <value>0</value>
+                <comment>crate number</comment>
+            </global_var>
+            <global_var>
+                <name>slot_n</name>
+                <value>11</value>
+                <comment>slot number</comment>
+            </global_var>
+            <global_var>
+                <name>base</name>
+                <value>0x0c000000</value>
+                <comment>base address</comment>
+            </global_var>
+            <global_var>
+                <name>am_reg</name>
+                <value>0xd</value>
+                <comment>am used to access most of the registers</comment>
+            </global_var>
+            <global_var>
+                <name>type</name>
+                <value>S</value>
+                <comment>type of module (Trigg/Scal)</comment>
+            </global_var>
+            <global_var>
+                <name>period</name>
+                <value>1000</value>
+                <comment>period of reading for scaler type modules</comment>
+            </global_var>
+            <global_var>
+                <name>max_crate</name>
+                <value>1</value>
+                <comment>max crate</comment>
+            </global_var>
+            <global_var>
+                <name>name</name>
+                <value>V830000</value>
+                <comment>name of the module</comment>
+            </global_var>
+            <advance_var>
+                <name>is_trig_mod</name>
+                <value>0</value>
+                <comment>is_trig_mod</comment>
+            </advance_var>
+        </vme_module>
         <advanced_fe>
             <name>rd_start_t</name>
             <value>100000</value>

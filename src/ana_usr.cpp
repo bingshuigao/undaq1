@@ -53,4 +53,22 @@ end:
 
 
 int ana_usr_scal(void* p_evt, hist_man& hists)
-{return 0;}
+{
+	uint32_t* p_dw = static_cast<uint32_t*>(p_evt);
+	uint32_t len_w = p_dw[0]/4;
+	//std::cout<<"lenth: "<<p_dw[1]<<" ts: "<<p_dw[5]<<std::endl;
+	int i;
+	std::cout<<"header-----------"<<std::endl;
+	for (i = 0; i < 6; i++) {
+		std::cout<<i<<"   "<<p_dw[i]<<std::endl;
+	}
+
+	std::cout<<"-------------------"<<std::endl;
+	if (len_w == 41) {
+		for (i = 0; i < 32; i++) {
+			std::cout<<"ch: "<<i<<" counts: "<<p_dw[9+i]<<std::endl;
+		}
+	}
+
+	return 0;
+}

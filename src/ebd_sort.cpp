@@ -171,6 +171,9 @@ int ebd_sort::handle_evt()
 {
 	int evt_type = evt_buf[2];
 
+	/* debug ...*/
+	std::cout<<"evt_type: "<<evt_type<<std::endl;
+
 	switch (evt_type) {
 	case 0:
 		return handle_EOR();

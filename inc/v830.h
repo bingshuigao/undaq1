@@ -67,6 +67,10 @@ public:
 		else
 			return geo;
 	}
+	
+	/* see comments in module.h */
+	virtual int on_start();
+	virtual int on_stop();
 
 };
 
