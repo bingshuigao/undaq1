@@ -32,7 +32,8 @@
  * Frontend:
  * rd_trig: 1--> status transition. The new status is contained in the first
  *               4-byte word of the true body.
- *          2--> To be defined
+ *          2--> A readout of the scaler modules is requested, the pointer to
+ *          the 'modules' object which will be readout is in the true body.
  *          3--> A warning message. The message is a null-terminated string
  *               which is contained in the true body.
  * rd_scal: 1--> The same as rd_trig

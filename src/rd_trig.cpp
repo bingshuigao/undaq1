@@ -19,13 +19,16 @@ int rd_trig::handle_msg(uint32_t* msg_body)
 {
 	/* The message type of the current thread are defined as following:
 	 * msg_type == 1 --> run status transition. 
-	 * msg_type == 2 --> to be defined yet */
+	 * msg_type == 2 --> readout scaler modules */
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
 
 	switch (msg_type) {
 	case 1:
 		/* run status transition */
 		return switch_run(msg_body[1]);
+	case 2:
+		/* readout scaler modules */
+		return do_rd_mods(reinterpret_cast<modules**>(msg_body + 1)[0]);
 	default:
 		return -E_MSG_TYPE;
 	}

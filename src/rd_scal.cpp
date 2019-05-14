@@ -59,8 +59,13 @@ int rd_scal::try_rd_fe()
 	for (auto it = mods.begin(); it != mods.end(); it++) {
 		module* a_mod = (*it)->get_1st_mod();
 		if (a_mod->time_out()) {
+			modules* p_mods = *it;
 			a_mod->reset_timer();
-			ret = do_rd_mods(*it);
+			/* Careful! Don't read the scaler modules here which
+			 * will introduce concurrent conditions. We send a
+			 * message to the trigger thread where the actual
+			 * readout will be done */
+			ret = send_msg(1, 2, &p_mods, sizeof(p_mods));
 			/* debug...*/
 //			std::cout<<"reading scaler!"<<std::endl;
 
