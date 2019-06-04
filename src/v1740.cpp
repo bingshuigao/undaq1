@@ -107,6 +107,10 @@ int v1740::on_start()
 	RET_IF_NONZERO(ret);
 
 	/* start acquasition */
+	do {
+		ret = read_reg(0x8104, 32, &dum);
+		RET_IF_NONZERO(ret);
+	} while (!(dum & 0x100))
 	ret = read_reg(0x8100, 32, &dum);
 	RET_IF_NONZERO(ret);
 	dum |= 0x4;
