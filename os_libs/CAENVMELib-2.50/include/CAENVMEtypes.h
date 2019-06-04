@@ -18,13 +18,8 @@
 #ifndef __CAENVMETYPES_H
 #define __CAENVMETYPES_H
 
-#ifdef LINUX
 #define CAEN_BYTE       unsigned char
 #define CAEN_BOOL       int
-#else
-#define CAEN_BYTE       byte
-#define CAEN_BOOL       VARIANT_BOOL
-#endif
 
 /*
         CAEN VME bridges.

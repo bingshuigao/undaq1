@@ -356,6 +356,22 @@ do_init_v830(v830* mod, std::vector<struct conf_vme_mod> &the_conf)
 	return 0;
 }
 
+/* set v1740 dc offset */
+static int set_v1740_dc(v1740* mod, uint32_t off, uint32_t val)
+{
+	int ret;
+	uint32_t val1;
+	uint32_t off1 = 0x1088 + (off & 0xf00);
+	do {
+		ret = mod->read_reg(off1, 32, &val1);
+		RET_IF_NONZERO(ret);
+	} while (val1 & 0x4)
+	ret = mod->write_reg(off, 32, &val);
+	RET_IF_NONZERO(ret);
+
+	return 0;
+}
+
 /* initialize vme module, return 0 if succeed, otherwise return error code */
 static int 
 do_init_v1740(v1740* mod, std::vector<struct conf_vme_mod> &the_conf)
@@ -371,8 +387,16 @@ do_init_v1740(v1740* mod, std::vector<struct conf_vme_mod> &the_conf)
 		/* this is a register setting */
 		uint32_t off = (*it).offset;
 		uint32_t val = (*it).val.val_uint64;
-		if (mod->write_reg(off, 32, &val))
-			return -E_INIT_V1740;
+		if ((off >> 12) == 1 && (off & 0xff) == 0x98) {
+			/* if off == 0x1n98, additional check should be made
+			 * before writing*/
+			if (set_v1740_dc(mod, off, val))
+				return -E_INIT_V1740;
+		}
+		else {
+			if (mod->write_reg(off, 32, &val))
+				return -E_INIT_V1740;
+		}
 	}
 	return 0;
 }
