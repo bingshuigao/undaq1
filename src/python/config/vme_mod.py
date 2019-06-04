@@ -341,13 +341,16 @@ class vme_mod:
     def _init_set(self):
         # place all the labels and entry(or combobox or other..) accoring to
         # the reg_map
+        self.set_labels = []
+        self.reg_labels = []
         for reg in self.reg_map:
             if not reg['has_set_wid']:
                 # this register doesn't want the base class to create the
                 # widgets for it, the derived class will do that.
                 continue
-            self._place_win_set(tk.Label(self.frm_set, bg='green', 
-                text=reg['name']))
+            tmp_lable_wid = tk.Label(self.frm_set, bg='green', text=reg['name'])
+            self.set_labels.append(tmp_lable_wid)
+            self._place_win_set(tmp_lable_wid)
             if reg['set_wid_type'] == 'entry':
                 win = tk.Entry(self.frm_set)
             elif reg['set_wid_type'] == 'comb':
@@ -366,8 +369,10 @@ class vme_mod:
     def _init_reg(self):
         # place the labels and entry boxes.
         for reg in self.reg_map:
-            self._place_win_reg(tk.Label(self.frm_reg, bg='green',
-                text=('0x%04x' % reg['off'])))
+            tmp_wid = tk.Label(self.frm_reg, bg='green', 
+                    text=('0x%04x' % reg['off']))
+            self.reg_labels.append(tmp_wid)
+            self._place_win_reg(tmp_wid)
             win = ttk.Entry(self.frm_reg)
             self._place_win_reg(win)
             reg['reg_wid'] = win
@@ -398,14 +403,12 @@ class vme_mod:
     # call back function of the apply buttons
     def _app_set(self):
         self._update_data_set()
-        # Yes, you're right, we update the widgets in  the register area, not
-        # settings area. This is because the widgets in the settings area has
-        # been modified by the user, we need to reflect this modification in
-        # the registers area to be consistent.
         self._update_reg_wid() 
+        self._update_set_wid() 
         self._show_msg('changes applied!')
     def _app_reg(self):
         self._update_data_reg()
+        self._update_reg_wid() 
         self._update_set_wid()
         self._show_msg('changes applied!')
     def _app_com(self):
@@ -594,6 +597,24 @@ class vme_mod:
                 reg['set_wid'].insert(0, val)
             elif reg['set_wid_type'] == 'comb':
                 reg['set_wid'].set(val)
+            # if the register has non-default values, change the color of the
+            # lable.
+            tmp_wid = self._get_label_wid(reg['name'])
+            if val != 'default':
+                 tmp_wid.config(bg='yellow')
+            else:
+                 tmp_wid.config(bg='green')
+
+
+    # get the label widget with the given name
+    def _get_label_wid(self, label_name):
+        for label_wid in self.set_labels + self.reg_labels:
+            if label_wid.config()['text'][-1] == label_name:
+                return label_wid
+        # to avoid exception:
+        return self.set_labels[0]
+
+
 
     # update the widgets in the module specific registers area accoring to its
     # register values.
@@ -605,6 +626,13 @@ class vme_mod:
             val = fun(reg)
             reg['reg_wid'].delete(0, tk.END)
             reg['reg_wid'].insert(0, val)
+            # if the register has non-default values, change the color of the
+            # lable.
+            tmp_wid = self._get_label_wid('0x%04x'%reg['off'])
+            if val != 'default':
+                 tmp_wid.config(bg='yellow')
+            else:
+                 tmp_wid.config(bg='green')
 
     # update the internale configuration data accoring to the widgets in the
     # module specific settings area 

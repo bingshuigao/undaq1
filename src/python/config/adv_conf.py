@@ -98,8 +98,11 @@ class adv_conf:
         self.col_wid = 6
 
         # init the widgets for the variables
+        self.labels = []
         for var in self.var_lst: 
-            self._place_win(tk.Label(self.frm, bg='green', text=var['name']))
+            tmp_wid = tk.Label(self.frm, bg='green', text=var['name'])
+            self.labels.append(tmp_wid)
+            self._place_win(tmp_wid)
             if var['wid_type'] == 'entry':
                 win = tk.Entry(self.frm)
             elif var['wid_type'] == 'comb':
@@ -166,6 +169,21 @@ class adv_conf:
                 var['wid'].insert(0, value)
             elif var['wid_type'] == 'comb':
                 var['wid'].set(value)
+            # if the variable has non-default value, change the color of the
+            # label:
+            tmp_wid = self._get_label_wid(var['name'])
+            if value != 'default':
+                tmp_wid.config(bg='yellow')
+            else:
+                tmp_wid.config(bg='green')
+    # get the label widget of the variable with given name
+    def _get_label_wid(self, var_name):
+        for label_wid in self.labels:
+            if label_wid.config()['text'][-1] == var_name:
+                return label_wid
+        # to avoid exception
+        return self.labels[0]
+
 
 # this method should be called when the user want to edit the advanced
     # configurations. 
