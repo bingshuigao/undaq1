@@ -1,0 +1,13 @@
+This explains how to added a 'supported module' (v1740) to the DAQ
+
+1, The config.py :
+    a): derive a subclass from vme_mod, here we just use madc32.py as a template:
+        # cp madc32.py v1740.py
+	Then change the defination of the self.reg_map accordingly
+    b): make the following modifications  to frontend.py:
+	 i) add: from v1740 import v1740
+	 ii) change the sup_mods_lst to include the new module
+         iii) modify the _new_mod function to include the new module
+
+2, 
+
