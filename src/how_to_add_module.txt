@@ -9,5 +9,36 @@ This explains how to added a 'supported module' (v1740) to the DAQ
 	 ii) change the sup_mods_lst to include the new module
          iii) modify the _new_mod function to include the new module
 
-2, 
+2, create header files for the v1740 module
+   a): use madc32.h as a template:
+	# cp madc32.h v1740.h
+	Then modify the new header file accordingly
+   b): define the module id of v1740 module:
+	add the comment line in module.h: /* v1740 ---> mod_id == 5 */
+	add the comment line in ana_thread.h /* 5 ---> v1740 */
+	add the comment line in fe_thread.h  /* 5 ---> v1740 */
+3, create the source files for the v1740 module
+   a): use madc32.cpp as a template:
+	# cp madc32.cpp v1740.cpp
+	Then modify the new source file accordingly
 
+4, modify the ebd_sort.h, in the function handle_single_evt() add the line:
+	case 5: 
+		 return handle_single_evt_v1740(evt, evt_len, max_len);          
+   and the declearation of the handle_single_evt_v1740() function:
+       int handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len);
+5, modify the ebd_sort.cpp, add the defination of the new function: 
+       int ebd_sort::handle_single_evt_v1740()
+
+6, modify the initzer.h:
+       a): add the include header file:
+           #include "v1740.h"
+7, modify the initzer.cpp:
+       a): in the function: static create_mod(), add the lines for the new
+	   module v1740
+       b): in the function: static int do_init_mod(), add the lines for the new
+	   module v1740
+       c): add a new initialization function for the new module v1740:
+	   static int do_init_v1740() which is the called in do_init_mod()
+8, modify the makefile
+9, compile and run the code to test!

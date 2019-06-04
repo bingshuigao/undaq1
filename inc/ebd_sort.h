@@ -79,6 +79,8 @@ private:
 			return handle_single_evt_v1190(evt, evt_len, max_len);
 		case 3:
 			return handle_single_evt_v830(evt, evt_len, max_len);
+		case 5: 
+			return handle_single_evt_v1740(evt, evt_len, max_len);
 		default:
 			return -E_UNKOWN_MOD;
 		}
@@ -86,6 +88,7 @@ private:
 	int handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v830(uint32_t* evt, int& evt_len, int max_len);
+	int handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len);
 
 
 	/* initialize the rb_map. 
@@ -103,12 +106,14 @@ private:
 
 	/* calculate the monotonic time stamp.
 	 * @param ts the time stamp of the module event
-	 * @param the number of bit of the module event time stamp
+	 * @param n_bit the number of bit of the module event time stamp
+	 * @param freq if non zero, we use this value as the clock frequency
+	 * instead of hz
 	 * @return return the calculated monotonic time stamp. If the time
 	 * stamp does not match the system clock time, return 0 indicating
 	 * errors. 
 	 * */
-	uint64_t get_mono_ts(uint64_t ts, int n_bit);
+	uint64_t get_mono_ts(uint64_t ts, int n_bit, int req = 0);
 
 	/* save the event into the right ring buffer. Before
 	 * calling this function, the slot and crate numbers should have been
@@ -177,6 +182,10 @@ private:
 
 	/* see comments in ebd_thread.h */
 	int n_readout;
+
+	/* single event buffer and its length */
+	uint32_t* single_evt_buf;
+	int max_evt_len;
 
 };
 

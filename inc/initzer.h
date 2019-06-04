@@ -22,6 +22,7 @@
 #include "v2718.h"
 #include "v1190.h"
 #include "v830.h"
+#include "v1740.h"
 #endif
 
 struct mod_rb_par
@@ -161,6 +162,9 @@ public:
 	 *     5-->scaler ring buffer 
 	 *     */
 	int get_ebd_buf_sz(int id);
+
+	/* get the max length (32-byte words) of a single event */
+	int get_ebd_max_evt_len();
 
 
 #endif

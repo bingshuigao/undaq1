@@ -266,7 +266,7 @@ class v1740(vme_mod):
         self.reg_map.append(
                 {'off' : 0xef14,
                  'value' : 'default',
-                 'name' : 'int vel',
+                 'name' : 'int vec',
                  'nbit' : 32,
                  'has_set_wid' : True,
                  'set_wid_type' : 'entry', 

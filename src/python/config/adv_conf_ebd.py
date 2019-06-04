@@ -125,6 +125,13 @@ class adv_conf_ebd(adv_conf):
                  'wid_type' : 'entry',
                  'comment' : None
                  })
+        # The max length (32-byte words) of a single event
+        self.var_lst.append{
+                 'value' : 'default',
+                 'name' : 'max_evt_len',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
 
 
 

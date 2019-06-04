@@ -29,6 +29,8 @@
 #define DEF_SOCK_BUF_EBD_SEND (1024*1024)
 /* merged event buffer size */
 #define DEF_EBD_MERGED_BUF_SZ (1024*1024*8)
+/* max single event length */
+#define DEF_EBD_MAX_EVT_LEN (1024*1024)
 /********** frontend buffers *************/
 /* data sharing */
 #define DEF_RB_FE_DATA (1024*1024*40)

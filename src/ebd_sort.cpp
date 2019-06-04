@@ -46,7 +46,7 @@ int ebd_sort::init_mask_to_slot()
 
 int ebd_sort::ebd_sort_init(my_thread* This, initzer* the_initzer) 
 {
-	int ret;
+	int ret, max_evt_len;
 
 	ebd_sort* ptr = reinterpret_cast<ebd_sort*>(This);
 	ptr->evt_buf = new uint32_t[the_initzer->get_fe_blt_buf_sz()/4+100];
@@ -60,6 +60,8 @@ int ebd_sort::ebd_sort_init(my_thread* This, initzer* the_initzer)
 //	RET_IF_NONZERO(ret);
 	ret = ptr->init_mask_to_slot();
 	RET_IF_NONZERO(ret);
+	ptr->max_evt_len = the_initzer->get_ebd_max_evt_len();
+	ptr->single_evt_buf = new uint32_t[ptr->max_evt_len+10];
 
 	return 0;
 }
@@ -302,7 +304,7 @@ void ebd_sort::set_slot_mask(uint32_t mask)
 	slot = mask_to_slot[mask_old];
 }
 
-uint64_t ebd_sort::get_mono_ts(uint64_t ts, int n_bit)
+uint64_t ebd_sort::get_mono_ts(uint64_t ts, int n_bit, int freq)
 {
 	uint64_t t_ellips, t_range, n_overf;
 
@@ -310,7 +312,9 @@ uint64_t ebd_sort::get_mono_ts(uint64_t ts, int n_bit)
 		/* it should never overflow */
 		return ts;
 	
-	t_ellips = (t_now - t_start) * hz;
+	if (freq == 0)
+		freq = hz;
+	t_ellips = (t_now - t_start) * freq;
 	t_range = 1L << n_bit;
 	if (t_ellips <= ts)
 		return ts;
@@ -321,6 +325,53 @@ uint64_t ebd_sort::get_mono_ts(uint64_t ts, int n_bit)
 
 	return t_range * n_overf + ts;
 
+}
+
+int ebd_sort::handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len)
+{
+	uint32_t sig;
+	uint64_t ts;
+	uint64_t ts_hi;
+	uint64_t ts_mono;
+	int idx, evt_len_w;
+	
+	/* first, we make sure that it has event header */
+	sig = evt[0] >> 28;
+	if (sig != 0xa)
+		/* Opps! Not a header, corrupted data... */
+		goto err_data;
+
+	/* Now we try to get event length */
+	evt_len_w = ((evt[0] & 0xFFFFFFF)); 
+	evt_len = evt_len_w * 4;
+	if (evt_len_w > max_len)
+		goto err_data;
+	if (evt_len_w > max_evt_len)
+		return -E_EBD_EVT_BUF_SZ;
+
+	/* get slot number if necessary  */
+	if (slot == -1) {
+		int geo = evt[1]>>27;
+		slot = slot_map[SLOT_MAP_IDX(crate,mod_id,geo)];
+	}
+
+	/* get time stamp */
+	ts = evt[3];
+	
+	/* calculate the monotonic time stamp
+	 * NOTE: we need to scale the time stamp to the desired unit. Because
+	 * the v1740 timestamp is in fixed frequency of 125 MHz, we need to
+	 * convert the time stamp to hz */
+	ts = get_mono_ts(ts, 32, 125000000);
+	if (ts == 0)
+		return -E_SYNC_CLOCK;
+	ts = static_cast<uint64_t>(ts * (1. * hz / 125000000));
+
+	/* save the event into the ring buffer */
+	return save_evt(single_evt_buf, evt, evt_len_w, ts);
+
+err_data:
+	return -E_DATA_V1740;
 }
 
 int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)

@@ -292,6 +292,9 @@ static int create_mod(std::string& name, module*& mod)
 	else if (name.find("V830") != std::string::npos) {
 		mod = new v830;
 	}
+	else if (name.find("V1740") != std::string::npos) {
+		mod = new v1740;
+	}
 	else {
 		if (name.find("V2718") == std::string::npos)
 			/* unknown module found */
@@ -353,6 +356,26 @@ do_init_v830(v830* mod, std::vector<struct conf_vme_mod> &the_conf)
 	return 0;
 }
 
+/* initialize vme module, return 0 if succeed, otherwise return error code */
+static int 
+do_init_v1740(v1740* mod, std::vector<struct conf_vme_mod> &the_conf)
+{
+	uint32_t dum = 0;
+	/* First, we need to soft-reset all settings */
+	if (mod->write_reg(0xef24, 32, &dum))
+		return -E_INIT_V1740;
+	/* then init all registers with non-default values */
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name != "") 
+			continue;
+		/* this is a register setting */
+		uint32_t off = (*it).offset;
+		uint32_t val = (*it).val.val_uint64;
+		if (mod->write_reg(off, 32, &val))
+			return -E_INIT_V1740;
+	}
+	return 0;
+}
 
 /* initialize vme module, return 0 if succeed, otherwise return error code */
 static int 
@@ -645,6 +668,8 @@ static int do_init_mod(module* mod, std::vector<struct conf_vme_mod> &the_conf)
 		return do_init_v1190(static_cast<v1190*>(mod), the_conf);
 	if (name == "v830")
 		return do_init_v830(static_cast<v830*>(mod), the_conf);
+	if (name == "v1740")
+		return do_init_v1740(static_cast<v1740*>(mod), the_conf);
 	return -E_UNKOWN_MOD;
 }
 
@@ -1095,6 +1120,19 @@ int initzer::get_ebd_ctl_t_us()
 	else
 		return DEF_T_US_CTL_FE;
 
+}
+int initzer::get_ebd_max_evt_len()
+{
+	bool found;
+	std::string name("max_evt_len");
+	int port;
+
+	port = get_ebd_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_EBD_MAX_EVT_LEN;
+	
 }
 ring_buf* initzer::get_ebd_rb(int rb_id)
 {
