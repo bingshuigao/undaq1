@@ -55,22 +55,38 @@ int ebd_recv::start()
 
 	RET_IF_NONZERO(ret);
 	
-	/* receive the slot map and ring buffer data if not yet.*/
+	/* receive the slot map (and others )and ring buffer data if not yet.*/
 	if (flag == -1) {
-		int sz = MAX_SLOT_MAP;
-		char* p_slot_map = slot_map;
-	
+		int sz;
+		char* p_slot_map;
+		uint64_t *p_clk_map;
+		
+		/* ring buffer */
 		ret = init_rb_data();
 		RET_IF_NONZERO(ret);
+		/* tell the ebd_merge that the rb_data is ready */
+		ret = send_msg(EBD_MERG, 2, &p_slot_map, 0);
+		RET_IF_NONZERO(ret);
 		
+		/* slot map */
+		sz = MAX_SLOT_MAP;
+		p_slot_map = slot_map;
 		ret = recv(sock, slot_map, sz, MSG_WAITALL);
 		if (ret != sz)
 			return -E_SYSCALL;
-		/* tell the ebd_merge that the rb_data is ready */
-		ret = send_msg(EBD_MERG, 2, &p_slot_map, 0);
 		/* tell the ebd_sort the address of the slot map */
-		return send_msg(EBD_SORT, 2, &p_slot_map, sizeof(p_slot_map));
+		ret = send_msg(EBD_SORT, 2, &p_slot_map, sizeof(p_slot_map));
+		RET_IF_NONZERO(ret);
 		
+		/* clock map */
+		sz = MAX_CLK_MAP*8;
+		p_clk_map = clk_map;
+		ret = recv(sock, clk_map, sz, MSG_WAITALL);
+		if (ret != sz)
+			return -E_SYSCALL;
+		/* tell the ebd_sort the address of the clk map */
+		ret = send_msg(EBD_SORT, 3, &p_clk_map, sizeof(p_clk_map));
+		RET_IF_NONZERO(ret);
 	}
 	return 0;
 }

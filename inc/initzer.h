@@ -279,6 +279,7 @@ public:
 	
 	/* return NULL indicating errors */
 	char* get_slot_map() {return slot_map;}
+	uint64_t* get_clk_map() {return clk_map;}
 
 private:
 #ifdef MAKE_FRONTEND
@@ -320,6 +321,9 @@ private:
 	 * return 0 if succeed, otherwise return error code. 
 	 * */
 	int fill_slot_map(module* mod);
+
+	/* similar as fill_slot_map() */
+	int fill_clk_map(module* mod);
 #endif
 
 	/* get the advanced variable (by name),
@@ -405,6 +409,10 @@ private:
 	 * difficult to handle, we use a 1d array instead.  */
 	char slot_map[MAX_SLOT_MAP];
 	bool slot_map_inited;
+
+	/* similar as slot map */
+	uint64_t clk_map[MAX_CLK_MAP];
+	bool clk_map_inited;
 };
 
 

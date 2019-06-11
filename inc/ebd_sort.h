@@ -169,6 +169,11 @@ private:
 	 * if needed. */
 	char* slot_map;
 
+	/* similar as slot_map. To get the clock freqency, say: return
+	 * clk_map[CLK_MAP_IDX(crate, slot)]. The crate is crate number, slot
+	 * is slot number. */
+	uint64_t* clk_map;
+
 	/* the ring buffer map. similar as the slot_map. to get the pointer of
 	 * the ring buffer for the module in crate n and slot m, just say:
 	 * return rb_map[n][m] */

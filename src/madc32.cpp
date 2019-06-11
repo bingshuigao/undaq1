@@ -7,6 +7,7 @@ madc32::madc32()
 	
 	name = "madc32";
 	mod_id = 1;
+	clk_freq = DEF_MADC32_CLK;
 }
 
 /* Read single event word-by-word from the event buffer 

@@ -57,6 +57,9 @@ protected:
 	 * Return 0 if succeed, otherwise return error code.
 	 * */
 	int send_slot_map();
+	
+	/* similar as slot map*/
+	int send_clk_map();
 
 	/* send the mod_rb_par to the event builder. The event builder will
 	 * need these data to create the dedicated ring buffers for each
@@ -82,6 +85,7 @@ private:
 	unsigned char* sock_buf;
 	int sock_buf_sz;
 	char* slot_map;
+	uint64_t* clk_map;
 
 
 };

@@ -49,6 +49,8 @@ public:
 	void set_timer(my_timer* t) {timer = t;}
 	my_timer* get_timer() {return timer;}
 	void reset_timer() {timer->reset();}
+	uint64_t get_clk_freq() {return clk_freq;}
+	void set_clk_freq(uint64_t freq) {clk_freq = freq;}
 
 
 
@@ -210,6 +212,9 @@ protected:
 
 	/* if the module is a trigger module */
 	bool trig_mod;
+
+	/* The clock frequency (used by event builder) */
+	uint64_t clk_freq;
 
 	/* if the module is a scaler type module */
 	my_timer* timer;

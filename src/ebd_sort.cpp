@@ -88,6 +88,7 @@ int ebd_sort::handle_msg(uint32_t* msg_body)
 	/* The message type of the current thread are defined as following 
 	 * 1 --> run status transition
 	 * 2 --> slot map and init_rb_map
+	 * 3 --> clock map
 	 * */
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
 	switch (msg_type) {
@@ -98,6 +99,9 @@ int ebd_sort::handle_msg(uint32_t* msg_body)
 	case 2:
 		slot_map = (reinterpret_cast<char**>(msg_body+1))[0];
 		return init_rb_map();
+	case 3:
+		clk_map = (reinterpret_cast<uint64_t**>(msg_body+1))[0];
+		return 0;
 	default:
 		return -E_MSG_TYPE;
 	}
@@ -330,9 +334,7 @@ uint64_t ebd_sort::get_mono_ts(uint64_t ts, int n_bit, int freq)
 int ebd_sort::handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len)
 {
 	uint32_t sig;
-	uint64_t ts;
-	uint64_t ts_hi;
-	uint64_t ts_mono;
+	uint64_t ts_hi, ts_mono, ts, clk_freq;
 	int idx, evt_len_w;
 	
 	/* first, we make sure that it has event header */
@@ -358,14 +360,12 @@ int ebd_sort::handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len)
 	/* get time stamp */
 	ts = evt[3];
 	
-	/* calculate the monotonic time stamp
-	 * NOTE: we need to scale the time stamp to the desired unit. Because
-	 * the v1740 timestamp is in fixed frequency of 125 MHz, we need to
-	 * convert the time stamp to hz */
-	ts = get_mono_ts(ts, 32, 125000000);
+	/* calculate the monotonic time stamp */
+	clk_freq = clk_map[CLK_MAP_IDX(crate, slot)];
+	ts = get_mono_ts(ts, 32, clk_freq);
 	if (ts == 0)
 		return -E_SYNC_CLOCK;
-	ts = static_cast<uint64_t>(ts * (1. * hz / 125000000));
+	ts = static_cast<uint64_t>(ts * (1. * hz / clk_freq));
 
 	/* save the event into the ring buffer */
 	return save_evt(single_evt_buf, evt, evt_len_w, ts);
@@ -379,9 +379,7 @@ int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 	uint32_t sig;
 	uint32_t buf[50]; /* big enough to accomadate a madc32 event plus the
 			     additional header .*/
-	uint64_t ts;
-	uint64_t ts_hi;
-	uint64_t ts_mono;
+	uint64_t ts, ts_hi, ts_mono, clk_freq;
 	bool has_et = false;
 	int idx, evt_len_w;
 	
@@ -421,10 +419,13 @@ int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 		ts += (ts_hi<<30);
 	}
 
+
 	/* calculate the monotonic time stamp */
-	ts = get_mono_ts(ts, has_et ? 46 : 30);
+	clk_freq = clk_map[CLK_MAP_IDX(crate, slot)];
+	ts = get_mono_ts(ts, has_et ? 46 : 30, clk_freq);
 	if (ts == 0)
 		return -E_SYNC_CLOCK;
+	ts = static_cast<uint64_t>(ts * (1. * hz / clk_freq));
 
 	/* save the event into the ring buffer */
 	return save_evt(buf, evt, evt_len_w, ts);
@@ -439,7 +440,7 @@ int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
 	 * frequency of 40MHz. If this is not the case, things may go wrong */
 	uint32_t sig;
 	uint32_t buf[200]; /* should be big enough */
-	uint64_t ts, ts_hi, ts_mono;
+	uint64_t ts, ts_hi, ts_mono, clk_freq;
 	int evt_len_wd, geo, i;
 	bool has_ettt = false;
 
@@ -495,11 +496,14 @@ int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
 	}
 
 	/* calculate the monotonic time stamp */
-	if (hz != 40000000)
+	clk_freq = clk_map[CLK_MAP_IDX(crate, slot)];
+	if (clk_freq != 40000000)
 		return -E_V1190_CLOCK;
-	ts = get_mono_ts(ts, 32);
+	ts = get_mono_ts(ts, 32, clk_freq);
 	if (ts == 0)
 		return -E_SYNC_CLOCK;
+	ts = static_cast<uint64_t>(ts * (1. * hz / clk_freq));
+
 
 	return save_evt(buf, evt, evt_len_wd, ts);
 

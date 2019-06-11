@@ -20,6 +20,13 @@ class adv_conf_mod(adv_conf):
                  'wid_values' : ['No', 'Yes', 'default'],
                  'comment' : None
                  })
+        # clock frequency (in Hz)
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'clk_fre',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
 
 
 ########## TEST ##########

@@ -62,6 +62,7 @@ initzer::initzer()
 	p_parser = 0;
 	vme_mod_inited = false;
 	slot_map_inited = false;
+	clk_map_inited = false;
 	rb_fe = NULL;
 	rb_fe2 = NULL;
 	rb_ebd = NULL;
@@ -365,7 +366,7 @@ static int set_v1740_dc(v1740* mod, uint32_t off, uint32_t val)
 	do {
 		ret = mod->read_reg(off1, 32, &val1);
 		RET_IF_NONZERO(ret);
-	} while (val1 & 0x4)
+	} while (val1 & 0x4);
 	ret = mod->write_reg(off, 32, &val);
 	RET_IF_NONZERO(ret);
 
@@ -731,6 +732,8 @@ int initzer::init_vme_mod()
 		RET_IF_NONZERO(ret);
 		ret = fill_slot_map(tmp);
 		RET_IF_NONZERO(ret);
+		ret = fill_clk_map(tmp);
+		RET_IF_NONZERO(ret);
 		p_module.push_back(tmp);
 	}
 
@@ -892,6 +895,14 @@ int initzer::init_global_var(module* mod,
 		}
 	}
 
+	/* get clock frequency (to be used in event builder)*/
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name == "clk_fre") {
+			mod->set_clk_freq((*it).val.val_uint64);
+			break;
+		}
+	}
+
 	/* assign the correct vme controller to the module */
 	mod->set_ctl(NULL);
 	/* first, try v2718 */
@@ -930,6 +941,19 @@ int initzer::fill_slot_map(module* mod)
 	return 0;
 }
 
+int initzer::fill_clk_map(module* mod)
+{
+	int crate = mod->get_crate();
+	int slot = mod->get_slot();
+	uint64_t clk_freq = mod->get_clk_freq();
+
+	if (crate >= MAX_CRATE)
+		return -E_MAX_CRATE;
+
+	clk_map[CLK_MAP_IDX(crate,slot)] = clk_freq;
+	clk_map_inited = true;
+	return 0;
+}
 
 /* get the number of trigger/scaler-type of modules from the vector of modules*/
 static int get_num_mod(std::vector<module*>& mods, char type)

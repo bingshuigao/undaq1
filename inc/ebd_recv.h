@@ -40,6 +40,7 @@ private:
 
 private:
 	char slot_map[MAX_SLOT_MAP];
+	uint64_t clk_map[MAX_CLK_MAP];
 };
 
 

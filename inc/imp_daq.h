@@ -82,6 +82,12 @@
 /* The max number of seconds allowed to spend on the on_start() functions */
 #define DEF_RD_ON_START 3
 
+/* default clock frequencies */
+#define DEF_MADC32_CLK 16000000
+#define DEF_V1190_CLK 40000000
+#define DEF_V1740_CLK 125000000
+
+
 /* run status */
 #define DAQ_STOP 0
 #define DAQ_RUN 1
@@ -92,8 +98,10 @@
 #define MAX_MODULE_ID 50
 #define MAX_GEO 32
 #define MAX_MODULE 21 
-#define MAX_SLOT_MAP (MAX_CRATE*MAX_MODULE*MAX_GEO)
+#define MAX_SLOT_MAP (MAX_CRATE*MAX_MODULE_ID*MAX_GEO)
+#define MAX_CLK_MAP (MAX_CRATE*MAX_MODULE)
 #define SLOT_MAP_IDX(crate, mod_id, geo) ((crate)*MAX_MODULE_ID*MAX_GEO + (mod_id)*MAX_GEO + (geo))
+#define CLK_MAP_IDX(crate, slot) ((crate)*MAX_MODULE + slot)
 
 /* thread id numbers */
 #define EBD_RECV 1

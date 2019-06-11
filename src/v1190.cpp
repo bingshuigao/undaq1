@@ -7,6 +7,7 @@ v1190::v1190()
 	name = "v1190";
 	mod_id = 2;
 	geo = -1;
+	clk_freq = DEF_V1190_CLK;
 }
 
 /* Read single event word-by-word from the event buffer 

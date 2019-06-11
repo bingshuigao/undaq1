@@ -33,6 +33,7 @@ int fe_sender::fe_sender_init(my_thread* ptr, initzer* the_initzer)
 	This->sock_buf_sz = the_initzer->get_fe_sender_buf_sz();
 	This->sock_buf = new unsigned char[This->sock_buf_sz];
 	This->slot_map = the_initzer->get_slot_map();
+	This->clk_map = the_initzer->get_clk_map();
 
 	return 0;
 }
@@ -67,10 +68,12 @@ int fe_sender::start()
 		if (sock == -1)
 			return -E_SYSCALL;
 		/* the first thing after connection established is to send the
-		 * ring buffer parameters and slot map */
+		 * ring buffer parameters and slot map and others */
 		ret = send_mod_rb_par();
 		RET_IF_NONZERO(ret);
 		ret = send_slot_map();
+		RET_IF_NONZERO(ret);
+		ret = send_clk_map();
 		RET_IF_NONZERO(ret);
 	}
 
@@ -103,6 +106,10 @@ int fe_sender::send_mod_rb_par()
 int fe_sender::send_slot_map()
 {
 	return do_send(sock, slot_map, MAX_SLOT_MAP, 0);
+}
+int fe_sender::send_clk_map()
+{
+	return do_send(sock, clk_map, MAX_CLK_MAP*8, 0);
 }
 
 int fe_sender::stop()
