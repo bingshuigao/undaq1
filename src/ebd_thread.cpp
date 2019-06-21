@@ -4,7 +4,6 @@ std::vector<ring_buf*> ebd_thread::rb_data;
 ebd_thread::ebd_thread()
 {
 	rb_evt = NULL;
-	rb_fe = NULL;
 	rb_msg = NULL;
 	rb_scal = NULL;
 	init_fun.push_back(&ebd_thread_init);
@@ -37,8 +36,8 @@ int ebd_thread::ebd_thread_init(my_thread* This, initzer* the_initzer)
 	ptr->rb_data_sz = the_initzer->get_ebd_buf_sz(4);
 	if (ptr->rb_data_sz == 0)
 		ptr->rb_data_sz = DEF_RB_EBD_MOD;
-	ptr->rb_fe = the_initzer->get_ebd_rb(1);
-	if (!ptr->rb_fe)
+	ptr->rb_fe = the_initzer->get_ebd_rb();
+	if (ptr->rb_fe.size() == 0)
 		return -E_RING_BUF_DATA;
 	ptr->rb_msg = the_initzer->get_ebd_rb(2);
 	if (!ptr->rb_msg)

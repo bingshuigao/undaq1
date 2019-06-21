@@ -165,6 +165,9 @@
  *  3--> The builder thread
  *  4--> The sender thread
  *  5--> The controller thread
+ *  Because the receiver thread may be more than one (because there may be more
+ *  than one frontends), the n'th receiver thread has the thread id: 1 + n*10
+ *  (n starts from 0).
  *
  * By B.Gao Nov. 2018 */
 
@@ -203,8 +206,9 @@ protected:
 	ring_buf* rb_evt;
 
 	/* This is for data sharing. The rb_fe contains 'raw' data received
-	 * from frontend. */
-	ring_buf* rb_fe;
+	 * from frontend. Because there may be more than one frontends, we use
+	 * vector here. */
+	std::vector<ring_buf*> rb_fe;
 };
 
 

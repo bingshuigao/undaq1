@@ -2,6 +2,8 @@
 #include <string>
 #include "BigInteger.h"
 #include <stdlib.h>
+#include <algorithm>
+#include <string.h>
 
 /* This function decodes the raw string to another string. The raw string
  * represents a very long integer like
@@ -62,10 +64,11 @@ initzer::initzer()
 	p_parser = 0;
 	vme_mod_inited = false;
 	slot_map_inited = false;
+	memset(slot_map, 0, MAX_SLOT_MAP);
 	clk_map_inited = false;
+	memset(clk_map, 0, MAX_CLK_MAP*8);
 	rb_fe = NULL;
 	rb_fe2 = NULL;
-	rb_ebd = NULL;
 	rb_ebd2 = NULL;
 	rb_ebd3 = NULL;
 	rb_ebd5 = NULL;
@@ -1182,6 +1185,37 @@ int initzer::get_ebd_max_evt_len()
 		return DEF_EBD_MAX_EVT_LEN;
 	
 }
+
+std::vector<ring_buf*> initzer::get_ebd_rb()
+{
+	uint32_t sz2 = get_ebd_buf_sz(1);
+	int num_rb, i;
+	ring_buf* p_rb;
+	
+	if (sz2 == 0)
+		sz2 = DEF_RB_EBD_RAW;
+	if (rb_ebd.size())
+		/* already initiated */
+		return rb_ebd;
+	
+	num_rb = get_ebd_n_recv();
+	for (i = 0; i < num_rb; i++) {
+		p_rb = new ring_buf;
+		if (p_rb->init(sz2)) {
+			delete p_rb;
+			goto err;
+		}
+		rb_ebd.push_back(p_rb);
+	}
+	return rb_ebd;
+
+err:
+	for (auto it = rb_ebd.begin(); it != rb_ebd.end(); it++) 
+		delete (*it);
+	rb_ebd.clear();
+	return rb_ebd;
+}
+
 ring_buf* initzer::get_ebd_rb(int rb_id)
 {
 	uint32_t sz2;
@@ -1189,12 +1223,6 @@ ring_buf* initzer::get_ebd_rb(int rb_id)
 
 	sz2 = get_ebd_buf_sz(rb_id);
 	switch (rb_id) {
-	case 1:
-		/* first check if the ring buffer object already created */
-		RET_IF_NONZERO(rb_ebd);
-		if (sz2 == 0)
-			sz2 = DEF_RB_EBD_RAW;
-		break;
 	case 2:
 		/* first check if the ring buffer object already created */
 		RET_IF_NONZERO(rb_ebd2);
@@ -1224,9 +1252,6 @@ ring_buf* initzer::get_ebd_rb(int rb_id)
 	}
 	
 	switch (rb_id) {
-	case 1:
-		rb_ebd = p_rb;
-		break;
 	case 2:
 		rb_ebd2 = p_rb;
 		break;
@@ -1606,9 +1631,27 @@ int initzer::get_ctl_port()
 
 
 
+/* get the n'th address from the addresses (separated by commas), if the number
+ * of addresses <= n, return empty string, indicating errors . */
+static std::string get_nth_addr(int n, std::string addrs)
+{
+	std::string addr("");
+	int num_addr = std::count(addrs.begin(), addrs.end(), ',') + 1;
+	int i;
+	
+	if (num_addr <= n)
+		return addr;
+	addrs.insert(0, 1, 'x');
+	addrs.append(',', 1);
+	for (i = 0; i < n; i++) 
+		addrs.replace(addrs.find_first_of(','), 1, 1, 'x');
+	int pos1 = addrs.find_last_of('x') + 1;
+	int pos2 = addrs.find_first_of(',');
+	return addrs.substr(pos1, pos2 - pos1);
+}
 
 
-std::string initzer::get_ebd_recv_svr_addr()
+std::string initzer::get_ebd_recv_svr_addr(int n)
 {
 	bool found;
 	std::string name("fe_server_addr");
@@ -1620,7 +1663,7 @@ std::string initzer::get_ebd_recv_svr_addr()
 	else
 		addr = decode_str(addr);
 
-	return addr;
+	return get_nth_addr(n, addr);
 }
 
 std::string initzer::get_ana_recv_svr_addr()
@@ -1666,6 +1709,22 @@ int initzer::get_fe_sender_buf_sz()
 		return DEF_SOCK_BUF_FE_SEND;
 
 }
+
+int initzer::get_ebd_n_recv()
+{
+	bool found;
+	std::string name("fe_server_addr");
+	std::string addr;
+
+	get_ebd_adv_var(name, found, &addr);
+	if (!found)
+		addr = DEF_SVR_RECV_EBD;
+	else
+		addr = decode_str(addr);
+
+	return std::count(addr.begin(), addr.end(), ',') + 1;
+}
+
 int initzer::get_ebd_sender_buf_sz()
 {
 	bool found;

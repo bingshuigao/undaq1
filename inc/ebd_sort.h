@@ -132,6 +132,12 @@ private:
 	 * */
 	int init_mask_to_slot();
 
+	/* build the whole slot map from the parts (see sub_slot_map),
+	 * return 0 if succeed, otherwise error code */
+	int build_slot_map();
+
+	/* see build_slot_map */
+	int build_clk_map();
 
 
 private:
@@ -169,10 +175,17 @@ private:
 	 * if needed. */
 	char* slot_map;
 
+	/* Since a whole slot map can be composed of several small parts (one
+	 * for each frontend), we need to save the pointers of each sub slot
+	 * maps (received from ebd_recv thread) before forming the whole map.
+	 * */
+	std::vector<char*> sub_slot_map;
+
 	/* similar as slot_map. To get the clock freqency, say: return
 	 * clk_map[CLK_MAP_IDX(crate, slot)]. The crate is crate number, slot
 	 * is slot number. */
 	uint64_t* clk_map;
+	std::vector<uint64_t*> sub_clk_map;
 
 	/* the ring buffer map. similar as the slot_map. to get the pointer of
 	 * the ring buffer for the module in crate n and slot m, just say:

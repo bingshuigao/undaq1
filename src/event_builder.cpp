@@ -4,6 +4,7 @@
 #include "ebd_sender.h"
 #include "ebd_sort.h"
 #include <iostream>
+#include <vector>
 
 void handle_err(const char* err, int code)
 {
@@ -14,6 +15,7 @@ int main(int argc, char* argv[])
 {
 	int ret;
 	int* p_ret;
+	int i, n_recv;
 
 	/* First, we create the initzer and parser */
 	xml_parser* parser = new xml_parser();
@@ -26,9 +28,12 @@ int main(int argc, char* argv[])
 	the_init->set_parser(parser);
 	
 	/* create the threads */
+	n_recv = the_init->get_ebd_n_recv();
 	ebd_ctl* ctl = new ebd_ctl();
 	ebd_sender* sender = new ebd_sender();
-	ebd_recv* receiver = new ebd_recv();
+	std::vector<ebd_recv*> receivers;
+	for (i = 0; i < n_recv; i++) 
+		receivers.push_back(new ebd_recv(n_recv, i));
 	ebd_merge* merger = new ebd_merge();
 	ebd_sort* sorter = new ebd_sort();
 
@@ -43,10 +48,12 @@ int main(int argc, char* argv[])
 		handle_err("cannot init thread sender", ret);
 		return ret;
 	}
-	ret = receiver->init(the_init);
-	if (ret) {
-		handle_err("cannot init thread receiver", ret);
-		return ret;
+	for (auto it = receivers.begin(); it != receivers.end(); it++) {
+		ret = (*it)->init(the_init);
+		if (ret) {
+			handle_err("cannot init thread receiver", ret);
+			return ret;
+		}
 	}
 	ret = merger->init(the_init);
 	if (ret) {
@@ -70,10 +77,12 @@ int main(int argc, char* argv[])
 		handle_err("cannot run thread sender", ret);
 		return ret;
 	}
-	ret = receiver->run();
-	if (ret) {
-		handle_err("cannot run thread receiver", ret);
-		return ret;
+	for (auto it = receivers.begin(); it != receivers.end(); it++) {
+		ret = (*it)->run();
+		if (ret) {
+			handle_err("cannot run thread receiver", ret);
+			return ret;
+		}
 	}
 	ret = merger->run();
 	if (ret) {
@@ -105,14 +114,16 @@ int main(int argc, char* argv[])
 	else {
 		std::cerr<<"thread sender exited succesfully"<<std::endl;
 	}
-	if (receiver->join((void**)&p_ret))
-		std::cerr<<"cannot join thread!"<<std::endl;
-	if (*p_ret) {
-		std::cerr<<"thread receiver exited with error code: ";
-		std::cerr<<"error code: "<<(*p_ret)<<std::endl;
-	}
-	else {
-		std::cerr<<"thread receiver exited succesfully"<<std::endl;
+	for (auto it = receivers.begin(); it != receivers.end(); it++) {
+		if ((*it)->join((void**)&p_ret))
+			std::cerr<<"cannot join thread!"<<std::endl;
+		if (*p_ret) {
+			std::cerr<<"thread receiver exited with error code: ";
+			std::cerr<<"error code: "<<(*p_ret)<<std::endl;
+		}
+		else {
+			std::cerr<<"thread receiver exited succesfully"<<std::endl;
+		}
 	}
 	if (merger->join((void**)&p_ret))
 		std::cerr<<"cannot join thread!"<<std::endl;

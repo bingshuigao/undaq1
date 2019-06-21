@@ -91,22 +91,63 @@ int ebd_sort::handle_msg(uint32_t* msg_body)
 	 * 3 --> clock map
 	 * */
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
+	int ret;
 	switch (msg_type) {
 	case 1:
 		/* run status transition
 		 * */
 		return switch_run(msg_body[1]);
 	case 2:
-		slot_map = (reinterpret_cast<char**>(msg_body+1))[0];
-		return init_rb_map();
+		ret = 0;
+		sub_slot_map.push_back((reinterpret_cast<char**>(msg_body+1))[0]);
+		if (sub_slot_map.size() == (reinterpret_cast<uint64_t*>(msg_body+1))[1]) {
+			/* all parts have been received, now build the whole map */
+			ret = build_slot_map();
+			RET_IF_NONZERO(ret);
+			ret = init_rb_map();
+			RET_IF_NONZERO(ret);
+		}
+		return ret;
 	case 3:
-		clk_map = (reinterpret_cast<uint64_t**>(msg_body+1))[0];
-		return 0;
+		ret = 0;
+		sub_clk_map.push_back((reinterpret_cast<uint64_t**>(msg_body+1))[0]);
+		if (sub_clk_map.size() == (reinterpret_cast<uint64_t*>(msg_body+1))[1]) {
+			/* all parts have been received, now build the whole map */
+			ret = build_clk_map();
+			RET_IF_NONZERO(ret);
+		}
+		return ret;
 	default:
 		return -E_MSG_TYPE;
 	}
 }
 
+int ebd_sort::build_clk_map()
+{
+	clk_map = sub_clk_map[0];
+	int i;
+	for (auto it = sub_clk_map.begin()+1; it != sub_clk_map.end(); it++) {
+		for (i = 0; i < MAX_CLK_MAP; i++) 
+			/* if the sub map contains no information on a specific
+			 * slot, then its value should be zero, so we can just
+			 * addup all sub maps. */
+			clk_map[i] += (*it)[i];
+	}
+	return 0;
+}
+int ebd_sort::build_slot_map()
+{
+	slot_map = sub_slot_map[0];
+	int i;
+	for (auto it = sub_slot_map.begin()+1; it != sub_slot_map.end(); it++) {
+		for (i = 0; i < MAX_SLOT_MAP; i++) 
+			/* if the sub map contains no information on a specific
+			 * slot, then its value should be zero, so we can just
+			 * addup all sub maps. */
+			slot_map[i] += (*it)[i];
+	}
+	return 0;
+}
 
 int ebd_sort::start()
 {
@@ -135,42 +176,47 @@ int ebd_sort::quit()
 int ebd_sort::main_proc()
 {
 	uint32_t buf_len, evt_len;
+	int ret;
 	
 	/* One should check if the slot_map has been inited. */
 	if (!slot_map)
 		return 0;
 
-	/* We need to look into the ring buffer of raw data rb_fe. The data
-	 * format in the rb_fe is documented in fe_thread.h */
-	if (rb_fe->get_lock())
-		return -E_SYSCALL;
-	buf_len = rb_fe->get_used1();
-	if (buf_len == 0) {
-		rb_fe->rel_lock();
-		/* take a short break before returning ^_^*/
-		usleep(120);
-		return 0;
-	}
+	/* We need to look into the (all) ring buffer(s) of raw data rb_fe. The
+	 * data format in the rb_fe is documented in fe_thread.h */
+	for (auto it = rb_fe.begin(); it != rb_fe.end(); it++) {
+		if ((*it)->get_lock())
+			return -E_SYSCALL;
+		buf_len = (*it)->get_used1();
+		if (buf_len == 0) {
+			(*it)->rel_lock();
+			/* take a short break before returning ^_^*/
+			usleep(120);
+			return 0;
+		}
 
-	/* the ring buffer is not empty, let's see if it is big enough holding
-	 * a complete event. */
-	if (rb_fe->read1(&evt_len, 4, true) != 4) {
-		rb_fe->rel_lock();
-		return -E_RING_BUF_DATA;
+		/* the ring buffer is not empty, let's see if it is big enough
+		 * holding a complete event. */
+		if ((*it)->read1(&evt_len, 4, true) != 4) {
+			(*it)->rel_lock();
+			return -E_RING_BUF_DATA;
+		}
+		if (buf_len < evt_len) {
+			(*it)->rel_lock();
+			usleep(120);
+			return 0;
+		}
+		
+		/* now, the ring buffer has a complete event */
+		if ((*it)->read1(evt_buf, evt_len) != evt_len) {
+			(*it)->rel_lock();
+			return -E_RING_BUF_DATA;
+		}
+		(*it)->rel_lock();
+		ret = handle_evt();
+		RET_IF_NONZERO(ret);
 	}
-	if (buf_len < evt_len) {
-		rb_fe->rel_lock();
-		usleep(120);
-		return 0;
-	}
-	
-	/* now, the ring buffer has a complete event */
-	if (rb_fe->read1(evt_buf, evt_len) != evt_len) {
-		rb_fe->rel_lock();
-		return -E_RING_BUF_DATA;
-	}
-	rb_fe->rel_lock();
-	return handle_evt();
+	return 0;
 }
 
 int ebd_sort::handle_evt()

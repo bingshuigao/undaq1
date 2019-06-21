@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
 
 xml_parser::xml_parser()
 {
@@ -22,10 +23,10 @@ xml_parser::~xml_parser()
 	if (raw_str)
 		free(raw_str);
 }
-int xml_parser::parse(const char* f_name)
+int xml_parser::parse(const char* f_name, int n1, int n2)
 {
 	/* First, read in the file to a long string. I don't like using
-	 * ifstream thins, they are too complicated :(*/
+	 * ifstream things, they are too complicated :(*/
 	FILE* fp = fopen(f_name, "rb");
 	int sz;
 	if (!fp) 
@@ -61,7 +62,38 @@ int xml_parser::parse(const char* f_name)
 	log = root->first_node("logger");
 	ana = root->first_node("analyzer");
 
+	/* now we need to remove some nodes in case of frontend */
+	if (n1 != -1) {
+		std::vector<rapidxml::xml_node<>*> rm_nodes;
+		for (auto it = fe->first_node("vme_module"); it; 
+				it = it->next_sibling("vme_module")) {
+			int crate_n = get_crate_n(it);
+			if (crate_n < 0)
+				return -E_FILE_PAR;
+			if (crate_n < n1 || crate_n > n2)
+				/* out of range, should remove */
+				rm_nodes.push_back(it);
+		}
+		for (auto it = rm_nodes.begin(); it != rm_nodes.end(); it++) 
+			fe->remove_node(*it);
+	}
+
 	return 0;
+}
+
+int xml_parser::get_crate_n(rapidxml::xml_node<>* vme_mod)
+{
+	/* Iterate all the global_var nodes in the node of the current
+	 * module*/
+	struct conf_vme_mod conf;
+	for (auto it=vme_mod->first_node("global_var"); it;
+			it = it->next_sibling("global_var")) {
+		if (get_global_var(&conf))
+			return -1;
+		if (conf.name == "crate_n")
+			return conf.val.val_uint64;
+	}
+	return -1;
 }
 
 std::vector<std::vector<struct conf_vme_mod> > 

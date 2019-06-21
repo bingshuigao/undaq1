@@ -49,6 +49,7 @@
 #define E_EBD_EVT_BUF_SZ 40 /* single event buffer for ebd is too small */
 #define E_DATA_V1740 41 /* corrupted v1740 data */
 #define E_INIT_V1740 42 /* error initialization of v1740 */
+#define E_GET_SVR_ADDR 43 /* error getting server address */
 
 
 

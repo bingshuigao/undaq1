@@ -34,6 +34,7 @@ int ebd_merge::handle_msg(uint32_t* msg_body)
 	 * 2 --> rb_data is ready
 	 * */
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
+	static int readyness = 0;
 	switch (msg_type) {
 	case 1:
 		/* run status transition
@@ -41,7 +42,9 @@ int ebd_merge::handle_msg(uint32_t* msg_body)
 		return switch_run(msg_body[1]);
 	case 2:
 		/* rb_data is ready. */
-		rb_data_ready = true;
+		readyness++;
+		if (readyness == msg_body[1])
+			rb_data_ready = true;
 		return 0;
 	default:
 		return -E_MSG_TYPE;

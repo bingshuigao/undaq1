@@ -69,7 +69,9 @@ class adv_conf_ebd(adv_conf):
                  'wid_type' : 'entry',
                  'comment' : None
                  })
-        # The server address of the receiver thread
+        # The server address of the frontend sender. Multiple addresses can be
+        # specified here, separated by commas. Each address corresponds to a
+        # frontend.
         self.var_lst.append({
                  'value' : 'default',
                  'name' : 'fe_server_addr',

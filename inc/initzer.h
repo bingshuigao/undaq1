@@ -139,9 +139,13 @@ public:
 	 *             in get_ebd_rbs();
 	 * id == 3 --> the built event ring buffer 
 	 * id == 2 --> the message ring buffer.
-	 * id == 1 --> the raw data received from frontend
 	 * */
 	ring_buf* get_ebd_rb(int id);
+
+	/* similar as get_ebd_rb(int), however, because there may be multiple
+	 * frontends, we need to return a vector here. an empty vector
+	 * indicates error.*/
+	std::vector<ring_buf*> get_ebd_rb();
 
 	/* get the clock freqency */
 	uint32_t get_ebd_sort_clock_hz();
@@ -263,13 +267,18 @@ public:
 	/* get the listening port of the evt builder data sender 
 	 * */
 	int get_ebd_sender_port();
+	
+	/* get the number of receiver thread of the evt builder */
+	int get_ebd_n_recv();
 
 	/* get the listening port of the GUI controler for frontend 
 	 * */
 	int get_ctl_port();
 
-	/* get the server address of the event builder receiver server */
-	std::string get_ebd_recv_svr_addr();
+	/* get the n'th server address of the event builder
+	 * receiver server, return empty string if error.
+	 * */
+	std::string get_ebd_recv_svr_addr(int n);
 
 	/* get the server address of the logger receiver server */
 	std::string get_log_recv_svr_addr();
@@ -374,13 +383,13 @@ private:
 	ring_buf* rb_fe2; /* this is for message sharing */
 
 	/* There are 4 types of ring buffers in event builder:
-	 * rb_ebd: contains the raw data received from frontend 
+	 * rb_ebd: contains the raw data received from frontend (vector)
 	 * rb_ebd2: for message sharing 
 	 * rb_ebd3: contains built event 
 	 * rb_ebd5: contains scaler event
 	 * rbs_ebd: individual ring buffers for each vme module 
 	 * */
-	ring_buf* rb_ebd;
+	std::vector<ring_buf*> rb_ebd;
 	ring_buf* rb_ebd2;
 	ring_buf* rb_ebd3;
 	ring_buf* rb_ebd5;

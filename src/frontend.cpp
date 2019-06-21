@@ -3,6 +3,7 @@
 #include "rd_scal.h"
 #include "rd_trig.h"
 #include <iostream>
+#include <stdlib.h>
 
 void handle_err(const char* err, int code)
 {
@@ -11,12 +12,23 @@ void handle_err(const char* err, int code)
 
 int main(int argc, char* argv[])
 {
-	int ret;
+	int ret, n1, n2;
 	int* p_ret;
 
+	/* get crate ranges */
+	n1 = n2 = -1;
+	if (argc != 3 && argc != 1) {
+		std::cerr<<"usage: ./frontend [<start crate n> <stop crate n>]"<<std::endl;
+		return -1;
+	}
+	if (argc == 3) {
+		n1 = atoi(argv[1]);
+		n2 = atoi(argv[2]);
+	}
+	
 	/* First, we create the initzer and parser */
 	xml_parser* parser = new xml_parser();
-	ret = parser->parse("config.xml");
+	ret = parser->parse("config.xml", n1, n2);
 	if (ret) {
 		handle_err("cannot parse config file!", ret);
 		return ret;

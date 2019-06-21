@@ -6,9 +6,10 @@
 #include <unistd.h>
 #include <iostream>
 
-ebd_recv::ebd_recv()
+ebd_recv::ebd_recv(int total, int n)
 {
-	thread_id = 1;
+	thread_id = 1 + 10*n;
+	total_thread = total;
 	init_fun.push_back(&ebd_recv_init);
 }
 
@@ -21,7 +22,9 @@ int ebd_recv::ebd_recv_init(my_thread* This, initzer* the_initzer)
 	ebd_recv* ptr = reinterpret_cast<ebd_recv*>(This);
 
 	ptr->port = the_initzer->get_fe_sender_port();
-	ptr->svr_addr = the_initzer->get_ebd_recv_svr_addr();
+	ptr->svr_addr = the_initzer->get_ebd_recv_svr_addr((ptr->thread_id-1)/10);
+	if (ptr->svr_addr.empty())
+		return -E_GET_SVR_ADDR;
 	ptr->recv_buf_sz = the_initzer->get_fe_sender_buf_sz();
 	ptr->sock_buf = new unsigned char[ptr->recv_buf_sz];
 	ptr->t_us = the_initzer->get_ebd_recv_t_us();
@@ -55,40 +58,65 @@ int ebd_recv::start()
 
 	RET_IF_NONZERO(ret);
 	
+	n_stops = 0;
 	/* receive the slot map (and others )and ring buffer data if not yet.*/
 	if (flag == -1) {
 		int sz;
-		char* p_slot_map;
-		uint64_t *p_clk_map;
+		char* p_slot_map[2];
+		uint64_t* p_clk_map[2];
 		
 		/* ring buffer */
 		ret = init_rb_data();
 		RET_IF_NONZERO(ret);
-		/* tell the ebd_merge that the rb_data is ready */
-		ret = send_msg(EBD_MERG, 2, &p_slot_map, 0);
+		/* tell the ebd_merge that the rb_data (for this frontend) is
+		 * ready */
+		ret = send_msg(EBD_MERG, 2, &total_thread, 4);
 		RET_IF_NONZERO(ret);
 		
 		/* slot map */
 		sz = MAX_SLOT_MAP;
-		p_slot_map = slot_map;
 		ret = recv(sock, slot_map, sz, MSG_WAITALL);
 		if (ret != sz)
 			return -E_SYSCALL;
 		/* tell the ebd_sort the address of the slot map */
-		ret = send_msg(EBD_SORT, 2, &p_slot_map, sizeof(p_slot_map));
+		p_slot_map[0] = slot_map;
+		p_slot_map[1] = reinterpret_cast<char*>(total_thread);
+		ret = send_msg(EBD_SORT, 2, p_slot_map, sizeof(char*)*2);
 		RET_IF_NONZERO(ret);
 		
 		/* clock map */
 		sz = MAX_CLK_MAP*8;
-		p_clk_map = clk_map;
 		ret = recv(sock, clk_map, sz, MSG_WAITALL);
 		if (ret != sz)
 			return -E_SYSCALL;
 		/* tell the ebd_sort the address of the clk map */
-		ret = send_msg(EBD_SORT, 3, &p_clk_map, sizeof(p_clk_map));
+		p_clk_map[0] = clk_map;
+		p_clk_map[1] = reinterpret_cast<uint64_t*>(total_thread);
+		ret = send_msg(EBD_SORT, 3, p_clk_map, sizeof(uint64_t*)*2);
 		RET_IF_NONZERO(ret);
 	}
-	return 0;
+
+	/* Now propagate the start request to the next receiver thread (if any)
+	 * */
+	if (!is_last_thread())
+		return send_msg(next_thread(), 1, &acq_stat, 4);
+	else
+		return 0;
+}
+
+bool ebd_recv::is_last_thread()
+{
+	if (thread_id == ((total_thread-1)*10 + 1))
+		return true;
+	else
+		return false;
+}
+
+int ebd_recv::next_thread()
+{
+	if (is_last_thread())
+		return 0;
+	return thread_id + 10;
 }
 
 int ebd_recv::init_rb_data()
@@ -133,12 +161,23 @@ int ebd_recv::init_rb_data()
 
 int ebd_recv::stop()
 {
-	int ret = recv_stop();
-	RET_IF_NONZERO(ret);
+	int ret, next_th_id;
 
+	if (thread_id != 1) {
+		if (++n_stops < 2)
+			return 0;
+	}
+	
+	ret = recv_stop();
+	RET_IF_NONZERO(ret);
 	acq_stat = DAQ_STOP;
+
 	/* proporgate the stop message to the next thread */
-	return send_msg(2, 1, &acq_stat, 4);
+	if (is_last_thread())
+		next_th_id = 2;
+	else 
+		next_th_id = next_thread();
+	return send_msg(next_th_id, 1, &acq_stat, 4);
 }
 
 int ebd_recv::quit()
@@ -160,11 +199,11 @@ int ebd_recv::main_proc()
 		if (sz == 0) {
 			/* the frontend sends a 'stop' signal, we should stop */
 			int status = DAQ_STOP;
-			return send_msg(1, 1, &status, 4);
+			return send_msg(thread_id, 1, &status, 4);
 		}
 
 		/* we expect a following data packets with total length of sz */
-		return read_sock_data(rb_fe, sz);
+		return read_sock_data(rb_fe[thread_id/10], sz);
 	}
 
 	/* no data available from socket */

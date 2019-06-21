@@ -56,9 +56,18 @@ public:
 	~xml_parser();
 	
 	/* parse the configuration file.
+	 * The parameters n1 and n2 are specifically designed for frontend.
+	 * When there are multiple frontends, the range [n1, n2] specifies the
+	 * range (inclusive) of crate numbers included in the frontend. In
+	 * normal cases other than frontend, these parameters are meaningless
+	 * and should be kept as its default values.
 	 * return 0 if the configuration file has been parsed successfully,
 	 * otherwise return an error code.*/
-	int parse(const char* f_name);
+	int parse(const char* f_name, int n1 = -1, int n2 = -1);
+	
+	/* get crate number from the vme config node. Negative return values
+	 * indicate errors. */
+	int get_crate_n(rapidxml::xml_node<>* vme_mod);
 
 	/* get the configruations of the vme modules (a vector of vectors). The
 	 * results are returned as a vector containing a vector of struct

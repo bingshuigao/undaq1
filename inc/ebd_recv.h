@@ -17,7 +17,10 @@
 class ebd_recv : public ebd_thread, public recv_thread
 {
 public:
-	ebd_recv();
+	/* total is the total number of receiver threads, n is the n'th
+	 * receiver thread, starting from zero (there can be more than one
+	 * receiver thread since more than one frondend is allowed) */
+	ebd_recv(int total, int n);
 	~ebd_recv();
 
 private:
@@ -38,9 +41,32 @@ private:
 	 * */
 	int init_rb_data();
 
+	/* Since there could be more than one receiver thread, and they are
+	 * chained when start/stop runs, this function make sense. return true
+	 * if it is the last thread in the chain, otherwise return false. */
+	bool is_last_thread();
+	/* return the thread id of the next receiver thread in the chain. */
+	int next_thread();
+
 private:
 	char slot_map[MAX_SLOT_MAP];
 	uint64_t clk_map[MAX_CLK_MAP];
+
+	/* total number of receiver threads */
+	int total_thread;
+
+	/* number of received stop signals. Since there can be more than one
+	 * receiver thread, there should be a synchronization mechanism when
+	 * star/stop runs. The way to synchronize here is to star/stop the
+	 * threads sequentially: when starting a run, the start request chain
+	 * is propagated in the order: 1->11->21->31->... However, it's more
+	 * tricky when stopping runs. This is because the stop request is not
+	 * directly from the controller, but from the frontend (by sending a
+	 * zero-length event). So in order to stop a receiver thread, two stop
+	 * requests should have been received (except the first receiver
+	 * thread): one is from the frontend, the other is from the receiver
+	 * thread chains (in the order 1->11->21->31->...). */
+	int n_stops;
 };
 
 
