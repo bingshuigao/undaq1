@@ -308,9 +308,10 @@ private:
 	 * Return 0 if succeed, otherwise return error code. */
 	int init_v2718();
 	
-	/* Init the vme module according to its configurations. Return the
+	/* Init the vme module according to its configurations. The offset is
+	 * the offset between board numbers and crate numbers. Return the
 	 * pointer to the vme object. Return NULL in case of error. */
-	v2718* do_init_v2718(std::vector<struct conf_vme_mod> &the_conf);
+	v2718* do_init_v2718(std::vector<struct conf_vme_mod> &the_conf, int offset);
 
 
 	/* initialize the global variables of the given module 
@@ -366,6 +367,8 @@ private:
 
 	/* get the module name */
 	char* get_mod_name(std::vector<struct conf_vme_mod> &the_conf);
+	/* get the module crate number  */
+	int64_t get_mod_crate(std::vector<struct conf_vme_mod> &the_conf);
 
 
 

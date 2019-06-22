@@ -745,10 +745,23 @@ int initzer::init_vme_mod()
 
 int initzer::init_v2718()
 {
+	/* We need to know the range of crate numbers. Because there exists an
+	 * offset between the board numbers and crate numbers. */
+	int min_crate = 100000;
+	int crate;
 	for (auto it = vme_conf.begin(); it != vme_conf.end(); it++) {
 		std::string name = get_mod_name(*it);
 		if (name.find("V2718") != std::string::npos) {
-			v2718* tmp = do_init_v2718(*it);
+			crate = get_mod_crate(*it);
+			min_crate = (crate < min_crate) ? crate : min_crate;
+		}
+	}
+
+	/* now we initialize the v2718s one by one */
+	for (auto it = vme_conf.begin(); it != vme_conf.end(); it++) {
+		std::string name = get_mod_name(*it);
+		if (name.find("V2718") != std::string::npos) {
+			v2718* tmp = do_init_v2718(*it, min_crate);
 			if (!tmp) 
 				return -E_INIT_V2718;
 			p_v2718.push_back(tmp);
@@ -757,7 +770,8 @@ int initzer::init_v2718()
 	return 0;
 }
 
-v2718* initzer::do_init_v2718(std::vector<struct conf_vme_mod> &the_conf)
+v2718* initzer::do_init_v2718(std::vector<struct conf_vme_mod> &the_conf, 
+		int crate_off)
 {
 	v2718* tmp_v2718 = new v2718;
 	int crate = -1;
@@ -779,7 +793,7 @@ v2718* initzer::do_init_v2718(std::vector<struct conf_vme_mod> &the_conf)
 	struct v2718_open_par par;
 	par.bd_type = cvV2718;
 	par.link = 0;
-	par.bd_num = crate;
+	par.bd_num = crate - crate_off;
 	if (tmp_v2718->open(&par)) 
 		goto fail;
 		
@@ -1046,6 +1060,14 @@ char* initzer::get_mod_name(std::vector<struct conf_vme_mod> &the_conf)
 			return (*it).val.val_str;
 	}
 	return NULL;
+}
+int64_t initzer::get_mod_crate(std::vector<struct conf_vme_mod> &the_conf)
+{
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name == "crate_n")
+			return (*it).val.val_uint64;
+	}
+	return -1;
 }
 
 
