@@ -11,6 +11,8 @@
 #include <sys/socket.h>
 #include "err_code.h"
 #include <iostream>
+#include <errno.h>
+#include <unistd.h>
 
 /* default sizes for buffers, please note that the actual size of the ring
  *  * buffer is only half of the defined values below.  */
@@ -123,8 +125,14 @@ static inline int do_send(int sock, void* buf, int sz, int flag)
 	unsigned char* p_buf = reinterpret_cast<unsigned char*>(buf);
 	while (sz > 0) {
 		int ret = send(sock, p_buf, sz, flag);
-		if (ret == -1) 
+		if (ret == -1) {
+			/* check error number */
+			if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
+				usleep(20);
+				continue;
+			}
 			return -E_SYSCALL;
+		}
 		sz -= ret;
 		p_buf += ret;
 	}

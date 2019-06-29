@@ -91,10 +91,10 @@ int ebd_sender::stop()
 
 	/* Now we also need to send the client a zero length to indicate the
 	 * stop event. */
-	if (send(sock_log, &n, 4, 0) == -1)
+	if (do_send(sock_log, &n, 4, 0))
 		return -E_SYSCALL;
 	if (sock_ana != -1) {
-		if (send(sock_ana, &n, 4, 0) == -1) {
+		if (do_send(sock_ana, &n, 4, 0)) {
 			sock_ana = -1;
 			ret = send_msg(4, 2, NULL, 0);
 			RET_IF_NONZERO(ret);
@@ -169,10 +169,10 @@ int ebd_sender::send_data(ring_buf* the_rb)
 	if (sz_out == -1) 
 		return -E_RING_BUF_DATA;
 
-	if ((send(sock_log, &sz_out, 4, 0) == -1))
+	if (do_send(sock_log, &sz_out, 4, 0))
 		return -E_SYSCALL;
 	if (sock_ana != -1) {
-		if (send(sock_ana, &sz_out, 4, 0) == -1) {
+		if (do_send(sock_ana, &sz_out, 4, 0)) {
 			sock_ana = -1;
 			ret = send_msg(4, 2, NULL, 0);
 			RET_IF_NONZERO(ret);

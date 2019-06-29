@@ -123,7 +123,7 @@ int fe_sender::stop()
 
 	/* Now we also need to send the client a zero length to indicate the
 	 * stop event. */
-	if (send(sock, &n, 4, 0) == -1)
+	if (do_send(sock, &n, 4, 0))
 		return -E_SYSCALL;
 
 	return send_msg(4, 1, &acq_stat, 4);
@@ -180,8 +180,7 @@ int fe_sender::send_data()
 	RET_IF_NONZERO(ret);
 	if (sz_out == -1) 
 		return -E_RING_BUF_DATA;
-	ret = send(sock, &sz_out, 4, 0);
-	if (ret == -1) 
+	if (do_send(sock, &sz_out, 4, 0))
 		return -E_SYSCALL;
 	/* then send the data */
 	return do_send(sock, sock_buf, sz_out, 0);
