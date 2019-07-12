@@ -404,11 +404,11 @@ int ebd_sort::handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len)
 	}
 
 	/* get time stamp */
-	ts = evt[3];
+	ts = evt[3] & 0x7fffffff;
 	
 	/* calculate the monotonic time stamp */
 	clk_freq = clk_map[CLK_MAP_IDX(crate, slot)];
-	ts = get_mono_ts(ts, 32, clk_freq);
+	ts = get_mono_ts(ts, 31, clk_freq);
 	if (ts == 0)
 		return -E_SYNC_CLOCK;
 	ts = static_cast<uint64_t>(ts * (1. * hz / clk_freq));

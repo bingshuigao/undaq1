@@ -28,6 +28,10 @@ int fe_ctl::handle_msg(uint32_t* msg_body)
 	case 1:
 		/* run status transition */
 		return switch_run(msg_body[1]);
+	case 3:
+		/* this is a warning to be sent to controler */
+		std::cout<<"warning received!"<<std::endl;
+		return 0;
 	default:
 		return -E_MSG_TYPE;
 	}

@@ -149,7 +149,8 @@ int rd_fe::send_warning(int id, const char* msg)
 	ret = rb_msg->write(buf, len);
 
 	delete buf;
-	RET_IF_NONZERO(ret);
+	if (ret == -1)
+		return -E_RING_BUF_MSG;
 	return 0;
 }
 
