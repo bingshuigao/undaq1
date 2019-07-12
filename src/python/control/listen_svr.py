@@ -10,7 +10,7 @@ class listen_svr:
     def __init__(self, port):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setblocking(False)
-        self.sock.bind(('127.0.0.1', port))
+        self.sock.bind(('0.0.0.0', port))
         self.sock.listen(10)
 
     def try_accept(self):

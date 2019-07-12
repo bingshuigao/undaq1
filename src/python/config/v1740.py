@@ -289,6 +289,16 @@ class v1740(vme_mod):
                  'has_set_wid' : True,
                  'set_wid_type' : 'entry', 
                  })
+        # decimation factor
+        self.reg_map.append(
+                {'off' : 0x8044,
+                 'value' : 'default',
+                 'name' : 'decim',
+                 'nbit' : 4,
+                 'has_set_wid' : True,
+                 'set_wid_type' : 'entry', 
+                 })
+
 
         # This method must be called at the **end**.
         self._base_init(name1, mod)
