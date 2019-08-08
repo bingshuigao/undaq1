@@ -124,7 +124,7 @@ class adv_conf:
         for var in self.var_lst:
             if var['value'] == 'default':
                 continue
-            value = '%d' % var['value']
+            value = '0x%x' % var['value']
             com = var['name']
             name = var['name']
             if var['comment']:
@@ -144,7 +144,7 @@ class adv_conf:
     def set_the_conf(self, name, val):
         for var in self.var_lst:
             if var['name'] == name:
-                var['value'] = int(val)
+                var['value'] = int(val, 16)
 
     
     # place the window in propriate posistion

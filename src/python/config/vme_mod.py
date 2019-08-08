@@ -248,7 +248,6 @@ class vme_mod:
                     self.set_reg(off, val1)
                 elif name.startswith('adv'):
                     name = name[4:]
-                    val = int(val, 16)
                     self.adv_conf.set_the_conf(name, val)
                 else:
                     return 'unknown tag name: ' + name
