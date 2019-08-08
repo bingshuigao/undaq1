@@ -56,13 +56,21 @@ class control:
         self.listen_svr = listen_svr(self.port)
 
         # The connection sockets
-        self.svr_fe = svr()
+        self.svr_fe = []
+        for i in range(self.fe_num):
+            self.svr_fe.append(svr())
         self.svr_ebd = svr()
         self.svr_ana = svr()
         self.svr_log = svr()
 
         # The number of connected clients
         self.n_client = 0
+        self.n_conn_fe = 0
+
+        # frontend(s) status
+        self.fe_stat_lst = []
+        for i in range(self.fe_num):
+            self.fe_stat_lst.append('unknown')
 
     def _create_logger_info(self):
         # the run number
@@ -125,11 +133,16 @@ class control:
         if not tmp:
             tmp = 1000
         self.t_ms = tmp
+        # the number of fe clients
+        tmp = parser.get_par('fe_num')
+        if not tmp:
+            tmp = 1
+        self.fe_num = tmp
 
     def _check_listen_sock(self):
         # debug:
         #print('checking...')
-        if self.n_client < 4:
+        if self.n_client < (3 + self.fe_num):
             conn,name = self.listen_svr.try_accept()
         else:
             return
@@ -139,7 +152,8 @@ class control:
             print('unknown client!')
             sys.exit(-1)
         if name == 'frontend':
-            self.svr_fe.set_sock(conn)
+            self.svr_fe[self.n_conn_fe].set_sock(conn)
+            self.n_conn_fe += 1
         elif name == 'event builder':
             self.svr_ebd.set_sock(conn)
         elif name == 'analyzer':
@@ -155,8 +169,10 @@ class control:
         # This is the main part
         # Try to receive pending message from the clients (if any)
         # frontend
-        msg = self.svr_fe.try_recv()
-        self._handle_fe_msg(msg)
+        for i in range(self.fe_num):
+            msg = self.svr_fe[i].try_recv()
+            self._handle_fe_msg(msg, i)
+        self._update_fe_stat()
         # event builder
         msg = self.svr_ebd.try_recv()
         self._handle_ebd_msg(msg)
@@ -167,7 +183,15 @@ class control:
         msg = self.svr_ana.try_recv()
         self._handle_ana_msg(msg)
 
-    def _handle_fe_msg(self, msg):
+    def _update_fe_stat(self):
+        tmp = self.fe_stat_lst[0]
+        for i in range(self.fe_num):
+            if self.fe_stat_lst[i] != tmp:
+                self.fe_stat_var = 'unknown'
+                return
+        self.fe_stat_var = tmp
+
+    def _handle_fe_msg(self, msg, i):
         if not msg:
             return
         msg_type = int.from_bytes(msg[:4], 'little') 
@@ -175,9 +199,9 @@ class control:
             # run status update
             run_stat = int.from_bytes(msg[4:8], 'little')
             if run_stat == 0:
-                self.fe_stat_var.set('stop')
+                self.fe_stat_lst[i] = 'stop'
             elif run_stat == 1:
-                self.fe_stat_var.set('run')
+                self.fe_stat_lst[i] = 'run'
 
 
     def _handle_ebd_msg(self, msg):
@@ -222,7 +246,8 @@ class control:
         msg_tail = bytes([0 for i in range(124)])
         msg = msg_type + msg_tail
         # send the message to all
-        self.svr_fe.send_all(msg)
+        for i in range(self.fe_num):
+            self.svr_fe[i].send_all(msg)
         self.svr_ebd.send_all(msg)
         self.svr_ana.send_all(msg)
         self.svr_log.send_all(msg)
@@ -256,7 +281,8 @@ class control:
         msg_tail = bytes([0 for i in range(120)])
         msg = msg_type + run_stat + msg_tail
         # send the start message to frontend, event builder and analyzer
-        self.svr_fe.send_all(msg)
+        for i in range(self.fe_num):
+            self.svr_fe[i].send_all(msg)
         self.svr_ebd.send_all(msg)
         self.svr_ana.send_all(msg)
         # modify the message and send it to the logger
@@ -277,7 +303,9 @@ class control:
         msg_tail = bytes([0 for i in range(120)])
         msg = msg_type + run_stat + msg_tail
         # send the start message to frontend, event builder and analyzer
-        self.svr_fe.send_all(msg)
+        for i in range(self.fe_num):
+            self.svr_fe[i].send_all(msg)
+            
 
     def _quit(self):
         msg_type = (0).to_bytes(length=4, byteorder='little')
@@ -285,7 +313,8 @@ class control:
         msg_tail = bytes([0 for i in range(120)])
         msg = msg_type + run_stat + msg_tail
         # send the message to all
-        self.svr_fe.send_all(msg)
+        for i in range(self.fe_num):
+            self.svr_fe[i].send_all(msg)
         self.svr_ebd.send_all(msg)
         self.svr_ana.send_all(msg)
         self.svr_log.send_all(msg)

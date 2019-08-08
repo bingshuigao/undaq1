@@ -84,6 +84,7 @@ class adv_conf_fe(adv_conf):
                  'wid_type' : 'entry',
                  'comment' : None
                  })
+        
 
         # the server address of the frontend controller thread. The address can
         # be the form of 'www.host.com' or '127.0.0.1'. Since all the config

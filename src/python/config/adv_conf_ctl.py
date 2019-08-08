@@ -26,6 +26,13 @@ class adv_conf_ctl(adv_conf):
                  'wid_type' : 'entry',
                  'comment' : None
                  })
+        # number of frontend threads.
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'fe_num',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
 
 
 
