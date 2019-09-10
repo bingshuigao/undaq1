@@ -11,6 +11,7 @@ ebd_sort::ebd_sort()
 	thread_id = 2;
 	evt_buf = NULL;
 	slot_map = NULL;
+	clk_map = NULL;
 	mask_to_slot = NULL;
 	for (i = 0; i < MAX_CRATE; i++) {
 		for (j = 0; j < MAX_MODULE; j++) {
@@ -180,6 +181,8 @@ int ebd_sort::main_proc()
 	
 	/* One should check if the slot_map has been inited. */
 	if (!slot_map)
+		return 0;
+	if (!clk_map)
 		return 0;
 
 	/* We need to look into the (all) ring buffer(s) of raw data rb_fe. The
@@ -441,10 +444,17 @@ int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 	if (evt_len_w > max_len)
 		goto err_data;
 
+	/* debug ...*/
+	std::cout<<"OK1"<<std::endl;
+	/* ***********/
 	/* get slot number if necessary  */
 	if (slot == -1)
 		slot = slot_map[SLOT_MAP_IDX(crate,mod_id,(evt[0]>>16)&0xFF)];
 
+	/* debug ...*/
+	std::cout<<"OK2"<<std::endl;
+	/* ***********/
+	
 	/* get time stamp */
 	idx = evt_len_w - 1;
 	sig = evt[idx] >> 30;
@@ -457,6 +467,7 @@ int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 	if (evt[idx] == 0)
 		/* this is a filler */
 		idx--;
+	std::cout<<idx<<std::endl;
 	sig = evt[idx] >> 21;
 	if (sig == 0x24)
 		has_et = true;
@@ -464,10 +475,20 @@ int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 		ts_hi = evt[idx] & 0xFFFF;
 		ts += (ts_hi<<30);
 	}
+	/* debug ...*/
+	std::cout<<"OK3"<<std::endl;
+	/* ***********/
 
 
 	/* calculate the monotonic time stamp */
+	/* debug ...*/
+	printf("clk_map pointer: 0x%016x", clk_map);
+	/* ***********/
+	
 	clk_freq = clk_map[CLK_MAP_IDX(crate, slot)];
+	/* debug ...*/
+	std::cout<<"clk: "<<"clk_freq"<<std::endl;
+	/* ***********/
 	ts = get_mono_ts(ts, has_et ? 46 : 30, clk_freq);
 	if (ts == 0)
 		return -E_SYNC_CLOCK;

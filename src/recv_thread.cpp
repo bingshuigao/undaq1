@@ -4,6 +4,8 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <unistd.h>
+#include <iostream>
+#include <errno.h>
 
 recv_thread::recv_thread()
 {
@@ -23,10 +25,19 @@ int recv_thread::recv_start()
 {
 	/* establish the connection between the current thread and the server
 	 * sender if not yet. */
+	std::string err;
 	if (sock == -1) {
-		sock = my_tcp_clt::connect(port, svr_addr.c_str());
-		if (sock == -1)
+		/* debug ...*/
+		std::cout<<"connecting: port: "<<port<<" ip: "<<svr_addr.c_str()<<std::endl;
+		/* *********/
+		sock = my_tcp_clt::connect(port, svr_addr.c_str(), &err);
+		if (sock == -1) {
+			std::cout<<err<<std::endl;
 			return -E_SYSCALL;
+		}
+		/* debug ...*/
+		std::cout<<"connected"<<std::endl;
+		/* *********/
 	}
 	return 0;
 }

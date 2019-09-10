@@ -88,6 +88,7 @@ int xml_parser::get_crate_n(rapidxml::xml_node<>* vme_mod)
 	struct conf_vme_mod conf;
 	for (auto it=vme_mod->first_node("global_var"); it;
 			it = it->next_sibling("global_var")) {
+		cur_node = it;
 		if (get_global_var(&conf))
 			return -1;
 		if (conf.name == "crate_n")

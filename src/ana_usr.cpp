@@ -25,7 +25,7 @@ begin:
 		/* debug ...*/
 		sig = p_dw[i+idx] >> 30;
 		if (sig == 3) {
-//			std::cout<<"mod id = "<<mod_id<<"ts = "<<(p_dw[i+idx]&0x3fffffff)<<" evt len: "<<len_tot<<std::endl;
+			std::cout<<"slot: "<<slot<<" mod id = "<<mod_id<<" ts = "<<(p_dw[i+idx]&0x3fffffff)<<" evt len: "<<len_tot<<std::endl;
 			continue;
 		}
 		else if (sig == 1) {
@@ -36,11 +36,11 @@ begin:
 		sig = p_dw[i+idx] >> 21;
 		if (sig != 0x20)
 			continue;
-		ch = (p_dw[i+idx] >> 16) & 0x1F;
-		val = p_dw[i+idx] & 0x1FFF;
+		//ch = (p_dw[i+idx] >> 16) & 0x1F;
+		//val = p_dw[i+idx] & 0x1FFF;
 		//if (ch != 31)
 			//continue;
-		((TH1D*)hists.get(slot))->Fill(val);
+		//((TH1D*)hists.get(slot))->Fill(val);
 	}
 	idx += i;
 	goto begin;

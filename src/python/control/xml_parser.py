@@ -27,7 +27,10 @@ class xml_parser:
     def get_par(self, name):
         if name in self.conf:
             # all parameters are in integer format
-            return int(self.conf[name])
+            if self.conf[name].startswith('0x'):
+                return int(self.conf[name], 16)
+            else:
+                return int(self.conf[name])
         return None
 
 

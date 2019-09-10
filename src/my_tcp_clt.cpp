@@ -4,39 +4,58 @@
 #include <netdb.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <unistd.h>
+#include <iostream>
 
+/* The code is mostly copied from the man(3) page of getaddrinfo */
 int my_tcp_clt::connect(int port, const char* host_name, std::string* err)
 {
-	int sock;
-	struct sockaddr_in server_addr;
-	struct hostent *host;
+	struct addrinfo hints;
+	struct addrinfo *result, *rp;
+	int sfd, s, j;
+	char service[100];
 	
-	host = gethostbyname(host_name);
-	if (!host) {
-		if (err)
-			*err = "cannot get host name";
-		return -1;
+	/* Obtain address(es) matching host/port */
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+	hints.ai_socktype = SOCK_STREAM; /* Stream socket */
+	hints.ai_flags = 0;
+	hints.ai_protocol = 0;          /* Any protocol */
+	
+	sprintf(service, "%d", port);
+again:
+	s = getaddrinfo(host_name, service, &hints, &result);
+	if (s != 0) {
+	    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
+	    std::cout<<host_name<<service<<std::endl;
+	    goto again;
+	    if (err)
+	     	*err = "cannot get hostname ";
+	    return -1;
 	}
-	sock = socket(AF_INET,SOCK_STREAM,0);
-	if (sock == -1) {
-		if (err)
-			*err = "cannot create socket";
+	
+	/* getaddrinfo() returns a list of address structures.
+	   Try each address until we successfully connect(2).
+	   If socket(2) (or connect(2)) fails, we (close the socket
+	   and) try the next address. */
+	
+	for (rp = result; rp != NULL; rp = rp->ai_next) {
+	    sfd = socket(rp->ai_family, rp->ai_socktype,
+	                 rp->ai_protocol);
+	    if (sfd == -1)
+	        continue;
+	
+	    if (::connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
+	        break;                  /* Success */
+	    close(sfd);
 	}
-
-	/* fill the server info */
-	memset(&server_addr, 0, sizeof(server_addr));
-	server_addr.sin_family=AF_INET;
-	server_addr.sin_port=htons(port);
-	server_addr.sin_addr=*((struct in_addr *)host->h_addr);
-
-	/* establish the connection */
-	if (::connect(sock, (struct sockaddr *)(&server_addr), 
-				sizeof(struct sockaddr)) == -1) {
-		if (err)
-			*err = "cannot connect";
-		return -1;
+	
+	if (rp == NULL) {               /* No address succeeded */
+	    fprintf(stderr, "Could not connect\n");
+	    if (err)
+	     	*err = "cannot get connect ";
+	    return -1;
 	}
-
-	/* if everything goes fine, return the socket */
-	return sock;
+	//freeaddrinfo(result);           /* No longer needed */
+	return sfd;
 }

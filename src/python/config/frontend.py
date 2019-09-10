@@ -46,6 +46,10 @@ class frontend:
 
     def get_frm(self):
         return self.frm
+    def get_crate_n(self):
+        return self.n_crate
+    def set_crate_n(self,n):
+        self.n_crate = n
 
     def get_adv_conf(self):
         return self.adv_conf
@@ -271,6 +275,9 @@ class frontend:
 
     def _update_sel_mod_w(self):
         self.sel_mods_w.delete(0, tk.END)
+        # debug ...
+#        print(self.n_crate)
+        #########
         for i in range(self.n_crate):
             self.sel_mods_w.insert(tk.END, 'Crate%02d' % (i))
             for j in range(21):

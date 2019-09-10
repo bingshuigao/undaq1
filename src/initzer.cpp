@@ -39,9 +39,16 @@ static std::string decode_str(std::string& raw)
 			hex_int += "F";
 		big_int /= 16;
 	}
+	/* if the raw string is already in hexdecimal form, give up the above
+	 * conversion, and take it from the raw string */
+	if (raw[0] == '0' && raw[1] == 'x') {
+		hex_int = "";
+		for (i = raw.size()-1; i > 1; i--) 
+			hex_int += raw[i];
+	}
+	
 	if (hex_int.size() % 2)
 		hex_int += "0";
-
 	/* Now the hex_int has even number of charactors, two of which form a
 	 * byte */
 	char hex_byte[3];
@@ -1664,7 +1671,7 @@ static std::string get_nth_addr(int n, std::string addrs)
 	if (num_addr <= n)
 		return addr;
 	addrs.insert(0, 1, 'x');
-	addrs.append(',', 1);
+	addrs.append(1, ',');
 	for (i = 0; i < n; i++) 
 		addrs.replace(addrs.find_first_of(','), 1, 1, 'x');
 	int pos1 = addrs.find_last_of('x') + 1;

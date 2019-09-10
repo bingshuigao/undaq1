@@ -32,6 +32,10 @@ int rd_fe::start()
 	struct timespec ts1, ts2;
 	int ret;
 
+	/* debug ...*/
+	std::cout<<"start command received by rd_fe thread"<<std::endl;
+
+
 	/* first, syncronize the timestamps by sending a reset signal */
 	for (auto it = mods.begin(); it != mods.end(); it++) {
 		if (thread_id != 1)

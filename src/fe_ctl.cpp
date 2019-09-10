@@ -71,6 +71,7 @@ int fe_ctl::fe_ctl_init(my_thread* ptr, initzer* the_initzer)
 
 	/* Now we need to connect to the GUI */
 	This->sock = my_tcp_clt::connect(This->port, This->svr_addr.c_str());
+
 	if (This->sock == -1)
 		return -E_SYSCALL;
 
@@ -99,10 +100,14 @@ int fe_ctl::handle_GUI_msg(unsigned char* msg)
 		stat = p_msg[1];
 		if (stat == 0) {
 			/* to stop a run, thread 1 initiate the chain */
+			/* debug ... */
+			std::cout<<"stop command received"<<std::endl;
 			return send_msg(1, 1, &stat, 4);
 		}
 		else if (stat == 1) {
 			/* to start a run, thread 4 initiate the chain */
+			/* debug ... */
+			std::cout<<"start command received"<<std::endl;
 			return send_msg(4, 1, &stat, 4);
 		}
 		else if (stat == 2) {

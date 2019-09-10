@@ -25,6 +25,9 @@ int ebd_recv::ebd_recv_init(my_thread* This, initzer* the_initzer)
 	ptr->svr_addr = the_initzer->get_ebd_recv_svr_addr((ptr->thread_id-1)/10);
 	if (ptr->svr_addr.empty())
 		return -E_GET_SVR_ADDR;
+	/* debug ...*/
+	std::cout<<ptr->svr_addr<<std::endl;
+	/* ***************/
 	ptr->recv_buf_sz = the_initzer->get_fe_sender_buf_sz();
 	ptr->sock_buf = new unsigned char[ptr->recv_buf_sz];
 	ptr->t_us = the_initzer->get_ebd_recv_t_us();

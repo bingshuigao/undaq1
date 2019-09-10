@@ -59,6 +59,9 @@ class control:
         self.svr_fe = []
         for i in range(self.fe_num):
             self.svr_fe.append(svr())
+        # debug ...
+        print('num of fe: %d' % self.fe_num)
+        ############
         self.svr_ebd = svr()
         self.svr_ana = svr()
         self.svr_log = svr()
@@ -154,6 +157,9 @@ class control:
         if name == 'frontend':
             self.svr_fe[self.n_conn_fe].set_sock(conn)
             self.n_conn_fe += 1
+            # debug ...
+            print('fe +1')
+            ##########
         elif name == 'event builder':
             self.svr_ebd.set_sock(conn)
         elif name == 'analyzer':
@@ -185,11 +191,14 @@ class control:
 
     def _update_fe_stat(self):
         tmp = self.fe_stat_lst[0]
+        # debug ...
+        print('fe status updated: %s' % tmp)
+        ###############
         for i in range(self.fe_num):
             if self.fe_stat_lst[i] != tmp:
-                self.fe_stat_var = 'unknown'
-                return
-        self.fe_stat_var = tmp
+                tmp = 'unknown'
+                break
+        self.fe_stat_var.set(tmp)
 
     def _handle_fe_msg(self, msg, i):
         if not msg:

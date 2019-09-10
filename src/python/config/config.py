@@ -346,6 +346,12 @@ class config:
             reg = mod.findall('register')
             adv = mod.findall('advance_var')
             name = self._find_name(glo)
+            crate_n = int(self._find_crate_n(glo)) + 1
+            # debug ...
+            #print('n_crate: %d' % crate_n)
+            #############
+            if self.frontend.get_crate_n() < crate_n:
+                self.frontend.set_crate_n(crate_n)
             tmp = self.frontend.create_mod(name)
             conf = self._get_mod_conf(glo, reg, adv)
             msg = tmp.set_conf(conf)
@@ -385,6 +391,12 @@ class config:
         for var in glo:
             name = var.find('name').text
             if name == 'name':
+                return var.find('value').text
+    # find the crate n from the (many) global parameters
+    def _find_crate_n(self, glo):
+        for var in glo:
+            name = var.find('name').text
+            if name == 'crate_n':
                 return var.find('value').text
                 
 

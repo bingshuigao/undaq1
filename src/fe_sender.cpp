@@ -60,6 +60,11 @@ int fe_sender::start()
 	int ret;
 	acq_stat = 1;
 
+	/* debug ... */
+	std::cout<<"start command received by fe_sender thread"<<std::endl;
+
+
+
 	/* establish the connection between event builder (tcp client) and the
 	 * current thread(tcp server). */
 	if (sock == -1) {
