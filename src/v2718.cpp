@@ -166,3 +166,30 @@ int v2718::send_pulse(bool invt)
 
 	return 0;
 }
+
+int v2718::send_pulse1(bool invt)
+{
+	int ret, val;
+//	std::cout<<"in v2718"<<std::endl;
+	val = 0x3;
+	ret = write_reg(0xc, &val);
+	RET_IF_NONZERO(ret);
+	val = 0x400;
+	if (invt)
+		ret = write_reg(0x0c, &val);
+	else
+		ret = write_reg(0x12, &val);
+	RET_IF_NONZERO(ret);
+
+	val = 0x40;
+	ret = write_reg(0x10, &val);
+	RET_IF_NONZERO(ret);
+	val = 0x40;
+	ret = write_reg(0x0a, &val);
+	RET_IF_NONZERO(ret);
+	val = 0x40;
+	ret = write_reg(0x10, &val);
+	RET_IF_NONZERO(ret);
+
+	return 0;
+}

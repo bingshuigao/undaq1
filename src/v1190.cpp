@@ -185,3 +185,19 @@ int v1190::on_stop()
 {
 	return 0;
 }
+
+int v1190::if_trig(bool& x)
+{
+	uint16_t data_ready;
+	int ret;
+
+	ret = read_reg(0x1020, 16, &data_ready);
+	RET_IF_NONZERO(ret);
+
+	if (data_ready)
+		x = true;
+	else
+		x= false;
+
+	return 0;
+}

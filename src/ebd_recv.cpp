@@ -189,7 +189,12 @@ int ebd_recv::quit()
 	RET_IF_NONZERO(ret);
 
 	acq_stat = DAQ_EXIT;
-	return 0;
+
+	/* propagate the quit message to the next thread if any */
+	if (!is_last_thread())
+		return send_msg(next_thread(), 1, &acq_stat, 4);
+	else
+		return 0;
 }
 
 int ebd_recv::main_proc()

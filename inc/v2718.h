@@ -68,6 +68,8 @@ public:
 	
 	/* the out port 1 (the second port) will be used */
 	virtual int send_pulse(bool invt);
+	/* the out port 0 (the first port) will be used */
+	virtual int send_pulse1(bool invt);
 
 private:
 	/* convert the dw to the data width code consistant with those defined

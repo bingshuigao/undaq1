@@ -55,8 +55,10 @@ protected:
 	 * scaler-type module, check timer). If we do need to readout data from
 	 * modules, then we read and handle the data.
 	 * Return 0 if succeed, otherwise return error
-	 * code. */
-	virtual int try_rd_fe() = 0;
+	 * code. 
+	 * @param force_rd: if true, read the modules anyway; if false, read
+	 * the modules only if neccessary (e.g. there is trigger) */
+	virtual int try_rd_fe(bool force_rd = false) = 0;
 	
 	/* Read the modules pointed by the_mods and save data to ring buffer. 
 	 * return 0 if succeed, otherwise return error code.
@@ -103,6 +105,9 @@ protected:
 	/* The max number of seconds allowed to spend on the on_start()
 	 * functions */
 	int on_start_t_max;
+
+	/* the vme crate controller */
+	vme_ctl* the_ctl;
 
 };
 

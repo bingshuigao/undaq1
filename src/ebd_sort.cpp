@@ -506,7 +506,7 @@ int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
 	/* Here we assume trigger matching mode. We also assume the clock
 	 * frequency of 40MHz. If this is not the case, things may go wrong */
 	uint32_t sig;
-	uint32_t buf[200]; /* should be big enough */
+	uint32_t buf[2000]; /* should be big enough */
 	uint64_t ts, ts_hi, ts_mono, clk_freq;
 	int evt_len_wd, geo, i;
 	bool has_ettt = false;
@@ -544,7 +544,7 @@ int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
 			ts += evt[i] & 0x1F;
 			/* check the word count */
 			evt_len_wd = ((evt[i]>>5) & 0xFFFF);
-			if (((i+1) != evt_len_wd) || (evt_len_wd >= 196)) {
+			if (((i+1) != evt_len_wd) || (evt_len_wd >= 1900)) {
 				/* debug...*/
 				std::cout<<"error 3"<<std::endl;
 				

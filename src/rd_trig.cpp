@@ -29,6 +29,9 @@ int rd_trig::handle_msg(uint32_t* msg_body)
 	case 2:
 		/* readout scaler modules */
 		return do_rd_mods(reinterpret_cast<modules**>(msg_body + 1)[0]);
+	case 3:
+		/* a dummy message */
+		return 0;
 	default:
 		return -E_MSG_TYPE;
 	}
@@ -43,6 +46,7 @@ int rd_trig::my_init(initzer* the_initzer)
 	trig_mod = the_initzer->get_trig_mod();
 	if (!trig_mod)
 		return -E_TRIG_MOD;
+	the_ctl = trig_mod->get_ctl();
 
 	/* the n_try */
 	n_try = the_initzer->get_fe_ntry();
@@ -51,7 +55,7 @@ int rd_trig::my_init(initzer* the_initzer)
 
 }
 
-int rd_trig::try_rd_fe()
+int rd_trig::try_rd_fe(bool force_rd)
 {
 	bool trig;
 	int ret, head_len;
@@ -59,7 +63,7 @@ int rd_trig::try_rd_fe()
 	
 	ret = query_trig(trig);
 	RET_IF_NONZERO(ret);
-	if (trig) {
+	if (trig | force_rd) {
 		for (auto it = mods.begin(); it != mods.end(); it++) {
 			ret = do_rd_mods(*it);
 			RET_IF_NONZERO(ret);

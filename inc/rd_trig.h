@@ -58,7 +58,7 @@ private:
 	 * modules, then we read and handle the data.
 	 * Return 0 if succeed, otherwise return error
 	 * code. */
-	virtual int try_rd_fe();
+	virtual int try_rd_fe(bool force_rd = false);
 
 
 

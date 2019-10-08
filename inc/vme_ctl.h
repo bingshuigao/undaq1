@@ -113,6 +113,7 @@ public:
 	 * @return 0 if succeed, non-zero error codes in case of error. 
 	 * */
 	virtual int send_pulse(bool invt) = 0;
+	virtual int send_pulse1(bool invt) = 0;
 
 protected:
 	int am; /* address modifier */

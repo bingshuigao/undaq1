@@ -52,13 +52,13 @@ int rd_scal::my_init(initzer* the_initzer)
 
 }
 
-int rd_scal::try_rd_fe()
+int rd_scal::try_rd_fe(bool force_rd)
 {
 	int ret;
 	/* see if any of the scaler-type modules need read (time out)*/
 	for (auto it = mods.begin(); it != mods.end(); it++) {
 		module* a_mod = (*it)->get_1st_mod();
-		if (a_mod->time_out()) {
+		if (a_mod->time_out() | force_rd) {
 			modules* p_mods = *it;
 			a_mod->reset_timer();
 			/* Careful! Don't read the scaler modules here which

@@ -81,5 +81,10 @@ public:
 		else
 			return geo;
 	}
+	
+	/* See if DAQ triggers (only makes sence for trigger module)
+	 * return 0 if succeed, otherwise return error code.
+	 * */
+	virtual int if_trig(bool& x);
 };
 #endif

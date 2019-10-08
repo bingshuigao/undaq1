@@ -32,17 +32,11 @@ int rd_fe::start()
 	struct timespec ts1, ts2;
 	int ret;
 
-	/* debug ...*/
-	std::cout<<"start command received by rd_fe thread"<<std::endl;
-
-
-	/* first, syncronize the timestamps by sending a reset signal */
-	for (auto it = mods.begin(); it != mods.end(); it++) {
-		if (thread_id != 1)
-			break;
-		ret = (*it)->get_1st_mod()->get_ctl()->send_pulse(false);
+	/* first, send a pulse for whatever use (e.g. syncronize the
+	 * timestamps)*/
+	if (thread_id == 1) {
+		ret = the_ctl->send_pulse(false);
 		RET_IF_NONZERO(ret);
-		break;
 	}
 
 	/* get the time stamp before the on_start() functions */
@@ -83,9 +77,33 @@ int rd_fe::start()
 
 int rd_fe::stop()
 {
+	int ret;
+	
+	/* first, send a pulse for whatever use (e.g. veto all subsequent
+	 * triggers) */
+	if (thread_id == 1) {
+		ret = the_ctl->send_pulse1(false);
+		RET_IF_NONZERO(ret);
+	}
+
+	/* then read the remaining data in the readout buffer */
+	ret = try_rd_fe(true);
+	RET_IF_NONZERO(ret);
+
+	/* This is tricky: in case of reading scaler data, which is done by
+	 * sending messages to the rd_trig thread, we need to to make sure that
+	 * the reading is finished before proporgating the stop message to the
+	 * next thread. So we insert a 'dummy' message in the que, that means
+	 * when the rd_trig thread sees the 'dummy' message, it must have
+	 * finished all the reading scaler data, then the stop message in the
+	 * que can be processed by other threads. */
+	if (thread_id == 2) {
+		ret = send_msg(1, 3, NULL, 0);
+		RET_IF_NONZERO(ret);
+	}
+	
 	acq_stat = 0;
 	for (auto it = mods.begin(); it != mods.end(); it++) {
-		int ret;
 		ret = (*it)->on_stop();
 		RET_IF_NONZERO(ret);
 	}
