@@ -21,8 +21,15 @@ int ebd_merge::ebd_merge_init(my_thread* This, initzer* the_initzer)
 	ebd_merge* ptr = reinterpret_cast<ebd_merge*>(This);
 	ptr->glom = the_initzer->get_ebd_merge_glom();
 	ptr->merged_buf_sz = (the_initzer->get_ebd_merge_merged_buf_sz())/4;
+	ptr->ebd_type = the_initzer->get_ebd_merge_type();
 	ptr->merged_buf = new uint32_t[ptr->merged_buf_sz];
 
+	if (ptr->ebd_type == EBD_TYPE_EVT_CNT)
+		ptr->glom = 0;
+
+	/* debug ... */
+	std::cout<<"ebd typexxxxxx:   "<<ptr->ebd_type<<std::endl;
+	/* ******* ... */
 	return 0;
 }
 
@@ -61,6 +68,8 @@ int ebd_merge::start()
 		uint32_t *p_int32 = reinterpret_cast<uint32_t*>(p_data);
 		p_data[2] = 0; /* the can_build marker */
 		p_int32[1] = 0; /* the cur_rd_rb (see ebd_thread.h) */
+		p_int32[2] = 0; /* last event countr */
+		p_int32[3] = 0; /* number of event counter overflows */
 	}
 
 	/* proporgate the message to the next thread */

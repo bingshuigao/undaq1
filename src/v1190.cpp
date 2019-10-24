@@ -178,6 +178,11 @@ int v1190::on_start()
 		std::cout<<"sz_out = "<<sz_out<<std::endl;
 		
 	} while (sz_out != 0);
+
+	/* we also want to reset the event counter in case of merging using
+	 * event counter. However, we don't do it softwarely, we do it
+	 * hardwarely, i.e. we should send the pulse to front panel CLR. */
+
 	return 0;
 }
 

@@ -87,6 +87,7 @@ int rd_fe::stop()
 	}
 
 	/* then read the remaining data in the readout buffer */
+	usleep(50000);
 	ret = try_rd_fe(true);
 	RET_IF_NONZERO(ret);
 

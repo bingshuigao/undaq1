@@ -45,9 +45,9 @@
  *         |___________________________________________|
  *         |  data type = 0                            |
  *         |___________________________________________|
- *         |  monotonic_ts_high (clock tick)           |
+ *         |  monotonic_ts_high (clock tick) /evt cnt  |
  *         |___________________________________________|
- *         |  monotonic_ts_low                         |
+ *         |  monotonic_ts_low / evt cnt               |
  *         |___________________________________________|
  *         | raw event data from vme module            |
  *         |___________________________________________|
@@ -58,6 +58,9 @@
  * The monotonic_ts is a monotonic time stamp which is used for event building.
  * It is carefully determined by taking into account the overflow of the module
  * time stamp (because of limited bits).
+ * NOTE: Now it is possible to use event counter to merge events, in which case
+ * the event counter is stored in the place of time stamp.
+ *
  *
  * The end of readout mark (EOR) has the following format:
  *         _____________________________________________
@@ -174,7 +177,7 @@
 #include "daq_thread.h"
 #include <vector>
 
-class ebd_thread : public daq_thread
+ class ebd_thread : public daq_thread
 {
 public:
 	ebd_thread();
@@ -193,6 +196,8 @@ protected:
 	 * p_byte[1] --> slot;
 	 * p_byte[2] --> can_build flag;
 	 * p_uint32[1] --> cur_rd_rb;
+	 * p_uint32[2] --> last event counter;
+	 * p_uint32[3] --> number of overflows of the event counter;
 	 * ...
 	 *
 	 * */
@@ -209,6 +214,8 @@ protected:
 	 * from frontend. Because there may be more than one frontends, we use
 	 * vector here. */
 	std::vector<ring_buf*> rb_fe;
+	
+	int ebd_type;
 };
 
 

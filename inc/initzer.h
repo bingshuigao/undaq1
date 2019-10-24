@@ -152,6 +152,9 @@ public:
 
 	/* get the glom for merger */
 	uint32_t get_ebd_merge_glom();
+	
+	/* get the event builder type (ts/cnt) */
+	uint32_t get_ebd_merge_type();
 
 	/* get the buffer size for the merged events */
 	uint32_t get_ebd_merge_merged_buf_sz();

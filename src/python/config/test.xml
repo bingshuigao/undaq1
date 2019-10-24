@@ -331,8 +331,13 @@
             </global_var>
             <advance_var>
                 <name>is_trig_mod</name>
-                <value>1</value>
+                <value>0x1</value>
                 <comment>is_trig_mod</comment>
+            </advance_var>
+            <advance_var>
+                <name>clk_fre</name>
+                <value>0x2710</value>
+                <comment>clk_fre</comment>
             </advance_var>
         </vme_module>
         <vme_module>
@@ -593,7 +598,7 @@
             </global_var>
             <advance_var>
                 <name>is_trig_mod</name>
-                <value>0</value>
+                <value>0x0</value>
                 <comment>is_trig_mod</comment>
             </advance_var>
         </vme_module>
@@ -782,21 +787,26 @@
             </global_var>
             <advance_var>
                 <name>is_trig_mod</name>
-                <value>0</value>
+                <value>0x0</value>
                 <comment>is_trig_mod</comment>
             </advance_var>
         </vme_module>
         <advanced_fe>
             <name>rd_start_t</name>
-            <value>100000</value>
+            <value>0x100000</value>
             <comment>rd_start_t</comment>
         </advanced_fe>
     </frontend>
     <event_builder>
         <advanced_ebd>
             <name>sort_freq</name>
-            <value>40000000</value>
+            <value>0x40000000</value>
             <comment>sort_freq</comment>
+        </advanced_ebd>
+        <advanced_ebd>
+            <name>merge_type</name>
+            <value>0x2</value>
+            <comment>merge_type</comment>
         </advanced_ebd>
     </event_builder>
     <GUI_ctl/>

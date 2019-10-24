@@ -134,6 +134,14 @@ class adv_conf_ebd(adv_conf):
                  'wid_type' : 'entry',
                  'comment' : None
                  })
+        # The event builder type (ts/evt cnt)
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'merge_type',
+                 'wid_type' : 'comb',
+                 'wid_values' : ['default', 'ts', 'evt cnt'],
+                 'comment' : None
+                 })
 
 
 

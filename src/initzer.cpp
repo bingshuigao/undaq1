@@ -1106,6 +1106,20 @@ uint32_t initzer::get_ebd_merge_glom()
 
 }
 
+uint32_t initzer::get_ebd_merge_type()
+{
+	bool found;
+	std::string name("merge_type");
+	int port;
+
+	port = get_ebd_adv_var(name, found);
+	if (found)
+		return port;
+	else
+		return DEF_EBD_MERGE_TYPE;
+
+}
+
 uint32_t initzer::get_ebd_merge_merged_buf_sz()
 {
 	bool found;

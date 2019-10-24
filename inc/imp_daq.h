@@ -14,6 +14,9 @@
 #include <errno.h>
 #include <unistd.h>
 
+#define EBD_TYPE_TS 1
+#define EBD_TYPE_EVT_CNT 2
+
 /* default sizes for buffers, please note that the actual size of the ring
  *  * buffer is only half of the defined values below.  */
 /********** event builder buffers *************/
@@ -118,6 +121,7 @@
 #define DEF_NTRY_FE 1000 
 #define DEF_EBD_SORT_HZ 10000000
 #define DEF_EBD_MERGE_GLOM 10
+#define DEF_EBD_MERGE_TYPE EBD_TYPE_TS
 #define DEF_SAVE_PATH_LOG "."
 
 static inline int do_send(int sock, void* buf, int sz, int flag)

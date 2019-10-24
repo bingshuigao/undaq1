@@ -114,6 +114,10 @@ private:
 	 * errors. 
 	 * */
 	uint64_t get_mono_ts(uint64_t ts, int n_bit, int req = 0);
+	
+	/* similar to the get_mono_ts, but for event counter. */
+	uint64_t get_mono_evt_cnt(uint64_t evt_cnt, int n_bit);
+
 
 	/* save the event into the right ring buffer. Before
 	 * calling this function, the slot and crate numbers should have been
