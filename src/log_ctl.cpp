@@ -34,16 +34,18 @@ int log_ctl::handle_msg(uint32_t* msg_body)
 
 int log_ctl::start()
 {
-	uint32_t new_msg[4];
+	uint32_t new_msg[3];
 	int ret = ctl_start();
 	RET_IF_NONZERO(ret);
 
 	/* proporgate the start message to next thread (thread 2)*/
-	new_msg[0] = 1; /* message type (run status transition)*/
-	new_msg[1] = real_stat; /* new status */
-	new_msg[2] = run_num; /* run number */
-	new_msg[3] = if_save; /* if save flag */
-	return send_msg(2, 1, new_msg, 16);
+	new_msg[0] = real_stat; /* new status */
+	new_msg[1] = run_num; /* run number */
+	new_msg[2] = if_save; /* if save flag */
+	/* debug ...*/
+	std::cout<<"run number from ctrl: "<<run_num<<std::endl;
+	/* ************/
+	return send_msg(2, 1, new_msg, 12);
 }
 
 int log_ctl::stop()
@@ -110,6 +112,9 @@ int log_ctl::handle_GUI_msg(unsigned char* msg)
 			 * are in p_msg[2] and p_msg[3]. */
 			run_num = p_msg[2];
 			if_save = p_msg[3];
+			/* debug ...*/
+//			std::cout<<"run_num "<<run_num<<std::endl;
+			/* ********...*/
 			return send_msg(3, 1, &stat, 4);
 		}
 		else if (stat == 2) {
