@@ -36,32 +36,6 @@ class madc32(vme_mod):
                  'has_set_wid' : True,
                  'set_wid_type' : 'entry', 
                  })
-        # irq level, vector and threshold
-        self.reg_map.append(
-                {'off' : 0x6010,
-                 'value' : 'default',
-                 'name' : 'irq level',
-                 'nbit' : 3,
-                 'has_set_wid' : True,
-                 'set_wid_type' : 'comb', 
-                 'set_wid_values' : ['0','1','2','3','4','5','6','7','default'],
-                 })
-        self.reg_map.append(
-                {'off' : 0x6012,
-                 'value' : 'default',
-                 'name' : 'irq vector',
-                 'nbit' : 8,
-                 'has_set_wid' : True,
-                 'set_wid_type' : 'entry', 
-                 })
-        self.reg_map.append(
-                {'off' : 0x6018,
-                 'value' : 'default',
-                 'name' : 'irq threshold',
-                 'nbit' : 13,
-                 'has_set_wid' : True,
-                 'set_wid_type' : 'entry', 
-                 })
         # max transfer data
         self.reg_map.append(
                 {'off' : 0x601a,
@@ -69,7 +43,8 @@ class madc32(vme_mod):
                  'name' : 'max trans data',
                  'nbit' : 14,
                  'has_set_wid' : True,
-                 'set_wid_type' : 'entry', 
+                 'set_wid_type' : 'comb',
+                 'set_wid_values' : ['unlimited', 'default'],
                  })
         # cblt and mcst contrl:
         self.reg_map.append(
@@ -119,7 +94,9 @@ class madc32(vme_mod):
                  'name' : 'multi event',
                  'nbit' : 4,
                  'has_set_wid' : True,
-                 'set_wid_type' : 'entry',
+                 'set_wid_type' : 'comb',
+                 'set_wid_values' : ['0(do not use!)', '1(do not use!)', 
+                     '2(do not use!)', '3(pls use!)', 'default'],
                  })
         # marking type
         self.reg_map.append(
@@ -223,17 +200,17 @@ class madc32(vme_mod):
                  })
         # others has no corresponding widget in the settings area. We add them
         # in a loop:
-        for addr in range(0x6000, 0x60b0, 2):
-            if self._find_reg(addr)[0] >= 0:
-                continue
-            self.reg_map.append(
-                {'off' : addr,
-                 'value' : 'default',
-                 'name' : '0x%04x' % addr,
-                 'nbit' : 32,
-                 'has_set_wid' : False,
-                 'set_wid_type' : 'entry',
-                 })
+#        for addr in range(0x6000, 0x60b0, 2):
+#            if self._find_reg(addr)[0] >= 0:
+#                continue
+#            self.reg_map.append(
+#                {'off' : addr,
+#                 'value' : 'default',
+#                 'name' : '0x%04x' % addr,
+#                 'nbit' : 32,
+#                 'has_set_wid' : False,
+#                 'set_wid_type' : 'entry',
+#                 })
 
         # This method must be called at the **end**.
         self._base_init(name, mod)

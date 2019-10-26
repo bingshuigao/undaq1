@@ -191,6 +191,7 @@ protected:
 	 * v1190  --> mod_id = 2;
 	 * v830   --> mod_id = 3;
 	 * v1740  --> mod_id = 5;
+	 * v775   --> mod_id = 6;
 	 * */
 	uint32_t mod_id;
 	

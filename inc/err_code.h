@@ -50,6 +50,9 @@
 #define E_DATA_V1740 41 /* corrupted v1740 data */
 #define E_INIT_V1740 42 /* error initialization of v1740 */
 #define E_GET_SVR_ADDR 43 /* error getting server address */
+#define E_EBD_TYPE 44 /* wrong event builder type (ts/evt cnt) */
+#define E_INIT_V775 44 /* error in the v775 initialization */
+#define E_DATA_V775 45 /* corrupted v775 data */
 
 
 

@@ -81,7 +81,7 @@ int v1740::get_cblt_conf(uint16_t* addr, int* cblt_enable, int* cblt_first,
 	if (cblt_first)
 		*cblt_first = ((val & 0x300) == 0x200) ? 1 : 0;
 	if (cblt_last)
-		*cblt_first = ((val & 0x300) == 0x100) ? 1 : 0;
+		*cblt_last = ((val & 0x300) == 0x100) ? 1 : 0;
 	return 0;
 }
 

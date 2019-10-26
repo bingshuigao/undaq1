@@ -15,15 +15,6 @@ class v830(vme_mod):
     def __init__(self, name, mod = None):
         # we need to create the reg_map variable
         self.reg_map = []
-        # interrupt level
-        self.reg_map.append({
-                 'off' : 0x1080,
-                 'value' : 'default',
-                 'name' : 'test reg',
-                 'nbit' : 32,
-                 'has_set_wid' : True,
-                 'set_wid_type' : 'entry',
-                 })
 
         # channel enable pattern
         self.reg_map.append({
@@ -77,60 +68,6 @@ class v830(vme_mod):
                  'set_wid_type' : 'entry',
                  })
 
-        # interrupt level
-        self.reg_map.append({
-                 'off' : 0x1112,
-                 'value' : 'default',
-                 'name' : 'int lev',
-                 'nbit' : 3,
-                 'has_set_wid' : True,
-                 'set_wid_type' : 'comb',
-                 'set_wid_values' : ['0', '1', '2', '3', '4', '5', '6', '7',
-                     'default']
-                 })
-
-        # interrupt vector
-        self.reg_map.append({
-                 'off' : 0x1114,
-                 'value' : 'default',
-                 'name' : 'int vec',
-                 'nbit' : 8,
-                 'has_set_wid' : True,
-                 'set_wid_type' : 'entry',
-                 })
-
-        # address decoder high
-        self.reg_map.append({
-                 'off' : 0x1116,
-                 'value' : 'default',
-                 'name' : 'addr hi',
-                 'nbit' : 8,
-                 'has_set_wid' : True,
-                 'set_wid_type' : 'entry',
-                 'get_set_wid_val' : self._get_val_hex,
-                 })
-       
-        # address decoder low
-        self.reg_map.append({
-                 'off' : 0x1118,
-                 'value' : 'default',
-                 'name' : 'addr lo',
-                 'nbit' : 8,
-                 'has_set_wid' : True,
-                 'set_wid_type' : 'entry',
-                 'get_set_wid_val' : self._get_val_hex,
-                 })
-
-        # enable/disable address register
-        self.reg_map.append({
-                 'off' : 0x111a,
-                 'value' : 'default',
-                 'name' : 'enable addr',
-                 'nbit' : 1,
-                 'has_set_wid' : True,
-                 'set_wid_type' : 'comb',
-                 'set_wid_values' : ['disable', 'enable', 'default']
-                 })
        
         # cblt address
         self.reg_map.append({

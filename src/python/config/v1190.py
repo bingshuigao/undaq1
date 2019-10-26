@@ -16,26 +16,6 @@ class v1190(vme_mod):
     def __init__(self, name, mod = None):
         # we need to create the reg_map variable
         self.reg_map = []
-        # interrupt level
-        self.reg_map.append({
-                 'off' : 0x100a,
-                 'value' : 'default',
-                 'name' : 'int lev',
-                 'nbit' : 3,
-                 'has_set_wid' : True,
-                 'set_wid_type' : 'comb',
-                 'set_wid_values' : ['0','1','2','3','4','5','6','7','default']
-                 })
-
-        # interrupt vectro
-        self.reg_map.append({
-                 'off' : 0x100c,
-                 'value' : 'default',
-                 'name' : 'int vec',
-                 'nbit' : 8,
-                 'has_set_wid' : True,
-                 'set_wid_type' : 'entry',
-                 })
 
         # GEO
         self.reg_map.append({
@@ -177,6 +157,7 @@ class v1190(vme_mod):
                  'nbit' : 16,
                  'has_set_wid' : True,
                  'set_wid_type' : 'entry',
+                 'get_set_wid_val' : self._get_val_signed,
                  })
         # extra search margin
         self.reg_map.append({
@@ -375,6 +356,15 @@ class v1190(vme_mod):
         if val == 'default':
             return 'default'
         return '0x%04x' % val
+    # get the value of the register in signed int format
+    def _get_val_signed(self, reg):
+        val = reg['value']
+        if val == 'default':
+            return 'default'
+        if val <= 32767:
+            return '%d' % val
+        else:
+            return '%d' % (val - 65536)
 
 
 

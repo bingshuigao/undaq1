@@ -659,3 +659,55 @@ uint64_t ebd_sort::get_mono_evt_cnt(uint64_t evt_cnt, int n_bit)
 
 	return n_range * p_udata[3] + p_udata[2];
 }
+
+int ebd_sort::handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len)
+{
+	uint32_t sig;
+	uint32_t buf[50]; /* big enough to accomadate a v775 event plus the
+			     additional header .*/
+	uint64_t ts, ts_hi, ts_mono, clk_freq, evt_cnt;
+	bool has_et = false;
+	int idx, evt_len_w;
+	
+	/* first, we make sure that it has event header */
+	sig = (evt[0] >> 24) & 0x7;
+	if (sig != 0x2)
+		/* Opps! Not a header, corrupted data... */
+		goto err_data;
+
+	/* Now we try to get event length */
+	evt_len_w = ((evt[0]>>8) & 0x3f) + 2; 
+	evt_len = evt_len_w * 4;
+	if (evt_len_w > max_len)
+		goto err_data;
+
+	/* debug ...*/
+	std::cout<<"OK1"<<std::endl;
+	/* ***********/
+	/* get slot number if necessary  */
+	if (slot == -1)
+		slot = slot_map[SLOT_MAP_IDX(crate,mod_id,(evt[0]>>16)&0xFF)];
+
+	/* debug ...*/
+	std::cout<<"OK2"<<std::endl;
+	/* ***********/
+	
+	switch (ebd_type) {
+	case EBD_TYPE_TS:
+		return -E_EBD_TYPE;
+	case EBD_TYPE_EVT_CNT:
+		idx = evt_len_w - 1;
+		sig = (evt[idx] >> 24) & 0x7;
+		if (sig != 0x4)
+			goto err_data;
+		evt_cnt = evt[idx] & 0xFFFFFF;
+		ts = get_mono_evt_cnt(evt_cnt, 24);
+		break;
+	}
+
+	/* save the event into the ring buffer */
+	return save_evt(buf, evt, evt_len_w, ts);
+
+err_data:
+	return -E_DATA_V775;
+}

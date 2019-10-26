@@ -23,6 +23,7 @@
 #include "v1190.h"
 #include "v830.h"
 #include "v1740.h"
+#include "v775.h"
 #endif
 
 struct mod_rb_par

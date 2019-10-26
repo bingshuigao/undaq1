@@ -306,6 +306,9 @@ static int create_mod(std::string& name, module*& mod)
 	else if (name.find("V1740") != std::string::npos) {
 		mod = new v1740;
 	}
+	else if (name.find("V775") != std::string::npos) {
+		mod = new v775;
+	}
 	else {
 		if (name.find("V2718") == std::string::npos)
 			/* unknown module found */
@@ -379,6 +382,37 @@ static int set_v1740_dc(v1740* mod, uint32_t off, uint32_t val)
 	} while (val1 & 0x4);
 	ret = mod->write_reg(off, 32, &val);
 	RET_IF_NONZERO(ret);
+
+	return 0;
+}
+
+/* initialize vme module, return 0 if succeed, otherwise return error code */
+static int 
+do_init_v775(v775* mod, std::vector<struct conf_vme_mod> &the_conf)
+{
+	uint16_t dum = 0x80;
+	/* First, we need to soft-reset all settings */
+	if (mod->write_reg(0x1006, 16, &dum))
+		return -E_INIT_V775;
+	if (mod->write_reg(0x1008, 16, &dum))
+		return -E_INIT_V775;
+	/* then init all registers with non-default values */
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name != "") 
+			continue;
+		/* this is a register setting */
+		uint32_t off = (*it).offset;
+		uint16_t val = (*it).val.val_uint64;
+		if ((off >= 0x1000) && (off <= 0x10be)) {
+			/* this is a physical register */
+			if (mod->write_reg(off, 16, &val))
+				return -E_INIT_V775;
+		}
+		else {
+			/* unknown register */
+			return -E_INIT_V775;
+		}
+	}
 
 	return 0;
 }
@@ -705,6 +739,8 @@ static int do_init_mod(module* mod, std::vector<struct conf_vme_mod> &the_conf)
 		return do_init_v830(static_cast<v830*>(mod), the_conf);
 	if (name == "v1740")
 		return do_init_v1740(static_cast<v1740*>(mod), the_conf);
+	if (name == "v775")
+		return do_init_v775(static_cast<v775*>(mod), the_conf);
 	return -E_UNKOWN_MOD;
 }
 
