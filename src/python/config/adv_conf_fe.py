@@ -102,6 +102,8 @@ class adv_conf_fe(adv_conf):
         self.var_lst.append({
                  'value' : 'default',
                  'name' : 'ctl_svr_addr',
+                 'str2int' : self._str2_big_int,
+                 'int2str' : self._big_int2_str,
                  'wid_type' : 'entry',
                  'comment' : None
                  })
@@ -114,6 +116,26 @@ class adv_conf_fe(adv_conf):
                  'comment' : None
                  })
 
+
+    def _str2_big_int(self, ch):
+        try:
+            tmp = ch.strip().lower()
+            if tmp == 'default':
+                return 0, 'DEF'
+            big_int = 0 
+            for (i,x) in enumerate(tmp):
+                big_int += ord(x) << (i*8)                                                                                                                   
+        except:
+            return 0, 'ERR'
+        return big_int, 'OK'
+    
+    def _big_int2_str(self, big_int):
+        hex_str = '%x' % big_int
+        str_out = ''
+        for i in range(len(hex_str)//2):
+            sub_str = '0x' + hex_str[i*2:i*2+2]
+            str_out = '%c' % int(sub_str, 16) + str_out
+        return str_out
 
 
 ########## TEST ##########

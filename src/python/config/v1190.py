@@ -158,6 +158,7 @@ class v1190(vme_mod):
                  'has_set_wid' : True,
                  'set_wid_type' : 'entry',
                  'get_set_wid_val' : self._get_val_signed,
+                 'str2int' : self._neg_str2int,
                  })
         # extra search margin
         self.reg_map.append({
@@ -365,6 +366,22 @@ class v1190(vme_mod):
             return '%d' % val
         else:
             return '%d' % (val - 65536)
+    def _neg_str2int(self, ch):
+        try:
+            tmp = ch.strip().lower()
+            if tmp == 'default':
+                return 0, 'DEF'
+            base = 10
+            if tmp.startswith('-'):
+                return int(tmp, base) + (1<<16), 'OK'
+            if tmp.startswith('0x'):
+                base = 16
+            return int(tmp, base), 'OK'
+        except:
+            return 0, 'ERR'
+        
+
+
 
 
 

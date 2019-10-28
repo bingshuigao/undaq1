@@ -44,6 +44,12 @@ __metaclass__ = type
  #                              takes one parameter which is the element of
  #                              this dict. If it is None, a default function
  #                              will be used.
+ #   'str2int':fun ---> A pointer to a function which converts the string to an
+ #                      unsigned integer value The function takes one parameter
+ #                      which is the string to be converted. It returns the
+ #                      converted value and error code (see the _str2int which
+ #                      is the default function). If it is None, a default
+ #                      function will be used.
  #   'get_reg_wid_val':fun ---> A pointer to a function which determines the
  #                              value of the widget in the registers area
  #                              according to its register value. The function
@@ -103,7 +109,7 @@ class vme_mod:
         # list are initialized, initialize to None if not.
         list_of_key = ['off', 'value', 'name', 'nbit', 'has_set_wid',
                 'set_wid_type', 'set_wid', 'set_wid_values', 'reg_wid',
-                'get_set_wid_val', 'get_reg_wid_val', 'comment']
+                'get_set_wid_val', 'get_reg_wid_val', 'str2int', 'comment']
         for reg in self.reg_map:
             for key in list_of_key:
                 if not key in reg:
@@ -640,8 +646,11 @@ class vme_mod:
             if not reg['has_set_wid']:
                 # the derived subclass will update, we will skip here.
                 continue
+            fun = self._str2int
+            if reg['str2int']:
+                fun = reg['str2int']
             if reg['set_wid_type'] == 'entry':
-                val,flag = self._str2int(reg['set_wid'].get())
+                val,flag = fun(reg['set_wid'].get())
                 if flag == 'DEF':
                     reg['value'] = 'default'
                 elif flag == 'ERR':
@@ -661,7 +670,10 @@ class vme_mod:
     def _update_data_reg(self):
         for reg in self.reg_map:
             tmp = reg['reg_wid'].get()
-            val,flag = self._str2int(tmp)
+            fun = self._str2int
+            if reg['str2int']:
+                fun = reg['str2int']
+            val,flag = fun(tmp)
             if flag == 'ERR':
                 self._show_msg('invilid value for register at 0x%04x' % reg['off'], 'err')
             elif flag == 'DEF':

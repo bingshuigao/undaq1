@@ -17,6 +17,14 @@ __metaclass__ = type
 #   'wid':window, ---> The widget associated with the variable
 #   'wid_values':values ---> The possible values of the widget if it is a
 #                            combobox. It is a list .
+#   'str2int':fun ---> A pointer to a function which converts the string to an 
+#                      unsigned integer value The function takes one parameter
+#                      which is the string to be converted. It returns the
+#                      converted value and error code (see the _str2int which
+#                      is the default function). If it is None, a default
+#                      function will be used.
+#   'int2str':fun ---> A pointer to a function which converts the integer to a
+#                      proper string.
 #   'comment':'comment' ---> Comments (explaination) about this variable.
 #  }
 # By B.Gao Oct. 2018
@@ -32,12 +40,16 @@ class adv_conf:
     # converts a string (content in a widget) to integer. A status code also
     # returned. The the status codes are 'OK', 'ERR', 'DEF'. The 'ERR' means
     # error and 'DEF' means the string is 'default'
-    def _str2int(self, ch):
+    def _str2int(self, ch, n_bit = 0):
         try:
             tmp = ch.strip().lower()
             if tmp == 'default':
                 return 0, 'DEF'
             base = 10
+            if tmp.startswith('-'):
+                if n_bit == 0:
+                    raise ValueError
+                return int(tmp, base) + (1<<n_bit)
             if tmp.startswith('0x'):
                 base = 16
             return int(tmp, base), 'OK'
@@ -49,8 +61,11 @@ class adv_conf:
     def _update_data(self):
         ret = 0
         for var in self.var_lst:
+            fun = self._str2int
+            if 'str2int' in var:
+                fun = var['str2int']
             if var['wid_type'] == 'entry':
-                val,flag = self._str2int(var['wid'].get())
+                val,flag = fun(var['wid'].get())
                 if flag == 'DEF':
                     var['value'] = 'default'
                 elif flag == 'ERR':
@@ -158,10 +173,13 @@ class adv_conf:
         for var in self.var_lst:
             tmp = var['value']
             if tmp != 'default':
-                if var['wid_type'] == 'entry':
-                    value = '%d' % tmp 
-                elif var['wid_type'] == 'comb':
-                    value = var['wid_values'][tmp]
+                if 'int2str' in var:
+                    value = var['int2str'](tmp)
+                else:
+                    if var['wid_type'] == 'entry':
+                        value = '%d' % tmp 
+                    elif var['wid_type'] == 'comb':
+                        value = var['wid_values'][tmp]
             else:
                 value = 'default'
             if var['wid_type'] == 'entry':
