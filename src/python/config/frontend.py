@@ -26,7 +26,9 @@ from v2718 import v2718
 from adv_conf_fe import adv_conf_fe
 from v1740 import v1740
 from v775 import v775
+from v785 import v785
 from v775n import v775n
+from v785n import v785n
 
 
 class frontend:
@@ -35,7 +37,7 @@ class frontend:
         self.n_crate = 1 
         # list of supported modules
         self.sup_mods_lst = ['V2718', 'MADC32', 'V1190A', 'V830', 'V977',
-                'V1740', 'V775', 'V775N']
+                'V1740', 'V775', 'V775N', 'V785', 'V785N']
         # list of selected modules (note: the element is an object of the
         # vme_mod class, not a string as in the sup_mods_list)
         self.sel_mods_lst = []
@@ -143,8 +145,12 @@ class frontend:
             tmp = v1740(self._get_uniq_name(name), mod)
         elif name == 'V775':
             tmp = v775(self._get_uniq_name(name), mod)
+        elif name == 'V785':
+            tmp = v785(self._get_uniq_name(name), mod)
         elif name == 'V775N':
             tmp = v775n(self._get_uniq_name(name), mod)
+        elif name == 'V785N':
+            tmp = v785n(self._get_uniq_name(name), mod)
         else:
             return None
         tmp.set_max_crate(self.n_crate)

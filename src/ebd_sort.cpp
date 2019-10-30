@@ -660,8 +660,13 @@ uint64_t ebd_sort::get_mono_evt_cnt(uint64_t evt_cnt, int n_bit)
 	return n_range * p_udata[3] + p_udata[2];
 }
 
-int ebd_sort::handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len, bool is_v775n)
+int ebd_sort::handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len,
+		int sub_mod_id)
 {
+	/* sub_mod_id == 0 ---> v775 (default)
+	 * sub_mod_id == 1 ---> v775n
+	 * sub_mod_id == 2 ---> v785,
+	 * sub_mod_id == 3 ---> v785n */
 	uint32_t sig;
 	uint32_t buf[50]; /* big enough to accomadate a v775 event plus the
 			     additional header .*/
@@ -709,10 +714,34 @@ int ebd_sort::handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len, b
 	return save_evt(buf, evt, evt_len_w, ts);
 
 err_data:
-	return is_v775n ? -E_DATA_V775N : -E_DATA_V775;
+
+	switch (sub_mod_id) {
+	case 0:
+		return -E_DATA_V775;
+	case 1:
+		return -E_DATA_V775N;
+	case 2:
+		return -E_DATA_V785;
+	case 3:
+		return -E_DATA_V785N;
+	default:
+		return -E_UNKOWN_MOD;
+	}
 }
 
 int ebd_sort::handle_single_evt_v775n(uint32_t* evt, int& evt_len, int max_len)
 {
-	return handle_single_evt_v775(evt, evt_len, max_len, true);
+	return handle_single_evt_v775(evt, evt_len, max_len, 1);
+}
+
+
+
+int ebd_sort::handle_single_evt_v785(uint32_t* evt, int& evt_len, int max_len)
+{
+	return handle_single_evt_v775(evt, evt_len, max_len, 2);
+}
+
+int ebd_sort::handle_single_evt_v785n(uint32_t* evt, int& evt_len, int max_len)
+{
+	return handle_single_evt_v775(evt, evt_len, max_len, 3);
 }

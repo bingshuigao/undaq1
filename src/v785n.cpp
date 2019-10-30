@@ -1,12 +1,12 @@
-#include "v775n.h"
+#include "v785n.h"
 
-v775n::v775n()
+v785n::v785n()
 {
 	/* set buffer offset */
 	buf_off = 0x0;
 	
-	name = "v775n";
-	mod_id = 7;
+	name = "v785n";
+	mod_id = 9;
 	clk_freq = DEF_MADC32_CLK;
 }
 
@@ -15,7 +15,7 @@ v775n::v775n()
  * @param evt Pointer to the buffer where the word will be saved
  * @param sz_out number of bytes read.
  * @return 0 if succeed, nonzero error codes if error. */
-int v775n::read_single_evt(int am, uint32_t *evt, int* sz_out)
+int v785n::read_single_evt(int am, uint32_t *evt, int* sz_out)
 {
 	int ret, am_old;
 
@@ -23,7 +23,7 @@ int v775n::read_single_evt(int am, uint32_t *evt, int* sz_out)
 	set_am(am);
 	*sz_out = 0;
 	do {
-		/* event buffer address (offset) in the v775n is 0x0000 */
+		/* event buffer address (offset) in the v785n is 0x0000 */
 		ret = read_reg(base_addr, 32, (void*) evt);
 		if (ret) {
 			set_am(am_old);
@@ -42,7 +42,7 @@ int v775n::read_single_evt(int am, uint32_t *evt, int* sz_out)
  * @param mcst_addr The mcst_addr to be used. If zero, use the default
  * address (0xBB)
  * @return 0 if succeed, nonzero error codes if error. */
-int v775n::enable_mcst(uint32_t mcst_addr)
+int v785n::enable_mcst(uint32_t mcst_addr)
 {
 	return -E_NOT_IMPLE;
 }
@@ -54,11 +54,11 @@ int v775n::enable_mcst(uint32_t mcst_addr)
  * @param last  if true, set the module to be the last  one in the cblt
  * chain
  * @return 0 if succeed, nonzero error codes if error.*/
-int v775n::enable_cblt(uint32_t cblt_addr, int first, int last)
+int v785n::enable_cblt(uint32_t cblt_addr, int first, int last)
 {
 	return -E_NOT_IMPLE;
 }
-int v775n::get_cblt_conf(uint16_t* addr, int* cblt_enable, int* cblt_first,
+int v785n::get_cblt_conf(uint16_t* addr, int* cblt_enable, int* cblt_first,
 		int* cblt_last)
 {
 	int ret;
@@ -82,7 +82,7 @@ int v775n::get_cblt_conf(uint16_t* addr, int* cblt_enable, int* cblt_first,
 	return 0;
 }
 
-int v775n::if_trig(bool& x)
+int v785n::if_trig(bool& x)
 {
 	uint16_t data_ready;
 	int ret;
@@ -97,7 +97,7 @@ int v775n::if_trig(bool& x)
 	return 0;
 }
 
-int v775n::on_start()
+int v785n::on_start()
 {
 	/* clear the fifo and reset the evt counter */
 	uint16_t dum = 0x4;
@@ -109,7 +109,7 @@ int v775n::on_start()
 	return 0;
 }
 
-int v775n::on_stop()
+int v785n::on_stop()
 {
 	/* reset timestamp */
 

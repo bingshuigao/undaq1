@@ -193,6 +193,8 @@ protected:
 	 * v1740  --> mod_id = 5;
 	 * v775   --> mod_id = 6;
 	 * v775n  --> mod_id = 7;
+	 * v785   --> mod_id = 8;
+	 * v785n  --> mod_id = 9;
 	 * */
 	uint32_t mod_id;
 	

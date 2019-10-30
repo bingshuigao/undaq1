@@ -312,6 +312,12 @@ static int create_mod(std::string& name, module*& mod)
 		else
 			mod = new v775n;
 	}
+	else if (name.find("V785") != std::string::npos) {
+		if (name.find("V785N") == std::string::npos)
+			mod = new v785;
+		else
+			mod = new v785n;
+	}
 	else {
 		if (name.find("V2718") == std::string::npos)
 			/* unknown module found */
@@ -389,6 +395,46 @@ static int set_v1740_dc(v1740* mod, uint32_t off, uint32_t val)
 	return 0;
 }
 
+
+/* initialize vme module, return 0 if succeed, otherwise return error code */
+static int 
+do_init_v785(v785* mod, std::vector<struct conf_vme_mod> &the_conf)
+{
+	uint16_t dum = 0x80;
+	/* First, we need to soft-reset all settings */
+	if (mod->write_reg(0x1006, 16, &dum))
+		return -E_INIT_V785;
+	if (mod->write_reg(0x1008, 16, &dum))
+		return -E_INIT_V785;
+	/* then init all registers with non-default values */
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name != "") 
+			continue;
+		/* this is a register setting */
+		uint32_t off = (*it).offset;
+		uint16_t val = (*it).val.val_uint64;
+		if ((off >= 0x1000) && (off <= 0x10be)) {
+			/* this is a physical register */
+			if (mod->write_reg(off, 16, &val))
+				return -E_INIT_V785;
+		}
+		else {
+			/* unknown register */
+			return -E_INIT_V785;
+		}
+	}
+
+	/* lastly, init other register that use non-default values but not
+	 * exposed to the user in the config */
+	/* enable BERR_ENABLE */
+	dum = 0x20;
+	if (mod->write_reg(0x1010, 16, &dum))
+		return -E_INIT_V785;
+
+	return 0;
+}
+
+
 /* initialize vme module, return 0 if succeed, otherwise return error code */
 static int 
 do_init_v775(v775* mod, std::vector<struct conf_vme_mod> &the_conf)
@@ -416,6 +462,13 @@ do_init_v775(v775* mod, std::vector<struct conf_vme_mod> &the_conf)
 			return -E_INIT_V775;
 		}
 	}
+
+	/* lastly, init other register that use non-default values but not
+	 * exposed to the user in the config */
+	/* enable BERR_ENABLE */
+	dum = 0x20;
+	if (mod->write_reg(0x1010, 16, &dum))
+		return -E_INIT_V775;
 
 	return 0;
 }
@@ -744,6 +797,8 @@ static int do_init_mod(module* mod, std::vector<struct conf_vme_mod> &the_conf)
 		return do_init_v1740(static_cast<v1740*>(mod), the_conf);
 	if (name == "v775" || name == "v775n")
 		return do_init_v775(static_cast<v775*>(mod), the_conf);
+	if (name == "v785" || name == "v785n")
+		return do_init_v785(static_cast<v785*>(mod), the_conf);
 	return -E_UNKOWN_MOD;
 }
 

@@ -103,7 +103,7 @@ int v775::on_start()
 	uint16_t dum = 0x4;
 	int ret = write_reg(0x1032, 16, &dum);
 	RET_IF_NONZERO(ret);
-	ret = write_reg(0x1034, 14, &dum);
+	ret = write_reg(0x1034, 16, &dum);
 	RET_IF_NONZERO(ret);
 
 	return 0;
