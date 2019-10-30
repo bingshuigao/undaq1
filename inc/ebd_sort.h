@@ -83,6 +83,8 @@ private:
 			return handle_single_evt_v1740(evt, evt_len, max_len);
 		case 6: 
 			return handle_single_evt_v775(evt, evt_len, max_len);
+		case 7: 
+			return handle_single_evt_v775n(evt, evt_len, max_len);
 		default:
 			return -E_UNKOWN_MOD;
 		}
@@ -91,7 +93,8 @@ private:
 	int handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v830(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len);
-	int handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len);
+	int handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len, bool is_v775n = false);
+	int handle_single_evt_v775n(uint32_t* evt, int& evt_len, int max_len);
 
 
 	/* initialize the rb_map. 

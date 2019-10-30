@@ -307,7 +307,10 @@ static int create_mod(std::string& name, module*& mod)
 		mod = new v1740;
 	}
 	else if (name.find("V775") != std::string::npos) {
-		mod = new v775;
+		if (name.find("V775N") == std::string::npos)
+			mod = new v775;
+		else
+			mod = new v775n;
 	}
 	else {
 		if (name.find("V2718") == std::string::npos)
@@ -739,7 +742,7 @@ static int do_init_mod(module* mod, std::vector<struct conf_vme_mod> &the_conf)
 		return do_init_v830(static_cast<v830*>(mod), the_conf);
 	if (name == "v1740")
 		return do_init_v1740(static_cast<v1740*>(mod), the_conf);
-	if (name == "v775")
+	if (name == "v775" || name == "v775n")
 		return do_init_v775(static_cast<v775*>(mod), the_conf);
 	return -E_UNKOWN_MOD;
 }

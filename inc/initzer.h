@@ -24,6 +24,7 @@
 #include "v830.h"
 #include "v1740.h"
 #include "v775.h"
+#include "v775n.h"
 #endif
 
 struct mod_rb_par

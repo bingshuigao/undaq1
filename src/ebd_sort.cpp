@@ -660,7 +660,7 @@ uint64_t ebd_sort::get_mono_evt_cnt(uint64_t evt_cnt, int n_bit)
 	return n_range * p_udata[3] + p_udata[2];
 }
 
-int ebd_sort::handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len)
+int ebd_sort::handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len, bool is_v775n)
 {
 	uint32_t sig;
 	uint32_t buf[50]; /* big enough to accomadate a v775 event plus the
@@ -709,5 +709,10 @@ int ebd_sort::handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len)
 	return save_evt(buf, evt, evt_len_w, ts);
 
 err_data:
-	return -E_DATA_V775;
+	return is_v775n ? -E_DATA_V775N : -E_DATA_V775;
+}
+
+int ebd_sort::handle_single_evt_v775n(uint32_t* evt, int& evt_len, int max_len)
+{
+	return handle_single_evt_v775(evt, evt_len, max_len, true);
 }
