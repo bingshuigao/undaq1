@@ -23,6 +23,8 @@ public:
 		type = 'T';
 		timer = NULL;
 		geo = -1;
+		clk_freq = 0;
+		clk_off = 0;
 	}
 	~module() {};
 
@@ -51,6 +53,8 @@ public:
 	void reset_timer() {timer->reset();}
 	uint64_t get_clk_freq() {return clk_freq;}
 	void set_clk_freq(uint64_t freq) {clk_freq = freq;}
+	uint64_t get_clk_off() {return clk_off;}
+	void set_clk_off(uint64_t off) {clk_off = off;}
 
 
 
@@ -217,8 +221,9 @@ protected:
 	/* if the module is a trigger module */
 	bool trig_mod;
 
-	/* The clock frequency (used by event builder) */
+	/* The clock frequency and offset (used by event builder) */
 	uint64_t clk_freq;
+	uint64_t clk_off;
 
 	/* if the module is a scaler type module */
 	my_timer* timer;

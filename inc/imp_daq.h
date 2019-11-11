@@ -105,8 +105,10 @@
 #define MAX_MODULE 21 
 #define MAX_SLOT_MAP (MAX_CRATE*MAX_MODULE_ID*MAX_GEO)
 #define MAX_CLK_MAP (MAX_CRATE*MAX_MODULE)
+#define MAX_CLK_OFF_MAP (MAX_CRATE*MAX_MODULE)
 #define SLOT_MAP_IDX(crate, mod_id, geo) ((crate)*MAX_MODULE_ID*MAX_GEO + (mod_id)*MAX_GEO + (geo))
 #define CLK_MAP_IDX(crate, slot) ((crate)*MAX_MODULE + slot)
+#define CLK_OFF_MAP_IDX(crate, slot) ((crate)*MAX_MODULE + slot)
 
 /* thread id numbers */
 #define EBD_RECV 1

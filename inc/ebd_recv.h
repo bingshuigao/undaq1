@@ -51,6 +51,7 @@ private:
 private:
 	char slot_map[MAX_SLOT_MAP];
 	uint64_t clk_map[MAX_CLK_MAP];
+	uint64_t clk_off_map[MAX_CLK_OFF_MAP];
 
 	/* total number of receiver threads */
 	int total_thread;

@@ -73,7 +73,9 @@ initzer::initzer()
 	slot_map_inited = false;
 	memset(slot_map, 0, MAX_SLOT_MAP);
 	clk_map_inited = false;
+	clk_off_map_inited = false;
 	memset(clk_map, 0, MAX_CLK_MAP*8);
+	memset(clk_off_map, 0, MAX_CLK_OFF_MAP*8);
 	rb_fe = NULL;
 	rb_fe2 = NULL;
 	rb_ebd2 = NULL;
@@ -838,6 +840,8 @@ int initzer::init_vme_mod()
 		RET_IF_NONZERO(ret);
 		ret = fill_clk_map(tmp);
 		RET_IF_NONZERO(ret);
+		ret = fill_clk_off_map(tmp);
+		RET_IF_NONZERO(ret);
 		p_module.push_back(tmp);
 	}
 
@@ -1020,6 +1024,13 @@ int initzer::init_global_var(module* mod,
 			break;
 		}
 	}
+	/* get clock offset (to be used in event builder)*/
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name == "clk_off") {
+			mod->set_clk_off((*it).val.val_uint64);
+			break;
+		}
+	}
 
 	/* assign the correct vme controller to the module */
 	mod->set_ctl(NULL);
@@ -1059,6 +1070,19 @@ int initzer::fill_slot_map(module* mod)
 	return 0;
 }
 
+int initzer::fill_clk_off_map(module* mod)
+{
+	int crate = mod->get_crate();
+	int slot = mod->get_slot();
+	uint64_t clk_off = mod->get_clk_off();
+
+	if (crate >= MAX_CRATE)
+		return -E_MAX_CRATE;
+
+	clk_off_map[CLK_OFF_MAP_IDX(crate,slot)] = clk_off;
+	clk_off_map_inited = true;
+	return 0;
+}
 int initzer::fill_clk_map(module* mod)
 {
 	int crate = mod->get_crate();

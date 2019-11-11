@@ -296,6 +296,7 @@ public:
 	/* return NULL indicating errors */
 	char* get_slot_map() {return slot_map;}
 	uint64_t* get_clk_map() {return clk_map;}
+	uint64_t* get_clk_off_map() {return clk_off_map;}
 
 private:
 #ifdef MAKE_FRONTEND
@@ -341,6 +342,7 @@ private:
 
 	/* similar as fill_slot_map() */
 	int fill_clk_map(module* mod);
+	int fill_clk_off_map(module* mod);
 #endif
 
 	/* get the advanced variable (by name),
@@ -432,6 +434,10 @@ private:
 	/* similar as slot map */
 	uint64_t clk_map[MAX_CLK_MAP];
 	bool clk_map_inited;
+
+	/* similar as slot map */
+	uint64_t clk_off_map[MAX_CLK_OFF_MAP];
+	bool clk_off_map_inited;
 };
 
 

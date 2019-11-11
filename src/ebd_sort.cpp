@@ -12,6 +12,7 @@ ebd_sort::ebd_sort()
 	evt_buf = NULL;
 	slot_map = NULL;
 	clk_map = NULL;
+	clk_off_map = NULL;
 	mask_to_slot = NULL;
 	ebd_type = EBD_TYPE_TS;
 	for (i = 0; i < MAX_CRATE; i++) {
@@ -95,6 +96,7 @@ int ebd_sort::handle_msg(uint32_t* msg_body)
 	 * 1 --> run status transition
 	 * 2 --> slot map and init_rb_map
 	 * 3 --> clock map
+	 * 4 --> clock offset map
 	 * */
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
 	int ret;
@@ -123,11 +125,33 @@ int ebd_sort::handle_msg(uint32_t* msg_body)
 			RET_IF_NONZERO(ret);
 		}
 		return ret;
+	case 4:
+		ret = 0;
+		sub_clk_off_map.push_back((reinterpret_cast<uint64_t**>(msg_body+1))[0]);
+		if (sub_clk_off_map.size() == (reinterpret_cast<uint64_t*>(msg_body+1))[1]) {
+			/* all parts have been received, now build the whole map */
+			ret = build_clk_off_map();
+			RET_IF_NONZERO(ret);
+		}
+		return ret;
 	default:
 		return -E_MSG_TYPE;
 	}
 }
 
+int ebd_sort::build_clk_off_map()
+{
+	clk_off_map = sub_clk_off_map[0];
+	int i;
+	for (auto it = sub_clk_off_map.begin()+1; it != sub_clk_off_map.end(); it++) {
+		for (i = 0; i < MAX_CLK_OFF_MAP; i++) 
+			/* if the sub map contains no information on a specific
+			 * slot, then its value should be zero, so we can just
+			 * addup all sub maps. */
+			clk_off_map[i] += (*it)[i];
+	}
+	return 0;
+}
 int ebd_sort::build_clk_map()
 {
 	clk_map = sub_clk_map[0];
@@ -188,6 +212,8 @@ int ebd_sort::main_proc()
 	if (!slot_map)
 		return 0;
 	if (!clk_map)
+		return 0;
+	if (!clk_off_map)
 		return 0;
 
 	/* We need to look into the (all) ring buffer(s) of raw data rb_fe. The
@@ -362,10 +388,11 @@ void ebd_sort::set_slot_mask(uint32_t mask)
 	slot = mask_to_slot[mask_old];
 }
 
-uint64_t ebd_sort::get_mono_ts(uint64_t ts, int n_bit, int freq)
+uint64_t ebd_sort::get_mono_ts(uint64_t ts, int n_bit, int freq, int off)
 {
 	uint64_t t_ellips, t_range, n_overf;
 
+	ts += off;
 	if (n_bit >= 64)
 		/* it should never overflow */
 		return ts;
@@ -388,7 +415,7 @@ uint64_t ebd_sort::get_mono_ts(uint64_t ts, int n_bit, int freq)
 int ebd_sort::handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len)
 {
 	uint32_t sig;
-	uint64_t ts_hi, ts_mono, ts, clk_freq, evt_cnt;
+	uint64_t ts_hi, ts_mono, ts, clk_freq, clk_off, evt_cnt;
 	int idx, evt_len_w;
 	
 	/* first, we make sure that it has event header */
@@ -418,7 +445,8 @@ int ebd_sort::handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len)
 	if (ebd_type == EBD_TYPE_TS) {
 		/* calculate the monotonic time stamp */
 		clk_freq = clk_map[CLK_MAP_IDX(crate, slot)];
-		ts = get_mono_ts(ts, 31, clk_freq);
+		clk_off = clk_off_map[CLK_OFF_MAP_IDX(crate, slot)];
+		ts = get_mono_ts(ts, 31, clk_freq, clk_off);
 		if (ts == 0)
 			return -E_SYNC_CLOCK;
 		ts = static_cast<uint64_t>(ts * (1. * hz / clk_freq));
@@ -439,7 +467,7 @@ int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 	uint32_t sig;
 	uint32_t buf[50]; /* big enough to accomadate a madc32 event plus the
 			     additional header .*/
-	uint64_t ts, ts_hi, ts_mono, clk_freq, evt_cnt;
+	uint64_t ts, ts_hi, ts_mono, clk_freq, evt_cnt, clk_off;
 	bool has_et = false;
 	int idx, evt_len_w;
 	
@@ -499,10 +527,11 @@ int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 		/* ***********/
 		
 		clk_freq = clk_map[CLK_MAP_IDX(crate, slot)];
+		clk_off = clk_off_map[CLK_OFF_MAP_IDX(crate, slot)];
 		/* debug ...*/
 		std::cout<<"clk: "<<"clk_freq"<<std::endl;
 		/* ***********/
-		ts = get_mono_ts(ts, has_et ? 46 : 30, clk_freq);
+		ts = get_mono_ts(ts, has_et ? 46 : 30, clk_freq, clk_off);
 		if (ts == 0)
 			return -E_SYNC_CLOCK;
 		ts = static_cast<uint64_t>(ts * (1. * hz / clk_freq));
@@ -531,7 +560,7 @@ int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
 	 * frequency of 40MHz. If this is not the case, things may go wrong */
 	uint32_t sig; 
 	uint32_t buf[2000]; /* should be big enough */
-	uint64_t ts, ts_hi, ts_mono, clk_freq, evt_cnt;
+	uint64_t ts, ts_hi, ts_mono, clk_freq, evt_cnt, clk_off;
 	int evt_len_wd, geo, i;
 	bool has_ettt = false;
 
@@ -595,9 +624,10 @@ int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
 
 		/* calculate the monotonic time stamp */
 		clk_freq = clk_map[CLK_MAP_IDX(crate, slot)];
+		clk_off = clk_off_map[CLK_OFF_MAP_IDX(crate, slot)];
 		if (clk_freq != 40000000)
 			return -E_V1190_CLOCK;
-		ts = get_mono_ts(ts, 32, clk_freq);
+		ts = get_mono_ts(ts, 32, clk_freq, clk_off);
 		if (ts == 0)
 			return -E_SYNC_CLOCK;
 		ts = static_cast<uint64_t>(ts * (1. * hz / clk_freq));

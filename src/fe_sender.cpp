@@ -34,6 +34,7 @@ int fe_sender::fe_sender_init(my_thread* ptr, initzer* the_initzer)
 	This->sock_buf = new unsigned char[This->sock_buf_sz];
 	This->slot_map = the_initzer->get_slot_map();
 	This->clk_map = the_initzer->get_clk_map();
+	This->clk_off_map = the_initzer->get_clk_off_map();
 
 	return 0;
 }
@@ -80,6 +81,8 @@ int fe_sender::start()
 		RET_IF_NONZERO(ret);
 		ret = send_clk_map();
 		RET_IF_NONZERO(ret);
+		ret = send_clk_off_map();
+		RET_IF_NONZERO(ret);
 	}
 
 	/* proporgate the start message to thread 2*/
@@ -115,6 +118,10 @@ int fe_sender::send_slot_map()
 int fe_sender::send_clk_map()
 {
 	return do_send(sock, clk_map, MAX_CLK_MAP*8, 0);
+}
+int fe_sender::send_clk_off_map()
+{
+	return do_send(sock, clk_off_map, MAX_CLK_OFF_MAP*8, 0);
 }
 
 int fe_sender::stop()

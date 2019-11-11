@@ -121,11 +121,12 @@ private:
 	 * @param n_bit the number of bit of the module event time stamp
 	 * @param freq if non zero, we use this value as the clock frequency
 	 * instead of hz
+	 * @param off if non zero, an offset will be added to the time stamp
 	 * @return return the calculated monotonic time stamp. If the time
 	 * stamp does not match the system clock time, return 0 indicating
 	 * errors. 
 	 * */
-	uint64_t get_mono_ts(uint64_t ts, int n_bit, int req = 0);
+	uint64_t get_mono_ts(uint64_t ts, int n_bit, int req = 0, int off = 0);
 	
 	/* similar to the get_mono_ts, but for event counter. */
 	uint64_t get_mono_evt_cnt(uint64_t evt_cnt, int n_bit);
@@ -154,6 +155,7 @@ private:
 
 	/* see build_slot_map */
 	int build_clk_map();
+	int build_clk_off_map();
 
 
 private:
@@ -202,6 +204,8 @@ private:
 	 * is slot number. */
 	uint64_t* clk_map;
 	std::vector<uint64_t*> sub_clk_map;
+	uint64_t* clk_off_map;
+	std::vector<uint64_t*> sub_clk_off_map;
 
 	/* the ring buffer map. similar as the slot_map. to get the pointer of
 	 * the ring buffer for the module in crate n and slot m, just say:

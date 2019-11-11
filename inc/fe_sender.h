@@ -60,6 +60,7 @@ protected:
 	
 	/* similar as slot map*/
 	int send_clk_map();
+	int send_clk_off_map();
 
 	/* send the mod_rb_par to the event builder. The event builder will
 	 * need these data to create the dedicated ring buffers for each
@@ -86,6 +87,7 @@ private:
 	int sock_buf_sz;
 	char* slot_map;
 	uint64_t* clk_map;
+	uint64_t* clk_off_map;
 
 
 };

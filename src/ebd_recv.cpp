@@ -67,6 +67,7 @@ int ebd_recv::start()
 		int sz;
 		char* p_slot_map[2];
 		uint64_t* p_clk_map[2];
+		uint64_t* p_clk_off_map[2];
 		
 		/* ring buffer */
 		ret = init_rb_data();
@@ -96,6 +97,17 @@ int ebd_recv::start()
 		p_clk_map[0] = clk_map;
 		p_clk_map[1] = reinterpret_cast<uint64_t*>(total_thread);
 		ret = send_msg(EBD_SORT, 3, p_clk_map, sizeof(uint64_t*)*2);
+		RET_IF_NONZERO(ret);
+
+		/* clock offset map */
+		sz = MAX_CLK_OFF_MAP*8;
+		ret = recv(sock, clk_off_map, sz, MSG_WAITALL);
+		if (ret != sz)
+			return -E_SYSCALL;
+		/* tell the ebd_sort the address of the clk map */
+		p_clk_off_map[0] = clk_off_map;
+		p_clk_off_map[1] = reinterpret_cast<uint64_t*>(total_thread);
+		ret = send_msg(EBD_SORT, 4, p_clk_off_map, sizeof(uint64_t*)*2);
 		RET_IF_NONZERO(ret);
 	}
 
