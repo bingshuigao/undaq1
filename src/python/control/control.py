@@ -76,6 +76,7 @@ class control:
             self.fe_stat_lst.append('unknown')
 
         self.n_intv = 0
+        self.ctrl_stat = 'stop'
 
     def _create_logger_info(self):
         # the run number
@@ -209,8 +210,8 @@ class control:
         ebd_stat= self.ebd_stat_var.get()
         log_stat= self.log_stat_var.get()
         ana_stat= self.ana_stat_var.get()
-        if fe_stat == ebd_stat and fe_stat == log_stat and fe_stat == ana_stat:
-            return fe_stat
+        if self.ctrl_stat == fe_stat and self.ctrl_stat == ebd_stat and self.ctrl_stat == log_stat and self.ctrl_stat == ana_stat:
+            return self.ctrl_stat
         else:
             return 'inconsist'
 
@@ -340,6 +341,7 @@ class control:
         self.butt_stop.config(state=tk.DISABLED)
         self.butt_quit.config(state=tk.DISABLED)
         self.n_intv = 0
+        self.ctrl_stat = 'run'
         
 
 
@@ -362,6 +364,7 @@ class control:
         self.butt_stop.config(state=tk.DISABLED)
         self.butt_quit.config(state=tk.DISABLED)
         self.n_intv = 0
+        self.ctrl_stat = 'stop'
 
 
 
