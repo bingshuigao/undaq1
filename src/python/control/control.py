@@ -75,6 +75,8 @@ class control:
         for i in range(self.fe_num):
             self.fe_stat_lst.append('unknown')
 
+        self.n_intv = 0
+
     def _create_logger_info(self):
         # the run number
         tk.Label(self.root_win, text='run number: ', bg='#00ffff')\
@@ -87,6 +89,7 @@ class control:
         tk.Checkbutton(self.root_win, text='Save', bg='#f0f0f0', 
                 variable=self.save_flag_var).place(x=135, y=600, 
                         width=60, height=25)
+        self.save_flag_var.set(1)
 
 
     def _create_status_lable(self):
@@ -200,6 +203,18 @@ class control:
                 break
         self.fe_stat_var.set(tmp)
 
+
+    def _check_all_stat(self):
+        fe_stat = self.fe_stat_var.get()
+        ebd_stat= self.ebd_stat_var.get()
+        log_stat= self.log_stat_var.get()
+        ana_stat= self.ana_stat_var.get()
+        if fe_stat == ebd_stat and fe_stat == log_stat and fe_stat == ana_stat:
+            return fe_stat
+        else:
+            return 'inconsist'
+
+
     def _handle_fe_msg(self, msg, i):
         if not msg:
             return
@@ -224,6 +239,24 @@ class control:
                 self.ebd_stat_var.set('stop')
             elif run_stat == 1:
                 self.ebd_stat_var.set('run')
+        # Now check the overall status and enable/disable the buttons
+        # the 'n_intv' is to let the check status slower
+        self.n_intv += 1
+        if self.n_intv == 2:
+            self.n_intv = 0
+            status = self._check_all_stat()
+            if (status == 'stop'):
+                self.butt_start.config(state=tk.NORMAL)
+                self.butt_stop.config(state=tk.DISABLED)
+                self.butt_quit.config(state=tk.NORMAL)
+            elif (status == 'run'):
+                self.butt_start.config(state=tk.DISABLED)
+                self.butt_stop.config(state=tk.NORMAL)
+                self.butt_quit.config(state=tk.DISABLED)
+            elif (status == 'inconsist'):
+                self.butt_start.config(state=tk.DISABLED)
+                self.butt_stop.config(state=tk.DISABLED)
+                self.butt_quit.config(state=tk.DISABLED)
 
     def _handle_ana_msg(self, msg):
         if not msg:
@@ -302,6 +335,11 @@ class control:
         msg_tail = bytes([0 for i in range(112)])
         msg = msg_type + run_stat + run_num + if_save + msg_tail
         self.svr_log.send_all(msg)
+        # disable the 'star', 'stop' and 'quit' buttons
+        self.butt_start.config(state=tk.DISABLED)
+        self.butt_stop.config(state=tk.DISABLED)
+        self.butt_quit.config(state=tk.DISABLED)
+        self.n_intv = 0
         
 
 
@@ -319,6 +357,12 @@ class control:
             run_num += 1
             self.run_num_entry.delete(0, tk.END)
             self.run_num_entry.insert(tk.END, str(run_num))
+        # disable the 'star', 'stop' and 'quit' buttons
+        self.butt_start.config(state=tk.DISABLED)
+        self.butt_stop.config(state=tk.DISABLED)
+        self.butt_quit.config(state=tk.DISABLED)
+        self.n_intv = 0
+
 
 
             
