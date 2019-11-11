@@ -311,9 +311,16 @@ class control:
         run_stat = (0).to_bytes(length=4, byteorder='little')
         msg_tail = bytes([0 for i in range(120)])
         msg = msg_type + run_stat + msg_tail
-        # send the start message to frontend, event builder and analyzer
         for i in range(self.fe_num):
             self.svr_fe[i].send_all(msg)
+        # auto increment of the run number if 'if_save' is set:
+        if self.save_flag_var.get() == 1:
+            run_num = int(self.run_num_entry.get())
+            run_num += 1
+            self.run_num_entry.delete(0, tk.END)
+            self.run_num_entry.insert(tk.END, str(run_num))
+
+
             
 
     def _quit(self):
