@@ -239,24 +239,24 @@ class control:
                 self.ebd_stat_var.set('stop')
             elif run_stat == 1:
                 self.ebd_stat_var.set('run')
-        # Now check the overall status and enable/disable the buttons
-        # the 'n_intv' is to let the check status slower
-        self.n_intv += 1
-        if self.n_intv == 2:
-            self.n_intv = 0
-            status = self._check_all_stat()
-            if (status == 'stop'):
-                self.butt_start.config(state=tk.NORMAL)
-                self.butt_stop.config(state=tk.DISABLED)
-                self.butt_quit.config(state=tk.NORMAL)
-            elif (status == 'run'):
-                self.butt_start.config(state=tk.DISABLED)
-                self.butt_stop.config(state=tk.NORMAL)
-                self.butt_quit.config(state=tk.DISABLED)
-            elif (status == 'inconsist'):
-                self.butt_start.config(state=tk.DISABLED)
-                self.butt_stop.config(state=tk.DISABLED)
-                self.butt_quit.config(state=tk.DISABLED)
+            # Now check the overall status and enable/disable the buttons
+            # the 'n_intv' is to let the check status slower
+            self.n_intv += 1
+            if self.n_intv == 2:
+                self.n_intv = 0
+                status = self._check_all_stat()
+                if (status == 'stop'):
+                    self.butt_start.config(state=tk.NORMAL)
+                    self.butt_stop.config(state=tk.DISABLED)
+                    self.butt_quit.config(state=tk.NORMAL)
+                elif (status == 'run'):
+                    self.butt_start.config(state=tk.DISABLED)
+                    self.butt_stop.config(state=tk.NORMAL)
+                    self.butt_quit.config(state=tk.DISABLED)
+                elif (status == 'inconsist'):
+                    self.butt_start.config(state=tk.DISABLED)
+                    self.butt_stop.config(state=tk.DISABLED)
+                    self.butt_quit.config(state=tk.DISABLED)
 
     def _handle_ana_msg(self, msg):
         if not msg:
@@ -378,6 +378,8 @@ class control:
         self.svr_ebd.send_all(msg)
         self.svr_ana.send_all(msg)
         self.svr_log.send_all(msg)
+        # quit the mainloop 
+        self.root_win.quit()
 
 
     # create the notebook widget
