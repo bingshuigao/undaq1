@@ -20,9 +20,14 @@ int fe_ctl::handle_msg(uint32_t* msg_body)
          /* The message type of the current thread are defined as following:
           * msg_type == 1 --> run status transition.                        
           * msg_type == 2 --> to be defined yet 
-	  * msg_type == 3 --> A warning message*/                          
+	  * msg_type == 3 --> A warning message
+	  * msg_type == 4 --> reply to the query of statistics (from rd_trig
+	  * thread)
+	  * */                          
 
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
+	unsigned char gui_msg[128];
+	uint32_t* p_int = reinterpret_cast<uint32_t*>(gui_msg);
 
 	switch (msg_type) {
 	case 1:
@@ -32,6 +37,15 @@ int fe_ctl::handle_msg(uint32_t* msg_body)
 		/* this is a warning to be sent to controler */
 		std::cout<<"warning received!"<<std::endl;
 		return 0;
+	case 4:
+		/* reply from rd_trig thread on the statistics */
+		p_int[0] = 3; /* gui message type */
+		p_int[1] = msg_body[1];
+		p_int[2] = msg_body[2];
+		p_int[3] = msg_body[3];
+		p_int[4] = msg_body[4];
+		std::cout<<"sending rates..."<<std::endl;
+		return do_send(sock, gui_msg, 128, 0);
 	default:
 		return -E_MSG_TYPE;
 	}
@@ -137,6 +151,11 @@ int fe_ctl::handle_GUI_msg(unsigned char* msg)
 		p[0] = 2;
 		p[1] = real_stat;
 		ret = do_send(sock, msg_send, 128, 0);
+		RET_IF_NONZERO(ret);
+		break;
+	case 3:
+		/* query statistics, the respond has message type of 3 */
+		ret = send_msg(1, 4, NULL, 0);
 		RET_IF_NONZERO(ret);
 		break;
 	default:

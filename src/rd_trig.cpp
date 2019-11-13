@@ -2,6 +2,7 @@
 #include "err_code.h"
 #include <unistd.h>
 #include <string.h>
+#include <time.h>
 
 
 rd_trig::rd_trig()
@@ -21,6 +22,9 @@ int rd_trig::handle_msg(uint32_t* msg_body)
 	 * msg_type == 1 --> run status transition. 
 	 * msg_type == 2 --> readout scaler modules */
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
+	uint32_t stat[4];
+	struct timespec ts;
+	uint64_t cur_t; /* current time, in the unit of ms */
 
 	switch (msg_type) {
 	case 1:
@@ -32,6 +36,16 @@ int rd_trig::handle_msg(uint32_t* msg_body)
 	case 3:
 		/* a dummy message */
 		return 0;
+	case 4:
+		/* (the ctrl thread) queries the statistics */
+		clock_gettime(CLOCK_MONOTONIC_COARSE, &ts);
+		cur_t = ts.tv_sec * 1000L + ts.tv_nsec/1000000;
+		stat[0] = n_byte >> 32;        /* high word of n_byte */
+		stat[1] = n_byte & 0xffffffff; /* low word of n_byte */
+		stat[2] = cur_t >> 32;         /* high word of time */
+		stat[3] = cur_t & 0xffffffff;  /* low word of time */
+//		std::cout<<"sending rates from rd_trig..."<<std::endl;
+		return send_msg(4, 4, stat, 16);
 	default:
 		return -E_MSG_TYPE;
 	}

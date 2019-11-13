@@ -77,6 +77,7 @@ class control:
 
         self.n_intv = 0
         self.ctrl_stat = 'stop'
+        self.cur_time = [0 for i in range(self.fe_num)]
 
     def _create_logger_info(self):
         # the run number
@@ -179,19 +180,27 @@ class control:
         # This is the main part
         # Try to receive pending message from the clients (if any)
         # frontend
+        msg = 1
         for i in range(self.fe_num):
-            msg = self.svr_fe[i].try_recv()
-            self._handle_fe_msg(msg, i)
+            while msg:
+                msg = self.svr_fe[i].try_recv()
+                self._handle_fe_msg(msg, i)
         self._update_fe_stat()
         # event builder
-        msg = self.svr_ebd.try_recv()
-        self._handle_ebd_msg(msg)
+        msg = 1
+        while msg:
+            msg = self.svr_ebd.try_recv()
+            self._handle_ebd_msg(msg)
         # logger
-        msg = self.svr_log.try_recv()
-        self._handle_log_msg(msg)
+        msg = 1
+        while msg:
+            msg = self.svr_log.try_recv()
+            self._handle_log_msg(msg)
         # analyzer
-        msg = self.svr_ana.try_recv()
-        self._handle_ana_msg(msg)
+        msg = 1
+        while msg:
+            msg = self.svr_ana.try_recv()
+            self._handle_ana_msg(msg)
 
     def _update_fe_stat(self):
         tmp = self.fe_stat_lst[0]
@@ -227,6 +236,19 @@ class control:
                 self.fe_stat_lst[i] = 'stop'
             elif run_stat == 1:
                 self.fe_stat_lst[i] = 'run'
+        elif msg_type == 3:
+            # data rate
+            n_byte_hi = int.from_bytes(msg[4:8],   'little')
+            n_byte_lo = int.from_bytes(msg[8:12],  'little')
+            ts_hi     = int.from_bytes(msg[12:16], 'little')
+            ts_lo     = int.from_bytes(msg[16:20], 'little')
+            n_byte = (n_byte_hi<<32) + n_byte_lo
+            ts = (ts_hi<<32) + ts_lo
+            delta_t = ts - self.cur_time[i]
+            self.cur_time[i] = ts
+            print('fe_num = %d, n_byte = %d, ts = %d' % (i, n_byte, ts))
+
+
 
 
     def _handle_ebd_msg(self, msg):
@@ -295,6 +317,16 @@ class control:
         self.svr_ana.send_all(msg)
         self.svr_log.send_all(msg)
 
+    def _check_rate(self):
+        # send a query statistics message to the clients
+        msg_type = (3).to_bytes(length=4, byteorder='little')
+        msg_tail = bytes([0 for i in range(124)])
+        msg = msg_type + msg_tail
+        # send the message to all
+        for i in range(self.fe_num):
+            self.svr_fe[i].send_all(msg)
+            print('checking rate......')
+
     def _clock(self):
         # we check the listening socket periodically
         self._check_listen_sock()
@@ -302,6 +334,8 @@ class control:
         self._check_conn_sock()
         # check the run status
         self._check_stat()
+        if self.tab_ctrl.tab(self.tab_ctrl.select(), 'text').strip() == 'status':
+            self._check_rate()
         # setup the clock again
         self.root_win.after(self.t_ms, self._clock)
 

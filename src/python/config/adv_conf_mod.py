@@ -27,6 +27,13 @@ class adv_conf_mod(adv_conf):
                  'wid_type' : 'entry',
                  'comment' : None
                  })
+        # clock offset (in clock ticks)
+        self.var_lst.append({
+                 'value' : 'default',
+                 'name' : 'clk_off',
+                 'wid_type' : 'entry',
+                 'comment' : None
+                 })
 
 
 ########## TEST ##########
