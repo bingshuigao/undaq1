@@ -78,6 +78,7 @@ class control:
         self.n_intv = 0
         self.ctrl_stat = 'stop'
         self.cur_time = [0 for i in range(self.fe_num)]
+        self.cur_size = [0 for i in range(self.fe_num)]
 
     def _create_logger_info(self):
         # the run number
@@ -205,7 +206,7 @@ class control:
     def _update_fe_stat(self):
         tmp = self.fe_stat_lst[0]
         # debug ...
-        print('fe status updated: %s' % tmp)
+        #print('fe status updated: %s' % tmp)
         ###############
         for i in range(self.fe_num):
             if self.fe_stat_lst[i] != tmp:
@@ -243,10 +244,13 @@ class control:
             ts_hi     = int.from_bytes(msg[12:16], 'little')
             ts_lo     = int.from_bytes(msg[16:20], 'little')
             n_byte = (n_byte_hi<<32) + n_byte_lo
+            delta_n = n_byte - self.cur_size[i]
+            self.cur_size[i] = n_byte
             ts = (ts_hi<<32) + ts_lo
             delta_t = ts - self.cur_time[i]
             self.cur_time[i] = ts
-            print('fe_num = %d, n_byte = %d, ts = %d' % (i, n_byte, ts))
+            self.stat_tab.set_rate(1.*delta_n/delta_t)
+            #print('fe_num = %d, n_byte = %d, ts = %d, rate = %f (kB/s)' % (i, n_byte, ts, 1.*delta_n/delta_t))
 
 
 

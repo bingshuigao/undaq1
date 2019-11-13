@@ -22,6 +22,11 @@ class stat_tab:
         return self.frm
 
     def _create_all(self):
-        pass
+        self.label_rate = tk.Label(self.frm, text='data rate:', height=1,
+                width=100, anchor='w')
+        self.label_rate.place(x=0, y=0)
+
+    def set_rate(self, rate):
+        self.label_rate.config(text='data rate: %.2f kB/s'%rate)
 
 

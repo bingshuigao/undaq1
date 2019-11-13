@@ -116,9 +116,11 @@ int log_save::save_data(ring_buf* rb, bool& flag)
 			fp = fp_trig;
 		else if (rb == rb_scal)
 			fp = fp_scal;
-		ret = fwrite(data_buf, 1, sz, fp);
-		if (ret != sz) 
-			return -E_SYSCALL;
+		if (save) {
+			ret = fwrite(data_buf, 1, sz, fp);
+			if (ret != sz) 
+				return -E_SYSCALL;
+		}
 	}
 	else {
 		rb->rel_lock();

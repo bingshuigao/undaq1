@@ -15,6 +15,7 @@ int ana_usr_trig(void* p_evt, hist_man& hists)
 	idx = 3;
 
 	std::cout<<"total len: "<<len_tot<<" ts low: "<<p_dw[2]<<" ts hi: "<<p_dw[1]<<std::endl;
+	goto end;
 begin:
 	if (idx == len_tot)
 		goto end;
