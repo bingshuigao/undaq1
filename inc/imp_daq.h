@@ -13,6 +13,7 @@
 #include <iostream>
 #include <errno.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #define EBD_TYPE_TS 1
 #define EBD_TYPE_EVT_CNT 2
@@ -143,6 +144,32 @@ static inline int do_send(int sock, void* buf, int sz, int flag)
 		p_buf += ret;
 	}
 	return 0;
+}
+
+/* in cases where the message to the controller is larger than 128 bits, the
+ * message has to be split into multiple packets. The function below does this.
+ * */
+static inline int do_send_msg_all(int sock, void* buf, int sz_32bit, int flag)
+{
+	uint32_t msg_send[32];
+	uint32_t* p =  reinterpret_cast<uint32_t*>(buf);
+	uint32_t* p0 = p;
+	int i, ret;
+
+	msg_send[0] = *p; p++;
+	while (1) {
+		for (i = 1; i < 31; i++) {
+			msg_send[i] = *p; p++;
+			if (p - p0 == sz_32bit) {
+				msg_send[31] = 0;
+				return do_send(sock, msg_send, 128, 0);
+			}
+		}
+		msg_send[31] = 0x01010101;
+		ret = do_send(sock, msg_send, 128, 0);
+		RET_IF_NONZERO(ret);
+		msg_send[0] = 1000;
+	}
 }
 
 

@@ -90,7 +90,7 @@ int log_ctl::handle_GUI_msg(unsigned char* msg)
 	int ret;
 	int stat;
 	unsigned char msg_send[128];
-	int* p;
+	uint32_t* p;
 
 #ifdef DEBUG___
 //	printf("received msg type: %d\n", msg_type);
@@ -130,17 +130,31 @@ int log_ctl::handle_GUI_msg(unsigned char* msg)
 		break;
 	case 1:
 		/* query name */
-		p = reinterpret_cast<int32_t*>(msg_send);
+		p = reinterpret_cast<uint32_t*>(msg_send);
 		p[0] = 1;
+		p[31] = 0;
 		sprintf((char*)msg_send+4, "logger");
 		ret = do_send(sock, msg_send, 128, 0);
 		RET_IF_NONZERO(ret);
 		break;
 	case 2:
 		/* query status  */
-		p = reinterpret_cast<int32_t*>(msg_send);
+		p = reinterpret_cast<uint32_t*>(msg_send);
 		p[0] = 2;
 		p[1] = real_stat;
+		p[31] = 0;
+		ret = do_send(sock, msg_send, 128, 0);
+		RET_IF_NONZERO(ret);
+		break;
+	case 4:
+		/* qeury ring buffer status */
+		p = reinterpret_cast<uint32_t*>(msg_send);
+		p[0] = 4; /* message type */
+		p[1] = rb_scal->get_sz();
+		p[2] = rb_scal->get_used();
+		p[3] = rb_trig->get_sz();
+		p[4] = rb_trig->get_used();
+		p[31] = 0;
 		ret = do_send(sock, msg_send, 128, 0);
 		RET_IF_NONZERO(ret);
 		break;

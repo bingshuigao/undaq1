@@ -97,9 +97,11 @@ int ebd_sort::handle_msg(uint32_t* msg_body)
 	 * 2 --> slot map and init_rb_map
 	 * 3 --> clock map
 	 * 4 --> clock offset map
+	 * 5 --> query number of vme modules.
 	 * */
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
-	int ret;
+	int ret, i, j;
+	uint32_t n_mod;
 	switch (msg_type) {
 	case 1:
 		/* run status transition
@@ -133,6 +135,22 @@ int ebd_sort::handle_msg(uint32_t* msg_body)
 			ret = build_clk_off_map();
 			RET_IF_NONZERO(ret);
 		}
+		return ret;
+	case 5:
+		ret = 0;
+		if (!slot_map) {
+			/* we can respond to this query only if the slot map
+			 * (ring buffers) has been initialized. */
+			return 0;
+		}
+		n_mod = 0;
+		for (i = 0; i < MAX_CRATE; i++) {
+			for (j = 0; j < MAX_MODULE; j++) {
+				if (rb_map[i][j])
+					n_mod++;
+			}
+		}
+		ret = send_msg(5, 2, &n_mod, 4);
 		return ret;
 	default:
 		return -E_MSG_TYPE;

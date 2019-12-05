@@ -19,14 +19,26 @@ int ebd_ctl::handle_msg(uint32_t* msg_body)
 {
          /* The message type of the current thread are defined as following:
           * msg_type == 1 --> run status transition.                        
-          * msg_type == 2 --> to be defined yet */                          
+          * msg_type == 2 --> n_mod
+	  * */                          
 
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
+	uint32_t n_mod;
+	unsigned char msg_send[128];
+	uint32_t* p;
 
 	switch (msg_type) {
 	case 1:
 		/* run status transition */
 		return switch_run(msg_body[1]);
+	case 2:
+		/* The number of vme modules is returned in the message */
+		n_mod = msg_body[1];
+		p = reinterpret_cast<uint32_t*>(msg_send);
+		p[0] = 3;
+		p[1] = n_mod;
+		p[31] = 0;
+		return do_send(sock, msg_send, 128, 0);
 	default:
 		return -E_MSG_TYPE;
 	}
@@ -77,14 +89,14 @@ int ebd_ctl::ebd_ctl_init(my_thread* ptr, initzer* the_initzer)
 }
 
 
+unsigned char msg_send[1024*1024];
 int ebd_ctl::handle_GUI_msg(unsigned char* msg)
 {
 	uint32_t* p_msg = reinterpret_cast<uint32_t*>(msg);
 	uint32_t msg_type = p_msg[0];
 	int ret;
 	int stat;
-	unsigned char msg_send[128];
-	int* p;
+	uint32_t *p, *p0;
 #ifdef DEBUG___
 //	printf("received msg type: %d\n", msg_type);
 #endif
@@ -120,18 +132,65 @@ int ebd_ctl::handle_GUI_msg(unsigned char* msg)
 		break;
 	case 1:
 		/* query name */
-		p = reinterpret_cast<int32_t*>(msg_send);
+		p = reinterpret_cast<uint32_t*>(msg_send);
 		p[0] = 1;
+		p[31] = 0;
 		sprintf((char*)msg_send+4, "event builder");
 		ret = do_send(sock, msg_send, 128, 0);
 		RET_IF_NONZERO(ret);
 		break;
 	case 2:
 		/* query status  */
-		p = reinterpret_cast<int32_t*>(msg_send);
+		p = reinterpret_cast<uint32_t*>(msg_send);
 		p[0] = 2;
 		p[1] = real_stat;
+		p[31] = 0;
 		ret = do_send(sock, msg_send, 128, 0);
+		RET_IF_NONZERO(ret);
+		break;
+	case 3:
+		/* query number of vme modules (in the ebd_sort thread)*/
+		ret = send_msg(2, 5, NULL, 0);
+		RET_IF_NONZERO(ret);
+		break;
+	case 4:
+		/* query ring buffers status. unlike case 3, we can directly
+		 * query the ring buffer in this thread, because by the time we
+		 * receive this query, the rb_map (ebd_sort thread) must have
+		 * been initialized  */
+		p = reinterpret_cast<uint32_t*>(msg_send);
+		p0 = p;
+		/* the message header */
+		*p = 4; /* message type is 4 */
+		p++;
+
+		/* the receive buffers */
+		for (auto it = rb_fe.begin(); it != rb_fe.end(); it++) {
+			*p = (*it)->get_sz(); p++;
+			*p = (*it)->get_used(); p++;
+		}
+		/* the individual vme module buffers */
+		for (auto it = rb_data.begin(); it != rb_data.end(); it++) {
+			/* slot and crate number (the lower bytes)  */
+			*p = ((uint32_t*)(*it)->get_usr_data())[0]; p++; 
+			/* total and used size */
+			*p = (*it)->get_sz(); p++;
+			*p = (*it)->get_used(); p++;
+		}
+		/* the scaler buffer */
+		*p = rb_scal->get_sz(); p++;
+		*p = rb_scal->get_used(); p++;
+		/* the built-event buffer */
+		*p = rb_evt->get_sz(); p++;
+		*p = rb_evt->get_used(); p++;
+		
+		if (p-p0 <= 31) {
+			*p = 0;
+			ret = do_send(sock, msg_send, 128, 0);
+		}
+		else {
+			ret = do_send_msg_all(sock, msg_send, p-p0, 0);
+		}
 		RET_IF_NONZERO(ret);
 		break;
 	default:

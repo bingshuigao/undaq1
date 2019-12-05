@@ -30,7 +30,10 @@ class svr:
             except BlockingIOError:
                 return None
             end_mark = msg[-1]
-            msg_all += msg
+            head = int.from_bytes(msg[:4], 'little')
+            if head != 1000
+                msg_all += msg[:4]
+            msg_all += msg[4:124]
             if end_mark == 0:
                 return msg_all
 

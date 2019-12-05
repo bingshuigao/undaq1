@@ -45,6 +45,7 @@ int fe_ctl::handle_msg(uint32_t* msg_body)
 		p_int[3] = msg_body[3];
 		p_int[4] = msg_body[4];
 		std::cout<<"sending rates..."<<std::endl;
+		p_int[31] = 0;
 		return do_send(sock, gui_msg, 128, 0);
 	default:
 		return -E_MSG_TYPE;
@@ -103,7 +104,7 @@ int fe_ctl::handle_GUI_msg(unsigned char* msg)
 	uint32_t msg_type = p_msg[0];
 	int ret, stat;
 	unsigned char msg_send[128];
-	int *p;
+	uint32_t *p;
 #ifdef DEBUG___
 //	printf("received msg type: %d\n", msg_type);
 #endif
@@ -139,23 +140,37 @@ int fe_ctl::handle_GUI_msg(unsigned char* msg)
 		break;
 	case 1:
 		/* query name */
-		p = reinterpret_cast<int32_t*>(msg_send);
+		p = reinterpret_cast<uint32_t*>(msg_send);
 		p[0] = 1;
+		p[31] = 0;
 		sprintf((char*)msg_send+4, "frontend");
 		ret = do_send(sock, msg_send, 128, 0);
 		RET_IF_NONZERO(ret);
 		break;
 	case 2:
 		/* query status  */
-		p = reinterpret_cast<int32_t*>(msg_send);
+		p = reinterpret_cast<uint32_t*>(msg_send);
 		p[0] = 2;
 		p[1] = real_stat;
+		p[31] = 0;
 		ret = do_send(sock, msg_send, 128, 0);
 		RET_IF_NONZERO(ret);
 		break;
 	case 3:
 		/* query statistics, the respond has message type of 3 */
 		ret = send_msg(1, 4, NULL, 0);
+		RET_IF_NONZERO(ret);
+		break;
+	case 4:
+		/* query the status of the ring buffer (rb_data) */
+		p = reinterpret_cast<uint32_t*>(msg_send);
+		p[0] = 4;
+		p[1] = rb_data->get_sz(); /* total sz */ 
+		p[2] = rb_data->get_used(); /* used sz */
+		if (p[2] == -1)
+			return -E_SYSCALL;
+		p[31] = 0;
+		ret = do_send(sock, msg_send, 128, 0);
 		RET_IF_NONZERO(ret);
 		break;
 	default:

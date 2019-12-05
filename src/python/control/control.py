@@ -70,6 +70,9 @@ class control:
         self.n_client = 0
         self.n_conn_fe = 0
 
+        # The number of vme modules
+        self.n_mod = -1
+
         # frontend(s) status
         self.fe_stat_lst = []
         for i in range(self.fe_num):
@@ -251,6 +254,11 @@ class control:
             self.cur_time[i] = ts
             self.stat_tab.set_rate(1.*delta_n/delta_t)
             #print('fe_num = %d, n_byte = %d, ts = %d, rate = %f (kB/s)' % (i, n_byte, ts, 1.*delta_n/delta_t))
+        elif msg_type == 4:
+            tot_sz = int.from_bytes(msg[4:8], 'little')
+            use_sz = int.from_bytes(msg[8:12],'little')
+            print('frontend buffer: %d/%d' % (use_sz, tot_sz))
+
 
 
 
@@ -284,6 +292,40 @@ class control:
                     self.butt_start.config(state=tk.DISABLED)
                     self.butt_stop.config(state=tk.DISABLED)
                     self.butt_quit.config(state=tk.DISABLED)
+        elif msg_type == 3:
+            self.n_mod = int.from_bytes(msg[4:8], 'little')
+        elif msg_type == 4:
+            # the receivers ring buffers (the number is fe_num)
+            ptr = 4
+            for i in range(self.fe_num):
+                sz_tot = int.from_bytes(msg[ptr:ptr+4], 'little')
+                ptr += 4
+                sz_use = int.from_bytes(msg[ptr:ptr+4], 'little')
+                ptr += 4
+                print('ebd buffer: %d/%d', (sz_use, sz_tot))
+            # the individual vme module buffers (the number is n_mod)
+            for i in range(n_mod):
+                crate_slot = int.from_bytes(msg[ptr:ptr+4], 'little')
+                ptr += 4
+                sz_tot = int.from_bytes(msg[ptr:ptr+4], 'little')
+                ptr += 4
+                sz_use = int.from_bytes(msg[ptr:ptr+4], 'little')
+                ptr += 4
+                print('ebd buffer (crate: %d, slot %d): %d/%d',
+                        (crate_slot&0xff, (crate_slot>>8)&0xff, sz_use, sz_tot))
+            # the scaler buffer
+            sz_tot = int.from_bytes(msg[ptr:ptr+4], 'little')
+            ptr += 4
+            sz_use = int.from_bytes(msg[ptr:ptr+4], 'little')
+            ptr += 4
+            print('scaler buffer: %d/%d', (sz_use, sz_tot))
+            # the built-event buffer
+            sz_tot = int.from_bytes(msg[ptr:ptr+4], 'little')
+            ptr += 4
+            sz_use = int.from_bytes(msg[ptr:ptr+4], 'little')
+            ptr += 4
+            print('built event buffer: %d/%d', (sz_use, sz_tot))
+                
 
     def _handle_ana_msg(self, msg):
         if not msg:
@@ -296,6 +338,13 @@ class control:
                 self.ana_stat_var.set('stop')
             elif run_stat == 1:
                 self.ana_stat_var.set('run')
+        elif msg_type == 4:
+            sz_tot = int.from_bytes(msg[4:8], 'little')
+            sz_use = int.from_bytes(msg[8:12],'little')
+            print('ana scaler buffer: %d/%d', (sz_use, sz_tot))
+            sz_tot = int.from_bytes(msg[12:16], 'little')
+            sz_use = int.from_bytes(msg[16:20],'little')
+            print('ana trig buffer: %d/%d', (sz_use, sz_tot))
 
     def _handle_log_msg(self, msg):
         if not msg:
@@ -308,6 +357,13 @@ class control:
                 self.log_stat_var.set('stop')
             elif run_stat == 1:
                 self.log_stat_var.set('run')
+        elif msg_type == 4:
+            sz_tot = int.from_bytes(msg[4:8], 'little')
+            sz_use = int.from_bytes(msg[8:12],'little')
+            print('ana scaler buffer: %d/%d', (sz_use, sz_tot))
+            sz_tot = int.from_bytes(msg[12:16], 'little')
+            sz_use = int.from_bytes(msg[16:20],'little')
+            print('ana trig buffer: %d/%d', (sz_use, sz_tot))
 
     def _check_stat(self):
         # send a query status message to the clients
@@ -340,8 +396,41 @@ class control:
         self._check_stat()
         if self.tab_ctrl.tab(self.tab_ctrl.select(), 'text').strip() == 'status':
             self._check_rate()
+        # check the ring buffers
+        self._check_rb()
         # setup the clock again
         self.root_win.after(self.t_ms, self._clock)
+
+    def _check_rb(self):
+        # we do the checking only if the daq is in run status
+        if self._check_all_stat() != 'run':
+            return
+        # we do the checking only if the ring buffers tab is selected
+        if self.tab_ctrl.tab(self.tab_ctrl.select(), 'text').strip() != 'ring buffers':
+            return
+        if self.n_mod == -1:
+            # send a query n_mod message to the ebd client 
+            msg_type = (3).to_bytes(length=4, byteorder='little')
+            msg_tail = bytes([0 for i in range(124)])
+            msg = msg_type + msg_tail
+            # send the message to ebd
+            self.svr_ebd.send_all(msg)
+        else:
+            # send a query rb status message to all the clients
+            # the fe
+            msg_type = (4).to_bytes(length=4, byteorder='little')
+            msg_tail = bytes([0 for i in range(124)])
+            msg = msg_type + msg_tail
+            for i in range(self.fe_num):
+                self.svr_fe[i].send_all(msg)
+            # the ebd
+            self.svr_ebd.send_all(msg)
+            # the log
+            self.svr_log.send_all(msg)
+            # the ana
+            self.svr_ana.send_all(msg)
+
+
 
     # create the open and save buttons:
     def _create_buttons(self):
