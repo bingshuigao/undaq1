@@ -84,6 +84,7 @@ int ana_main::handle_msg(uint32_t* msg_body)
 int ana_main::start()
 {
 	acq_stat = DAQ_RUN;
+	n_evt[0] = n_evt[1] = 0;
 	return send_msg(1, 1, &acq_stat, 4);
 }
 

@@ -5,7 +5,7 @@
 #include <iostream>
 
 
-int ana_usr_trig(void* p_evt, hist_man& hists)
+int ana_usr_trig(void* p_evt, hist_man& hists, bool is_bor)
 {
 	uint32_t* p_dw = static_cast<uint32_t*>(p_evt);
 
@@ -53,7 +53,7 @@ end:
 }
 
 
-int ana_usr_scal(void* p_evt, hist_man& hists)
+int ana_usr_scal(void* p_evt, hist_man& hists, bool is_bor)
 {
 	uint32_t* p_dw = static_cast<uint32_t*>(p_evt);
 	uint32_t len_w = p_dw[0]/4;

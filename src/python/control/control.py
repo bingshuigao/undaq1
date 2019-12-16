@@ -304,7 +304,7 @@ class control:
                 ptr += 4
                 print('ebd buffer: %d/%d', (sz_use, sz_tot))
             # the individual vme module buffers (the number is n_mod)
-            for i in range(n_mod):
+            for i in range(self.n_mod):
                 crate_slot = int.from_bytes(msg[ptr:ptr+4], 'little')
                 ptr += 4
                 sz_tot = int.from_bytes(msg[ptr:ptr+4], 'little')
