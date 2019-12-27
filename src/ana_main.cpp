@@ -90,6 +90,15 @@ int ana_main::start()
 
 int ana_main::stop()
 {
+	/* we need to flush the buffer before stopping. we do it by looking at
+	 * the used size of the ring buffer, if non-zero, through another
+	 * 'stop' message into the message ring buffer, and then return with no
+	 * further processing (similar as ebd_sort)*/
+	if (rb_scal->get_used() || rb_evt->get_used()) {
+		int tmp = DAQ_STOP;
+		return send_msg(thread_id, 1, &tmp, 4);
+	}
+
 	acq_stat = DAQ_STOP;
 	return send_msg(3, 1, &acq_stat, 4);
 }

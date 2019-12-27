@@ -209,9 +209,19 @@ int ebd_sort::start()
 
 int ebd_sort::stop()
 {
-	acq_stat = DAQ_STOP;
+	/* we need to flush the ring buffers before stopping. We do it by
+	 * looking at the used size of the ring buffers, if non-zero, through
+	 * another 'stop' message into the message ring buffer, and then return
+	 * with no further processing.  */
+	for (auto it = rb_fe.begin(); it != rb_fe.end(); it++) {
+		if ((*it)->get_used()) {
+			int tmp = DAQ_STOP;
+			return send_msg(thread_id, 1, &tmp, 4);
+		}
+	}
 
 	/* proporgate the stop message to the next thread */
+	acq_stat = DAQ_STOP;
 	return send_msg(3, 1, &acq_stat, 4);
 }
 
