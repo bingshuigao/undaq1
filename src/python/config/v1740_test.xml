@@ -9,7 +9,7 @@
             </register>
             <register>
                 <offset>0xc</offset>
-                <value>0x2</value>
+                <value>0x300</value>
                 <comment>output mulp set</comment>
             </register>
             <register>
@@ -247,7 +247,7 @@
         </vme_module>
         <advanced_fe>
             <name>blt_buf_sz</name>
-            <value>0x1e84800</value>
+            <value>0x32000000</value>
             <comment>blt_buf_sz</comment>
         </advanced_fe>
     </frontend>

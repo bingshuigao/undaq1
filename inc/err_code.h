@@ -57,6 +57,7 @@
 #define E_DATA_V785            48 /* corrupted v785 data */
 #define E_INIT_V785            49 /* error in the v775 initialization */
 #define E_DATA_V785N           50 /* corrupted v785 data */
+#define E_DATA_EVT             51 /* corrupted whole event */
 
 
 
