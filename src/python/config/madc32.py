@@ -21,7 +21,7 @@ class madc32(vme_mod):
         for i in range(32):
             self.reg_map.append(
                     {'off' : 0x4000+i*2,
-                     'value' : 'default',
+                     'value' : 150,
                      'name' : 'threshold %02d' % i,
                      'nbit' : 13,
                      'has_set_wid' : True,
@@ -39,7 +39,7 @@ class madc32(vme_mod):
         # max transfer data
         self.reg_map.append(
                 {'off' : 0x601a,
-                 'value' : 'default',
+                 'value' : 0,
                  'name' : 'max trans data',
                  'nbit' : 14,
                  'has_set_wid' : True,
@@ -90,7 +90,7 @@ class madc32(vme_mod):
         # multi event
         self.reg_map.append(
                 {'off' : 0x6036,
-                 'value' : 'default',
+                 'value' : 3,
                  'name' : 'multi event',
                  'nbit' : 4,
                  'has_set_wid' : True,
@@ -101,7 +101,7 @@ class madc32(vme_mod):
         # marking type
         self.reg_map.append(
                 {'off' : 0x6038,
-                 'value' : 'default',
+                 'value' : 0,
                  'name' : 'marking type',
                  'nbit' : 2,
                  'has_set_wid' : True,
@@ -112,7 +112,7 @@ class madc32(vme_mod):
         # adc resolution
         self.reg_map.append(
                 {'off' : 0x6042,
-                 'value' : 'default',
+                 'value' : 4,
                  'name' : 'adc res',
                  'nbit' : 3,
                  'has_set_wid' : True,
@@ -123,7 +123,7 @@ class madc32(vme_mod):
         # input range
         self.reg_map.append(
                 {'off' : 0x6060,
-                 'value' : 'default',
+                 'value' : 2,
                  'name' : 'input range',
                  'nbit' : 2,
                  'has_set_wid' : True,
@@ -153,7 +153,7 @@ class madc32(vme_mod):
         # nim gate1 osc
         self.reg_map.append(
                 {'off' : 0x606a,
-                 'value' : 'default',
+                 'value' : 1,
                  'name' : 'nim g1 osc',
                  'nbit' : 1,
                  'has_set_wid' : True,
@@ -164,7 +164,7 @@ class madc32(vme_mod):
         # nim fast clear and ts reset
         self.reg_map.append(
                 {'off' : 0x606c,
-                 'value' : 'default',
+                 'value' : 1,
                  'name' : 'nim fc res',
                  'nbit' : 1,
                  'has_set_wid' : True,
@@ -174,7 +174,7 @@ class madc32(vme_mod):
         # reset counters AB
         self.reg_map.append(
                 {'off' : 0x6090,
-                 'value' : 'default',
+                 'value' : 12,
                  'name' : 'rst ctr',
                  'nbit' : 4,
                  'has_set_wid' : True,
@@ -183,7 +183,7 @@ class madc32(vme_mod):
         # time stamp source
         self.reg_map.append(
                 {'off' : 0x6096,
-                 'value' : 'default',
+                 'value' : 3,
                  'name' : 'ts src',
                  'nbit' : 2,
                  'has_set_wid' : True,

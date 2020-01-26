@@ -89,6 +89,9 @@ class vme_mod:
             self.max_crate = mod.get_max_crate() # max number of crate
             # name of the module
             self.name = name
+            # clear the intrinsic non-default values 
+            for reg in self.reg_map:
+                reg['value'] = 'default'
             # set non-default values of registers
             regs = mod.get_reg_map()
             for off,val in regs.items():
@@ -100,7 +103,7 @@ class vme_mod:
             self.crate = 0
             self.slot = 0
             self.base = 0x0
-            self.am_reg = 0
+            self.am_reg = 9
             self.type = 'T' 
             self.period = 1000
             self.max_crate = 1 
@@ -226,7 +229,11 @@ class vme_mod:
         return tmp
 
     # reverse of get_conf
-    def set_conf(self, conf):
+    def set_conf(self, conf, clr_all_reg=False):
+        if clr_all_reg:
+            # clear the intrinsic non-default values 
+            for reg in self.reg_map:
+                reg['value'] = 'default'
         for name, val, com in conf:
             try:
                 if name.startswith('glo'):

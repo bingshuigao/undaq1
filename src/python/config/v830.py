@@ -19,11 +19,12 @@ class v830(vme_mod):
         # channel enable pattern
         self.reg_map.append({
                  'off' : 0x1100,
-                 'value' : 'default',
+                 'value' : 0xffffffff,
                  'name' : 'ch enable',
                  'nbit' : 32,
                  'has_set_wid' : True,
                  'set_wid_type' : 'entry',
+                 'get_set_wid_val' : self._get_val_hex,
                  })
 
         # Dwell time
@@ -39,7 +40,7 @@ class v830(vme_mod):
         # control bit set
         self.reg_map.append({
                  'off' : 0x110a,
-                 'value' : 'default',
+                 'value' : 0xb1,
                  'name' : 'ctrl bit set',
                  'nbit' : 8,
                  'has_set_wid' : True,

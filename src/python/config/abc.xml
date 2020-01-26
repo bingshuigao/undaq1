@@ -44,6 +44,11 @@
             </global_var>
         </vme_module>
         <vme_module>
+            <register>
+                <offset>0x601a</offset>
+                <value>0x0</value>
+                <comment>max trans data</comment>
+            </register>
             <global_var>
                 <name>crate_n</name>
                 <value>0</value>

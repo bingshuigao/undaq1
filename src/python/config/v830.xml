@@ -1,0 +1,61 @@
+<?xml version="1.0" ?>
+<config>
+    <frontend>
+        <vme_module>
+            <register>
+                <offset>0x1100</offset>
+                <value>0xffffffff</value>
+                <comment>ch enable</comment>
+            </register>
+            <register>
+                <offset>0x110a</offset>
+                <value>0xb1</value>
+                <comment>ctrl bit set</comment>
+            </register>
+            <global_var>
+                <name>crate_n</name>
+                <value>0</value>
+                <comment>crate number</comment>
+            </global_var>
+            <global_var>
+                <name>slot_n</name>
+                <value>0</value>
+                <comment>slot number</comment>
+            </global_var>
+            <global_var>
+                <name>base</name>
+                <value>0x00000000</value>
+                <comment>base address</comment>
+            </global_var>
+            <global_var>
+                <name>am_reg</name>
+                <value>0x9</value>
+                <comment>am used to access most of the registers</comment>
+            </global_var>
+            <global_var>
+                <name>type</name>
+                <value>T</value>
+                <comment>type of module (Trigg/Scal)</comment>
+            </global_var>
+            <global_var>
+                <name>period</name>
+                <value>1000</value>
+                <comment>period of reading for scaler type modules</comment>
+            </global_var>
+            <global_var>
+                <name>max_crate</name>
+                <value>1</value>
+                <comment>max crate</comment>
+            </global_var>
+            <global_var>
+                <name>name</name>
+                <value>V830000</value>
+                <comment>name of the module</comment>
+            </global_var>
+        </vme_module>
+    </frontend>
+    <event_builder/>
+    <GUI_ctl/>
+    <logger/>
+    <analyzer/>
+</config>

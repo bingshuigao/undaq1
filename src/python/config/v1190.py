@@ -61,7 +61,7 @@ class v1190(vme_mod):
         # BLT event number:
         self.reg_map.append({
                  'off' : 0x1024,
-                 'value' : 'default',
+                 'value' : 0,
                  'name' : 'blt evt N',
                  'nbit' : 8,
                  'has_set_wid' : True,
@@ -132,7 +132,7 @@ class v1190(vme_mod):
         # acq mode (trigger matching or continous)
         self.reg_map.append({
                  'off' : 0,
-                 'value' : 'default',
+                 'value' : 0,
                  'name' : 'acq mode',
                  'nbit' : 1,
                  'has_set_wid' : True,
@@ -143,7 +143,7 @@ class v1190(vme_mod):
         # window width:
         self.reg_map.append({
                  'off' : 1,
-                 'value' : 'default',
+                 'value' : 150,
                  'name' : 'window width',
                  'nbit' : 12,
                  'has_set_wid' : True,
@@ -152,7 +152,7 @@ class v1190(vme_mod):
         # window offset:
         self.reg_map.append({
                  'off' : 2,
-                 'value' : 'default',
+                 'value' : -120,
                  'name' : 'window offset',
                  'nbit' : 16,
                  'has_set_wid' : True,
@@ -163,7 +163,7 @@ class v1190(vme_mod):
         # extra search margin
         self.reg_map.append({
                  'off' : 3,
-                 'value' : 'default',
+                 'value' : 10,
                  'name' : 'ex search',
                  'nbit' : 12,
                  'has_set_wid' : True,
@@ -172,7 +172,7 @@ class v1190(vme_mod):
         # reject margin
         self.reg_map.append({
                  'off' : 4,
-                 'value' : 'default',
+                 'value' : 5,
                  'name' : 'reject',
                  'nbit' : 12,
                  'has_set_wid' : True,
@@ -181,7 +181,7 @@ class v1190(vme_mod):
         # subtraction trigger time
         self.reg_map.append({
                  'off' : 5,
-                 'value' : 'default',
+                 'value' : 0,
                  'name' : 'sub trig T',
                  'nbit' : 1,
                  'has_set_wid' : True,
@@ -192,7 +192,7 @@ class v1190(vme_mod):
         # (pair->0, trailing->1, leading->2, trailing and leading->3)
         self.reg_map.append({
                  'off' : 6,
-                 'value' : 'default',
+                 'value' : 2,
                  'name' : 'edge detect',
                  'nbit' : 2,
                  'has_set_wid' : True,
@@ -204,7 +204,7 @@ class v1190(vme_mod):
         # (800ps->0, 200ps->1, 100ps->2, 25ps->3)
         self.reg_map.append({
                  'off' : 7,
-                 'value' : 'default',
+                 'value' : 2,
                  'name' : 'LSB',
                  'nbit' : 2,
                  'has_set_wid' : True,
@@ -217,7 +217,7 @@ class v1190(vme_mod):
         # 6.25ns->6, 12.5ns->7
         self.reg_map.append({
                  'off' : 8,
-                 'value' : 'default',
+                 'value' : 0,
                  'name' : 'pair res.',
                  'nbit' : 3,
                  'has_set_wid' : True,
@@ -239,7 +239,7 @@ class v1190(vme_mod):
         # TDC header and trailer:
         self.reg_map.append({
                  'off' : 10,
-                 'value' : 'default',
+                 'value' : 0,
                  'name' : 'tdc h&tr',
                  'nbit' : 1,
                  'has_set_wid' : True,
@@ -291,11 +291,12 @@ class v1190(vme_mod):
         for i in range(4):
             self.reg_map.append({
                      'off' : 16+i,
-                     'value' : 'default',
+                     'value' : 0xffffffff,
                      'name' : 'enable msk%d' % i,
                      'nbit' : 32,
                      'has_set_wid' : True,
                      'set_wid_type' : 'entry',
+                     'get_set_wid_val' : self._get_val_hex,
                      })
         # set global offset
         self.reg_map.append({
@@ -331,7 +332,7 @@ class v1190(vme_mod):
         # defined as offset = 500,501
         self.reg_map.append({
                  'off' : 500,
-                 'value' : 'default',
+                 'value' : 0x0a01,
                  'name' : 'ctrl bit set',
                  'nbit' : 13,
                  'has_set_wid' : True,

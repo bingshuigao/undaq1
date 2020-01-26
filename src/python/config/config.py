@@ -354,7 +354,7 @@ class config:
                 self.frontend.set_crate_n(crate_n)
             tmp = self.frontend.create_mod(name)
             conf = self._get_mod_conf(glo, reg, adv)
-            msg = tmp.set_conf(conf)
+            msg = tmp.set_conf(conf, True)
             if msg:
                 messagebox.showerror('error', msg, parent=self.root_win)
             self.frontend.update_win()

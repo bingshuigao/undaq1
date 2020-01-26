@@ -29,7 +29,7 @@
             </register>
             <register>
                 <offset>0x17</offset>
-                <value>0x100</value>
+                <value>0x200</value>
                 <comment>pulser a1</comment>
             </register>
             <global_var>
@@ -72,132 +72,222 @@
                 <value>V2718000</value>
                 <comment>name of the module</comment>
             </global_var>
-            <advance_var>
-                <name>is_trig_mod</name>
-                <value>0x0</value>
-                <comment>is_trig_mod</comment>
-            </advance_var>
         </vme_module>
         <vme_module>
             <register>
-                <offset>0x1180</offset>
-                <value>0x85c</value>
-                <comment>trig_th_G1</comment>
-            </register>
-            <register>
-                <offset>0x1198</offset>
-                <value>0x7fff</value>
-                <comment>DC_off_G1</comment>
-            </register>
-            <register>
-                <offset>0x11a8</offset>
-                <value>0xff</value>
-                <comment>enable_msk_G1</comment>
-            </register>
-            <register>
-                <offset>0x11c0</offset>
-                <value>0x26191d40</value>
-                <comment>low_DC_G1</comment>
-            </register>
-            <register>
-                <offset>0x11c4</offset>
-                <value>0x201b372c</value>
-                <comment>hi_DC_G1</comment>
-            </register>
-            <register>
-                <offset>0x1380</offset>
-                <value>0x85c</value>
-                <comment>trig_th_G3</comment>
-            </register>
-            <register>
-                <offset>0x1398</offset>
-                <value>0x7fff</value>
-                <comment>DC_off_G3</comment>
-            </register>
-            <register>
-                <offset>0x13a8</offset>
-                <value>0xff</value>
-                <comment>enable_msk_G3</comment>
-            </register>
-            <register>
-                <offset>0x13c0</offset>
-                <value>0x363b3926</value>
-                <comment>low_DC_G3</comment>
-            </register>
-            <register>
-                <offset>0x13c4</offset>
-                <value>0x30404c59</value>
-                <comment>hi_DC_G3</comment>
-            </register>
-            <register>
-                <offset>0x1580</offset>
-                <value>0x85c</value>
-                <comment>trig_th_G5</comment>
-            </register>
-            <register>
-                <offset>0x1598</offset>
-                <value>0x7fff</value>
-                <comment>DC_off_G5</comment>
-            </register>
-            <register>
-                <offset>0x15a8</offset>
-                <value>0xff</value>
-                <comment>enable_msk_G5</comment>
-            </register>
-            <register>
-                <offset>0x15c0</offset>
-                <value>0x2f4a3237</value>
-                <comment>low_DC_G5</comment>
-            </register>
-            <register>
-                <offset>0x15c4</offset>
-                <value>0x3337323c</value>
-                <comment>hi_DC_G5</comment>
-            </register>
-            <register>
-                <offset>0x800c</offset>
-                <value>0x6</value>
-                <comment>Nr. buf</comment>
-            </register>
-            <register>
-                <offset>0x8044</offset>
-                <value>0x0</value>
-                <comment>decim</comment>
-            </register>
-            <register>
-                <offset>0x810c</offset>
-                <value>0x40000000</value>
-                <comment>trig msk</comment>
-            </register>
-            <register>
-                <offset>0x8110</offset>
-                <value>0x2a</value>
-                <comment>GPO en msk</comment>
-            </register>
-            <register>
-                <offset>0x8114</offset>
-                <value>0x9c4</value>
-                <comment>post trig</comment>
-            </register>
-            <register>
-                <offset>0x8120</offset>
-                <value>0x2a</value>
-                <comment>grp en msk</comment>
-            </register>
-            <register>
-                <offset>0xef00</offset>
-                <value>0x10</value>
-                <comment>rd ctl</comment>
-            </register>
-            <register>
-                <offset>0xef08</offset>
-                <value>0x1</value>
-                <comment>bd id</comment>
-            </register>
-            <register>
-                <offset>0xef1c</offset>
+                <offset>0x4000</offset>
                 <value>0x64</value>
-                <comment>max blt N</comment>
+                <comment>threshold 00</comment>
+            </register>
+            <register>
+                <offset>0x4002</offset>
+                <value>0x64</value>
+                <comment>threshold 01</comment>
+            </register>
+            <register>
+                <offset>0x4004</offset>
+                <value>0x64</value>
+                <comment>threshold 02</comment>
+            </register>
+            <register>
+                <offset>0x4006</offset>
+                <value>0x64</value>
+                <comment>threshold 03</comment>
+            </register>
+            <register>
+                <offset>0x4008</offset>
+                <value>0x64</value>
+                <comment>threshold 04</comment>
+            </register>
+            <register>
+                <offset>0x400a</offset>
+                <value>0x64</value>
+                <comment>threshold 05</comment>
+            </register>
+            <register>
+                <offset>0x400c</offset>
+                <value>0x64</value>
+                <comment>threshold 06</comment>
+            </register>
+            <register>
+                <offset>0x400e</offset>
+                <value>0x64</value>
+                <comment>threshold 07</comment>
+            </register>
+            <register>
+                <offset>0x4010</offset>
+                <value>0x64</value>
+                <comment>threshold 08</comment>
+            </register>
+            <register>
+                <offset>0x4012</offset>
+                <value>0x64</value>
+                <comment>threshold 09</comment>
+            </register>
+            <register>
+                <offset>0x4014</offset>
+                <value>0x64</value>
+                <comment>threshold 10</comment>
+            </register>
+            <register>
+                <offset>0x4016</offset>
+                <value>0x64</value>
+                <comment>threshold 11</comment>
+            </register>
+            <register>
+                <offset>0x4018</offset>
+                <value>0x64</value>
+                <comment>threshold 12</comment>
+            </register>
+            <register>
+                <offset>0x401a</offset>
+                <value>0x64</value>
+                <comment>threshold 13</comment>
+            </register>
+            <register>
+                <offset>0x401c</offset>
+                <value>0x64</value>
+                <comment>threshold 14</comment>
+            </register>
+            <register>
+                <offset>0x401e</offset>
+                <value>0x64</value>
+                <comment>threshold 15</comment>
+            </register>
+            <register>
+                <offset>0x4020</offset>
+                <value>0x64</value>
+                <comment>threshold 16</comment>
+            </register>
+            <register>
+                <offset>0x4022</offset>
+                <value>0x64</value>
+                <comment>threshold 17</comment>
+            </register>
+            <register>
+                <offset>0x4024</offset>
+                <value>0x64</value>
+                <comment>threshold 18</comment>
+            </register>
+            <register>
+                <offset>0x4026</offset>
+                <value>0x64</value>
+                <comment>threshold 19</comment>
+            </register>
+            <register>
+                <offset>0x4028</offset>
+                <value>0x64</value>
+                <comment>threshold 20</comment>
+            </register>
+            <register>
+                <offset>0x402a</offset>
+                <value>0x64</value>
+                <comment>threshold 21</comment>
+            </register>
+            <register>
+                <offset>0x402c</offset>
+                <value>0x64</value>
+                <comment>threshold 22</comment>
+            </register>
+            <register>
+                <offset>0x402e</offset>
+                <value>0x64</value>
+                <comment>threshold 23</comment>
+            </register>
+            <register>
+                <offset>0x4030</offset>
+                <value>0x6e</value>
+                <comment>threshold 24</comment>
+            </register>
+            <register>
+                <offset>0x4032</offset>
+                <value>0x64</value>
+                <comment>threshold 25</comment>
+            </register>
+            <register>
+                <offset>0x4034</offset>
+                <value>0x64</value>
+                <comment>threshold 26</comment>
+            </register>
+            <register>
+                <offset>0x4036</offset>
+                <value>0x64</value>
+                <comment>threshold 27</comment>
+            </register>
+            <register>
+                <offset>0x4038</offset>
+                <value>0x64</value>
+                <comment>threshold 28</comment>
+            </register>
+            <register>
+                <offset>0x403a</offset>
+                <value>0x64</value>
+                <comment>threshold 29</comment>
+            </register>
+            <register>
+                <offset>0x403c</offset>
+                <value>0x64</value>
+                <comment>threshold 30</comment>
+            </register>
+            <register>
+                <offset>0x403e</offset>
+                <value>0x64</value>
+                <comment>threshold 31</comment>
+            </register>
+            <register>
+                <offset>0x6004</offset>
+                <value>0x1</value>
+                <comment>module id</comment>
+            </register>
+            <register>
+                <offset>0x601a</offset>
+                <value>0x0</value>
+                <comment>max trans data</comment>
+            </register>
+            <register>
+                <offset>0x6020</offset>
+                <value>0x26</value>
+                <comment>cblt&amp;mcst ctrl</comment>
+            </register>
+            <register>
+                <offset>0x6036</offset>
+                <value>0x3</value>
+                <comment>multi event</comment>
+            </register>
+            <register>
+                <offset>0x6038</offset>
+                <value>0x3</value>
+                <comment>marking type</comment>
+            </register>
+            <register>
+                <offset>0x6042</offset>
+                <value>0x4</value>
+                <comment>adc res</comment>
+            </register>
+            <register>
+                <offset>0x6060</offset>
+                <value>0x2</value>
+                <comment>input range</comment>
+            </register>
+            <register>
+                <offset>0x606a</offset>
+                <value>0x1</value>
+                <comment>nim g1 osc</comment>
+            </register>
+            <register>
+                <offset>0x606c</offset>
+                <value>0x1</value>
+                <comment>nim fc res</comment>
+            </register>
+            <register>
+                <offset>0x6090</offset>
+                <value>0xc</value>
+                <comment>rst ctr</comment>
+            </register>
+            <register>
+                <offset>0x6096</offset>
+                <value>0x3</value>
+                <comment>ts src</comment>
             </register>
             <global_var>
                 <name>crate_n</name>
@@ -206,17 +296,17 @@
             </global_var>
             <global_var>
                 <name>slot_n</name>
-                <value>11</value>
+                <value>4</value>
                 <comment>slot number</comment>
             </global_var>
             <global_var>
                 <name>base</name>
-                <value>0x30000000</value>
+                <value>0x20020000</value>
                 <comment>base address</comment>
             </global_var>
             <global_var>
                 <name>am_reg</name>
-                <value>0x9</value>
+                <value>0xd</value>
                 <comment>am used to access most of the registers</comment>
             </global_var>
             <global_var>
@@ -236,26 +326,477 @@
             </global_var>
             <global_var>
                 <name>name</name>
-                <value>V1740000</value>
+                <value>MADC32000</value>
                 <comment>name of the module</comment>
             </global_var>
             <advance_var>
                 <name>is_trig_mod</name>
+                <value>1</value>
+                <comment>is_trig_mod</comment>
+            </advance_var>
+        </vme_module>
+        <vme_module>
+            <register>
+                <offset>0x4000</offset>
+                <value>0x64</value>
+                <comment>threshold 00</comment>
+            </register>
+            <register>
+                <offset>0x4002</offset>
+                <value>0x64</value>
+                <comment>threshold 01</comment>
+            </register>
+            <register>
+                <offset>0x4004</offset>
+                <value>0x64</value>
+                <comment>threshold 02</comment>
+            </register>
+            <register>
+                <offset>0x4006</offset>
+                <value>0x64</value>
+                <comment>threshold 03</comment>
+            </register>
+            <register>
+                <offset>0x4008</offset>
+                <value>0x64</value>
+                <comment>threshold 04</comment>
+            </register>
+            <register>
+                <offset>0x400a</offset>
+                <value>0x64</value>
+                <comment>threshold 05</comment>
+            </register>
+            <register>
+                <offset>0x400c</offset>
+                <value>0x64</value>
+                <comment>threshold 06</comment>
+            </register>
+            <register>
+                <offset>0x400e</offset>
+                <value>0x64</value>
+                <comment>threshold 07</comment>
+            </register>
+            <register>
+                <offset>0x4010</offset>
+                <value>0x64</value>
+                <comment>threshold 08</comment>
+            </register>
+            <register>
+                <offset>0x4012</offset>
+                <value>0x64</value>
+                <comment>threshold 09</comment>
+            </register>
+            <register>
+                <offset>0x4014</offset>
+                <value>0x64</value>
+                <comment>threshold 10</comment>
+            </register>
+            <register>
+                <offset>0x4016</offset>
+                <value>0x64</value>
+                <comment>threshold 11</comment>
+            </register>
+            <register>
+                <offset>0x4018</offset>
+                <value>0x64</value>
+                <comment>threshold 12</comment>
+            </register>
+            <register>
+                <offset>0x401a</offset>
+                <value>0x64</value>
+                <comment>threshold 13</comment>
+            </register>
+            <register>
+                <offset>0x401c</offset>
+                <value>0x64</value>
+                <comment>threshold 14</comment>
+            </register>
+            <register>
+                <offset>0x401e</offset>
+                <value>0x64</value>
+                <comment>threshold 15</comment>
+            </register>
+            <register>
+                <offset>0x4020</offset>
+                <value>0x64</value>
+                <comment>threshold 16</comment>
+            </register>
+            <register>
+                <offset>0x4022</offset>
+                <value>0x64</value>
+                <comment>threshold 17</comment>
+            </register>
+            <register>
+                <offset>0x4024</offset>
+                <value>0x64</value>
+                <comment>threshold 18</comment>
+            </register>
+            <register>
+                <offset>0x4026</offset>
+                <value>0x64</value>
+                <comment>threshold 19</comment>
+            </register>
+            <register>
+                <offset>0x4028</offset>
+                <value>0x64</value>
+                <comment>threshold 20</comment>
+            </register>
+            <register>
+                <offset>0x402a</offset>
+                <value>0x64</value>
+                <comment>threshold 21</comment>
+            </register>
+            <register>
+                <offset>0x402c</offset>
+                <value>0x64</value>
+                <comment>threshold 22</comment>
+            </register>
+            <register>
+                <offset>0x402e</offset>
+                <value>0x64</value>
+                <comment>threshold 23</comment>
+            </register>
+            <register>
+                <offset>0x4030</offset>
+                <value>0x6e</value>
+                <comment>threshold 24</comment>
+            </register>
+            <register>
+                <offset>0x4032</offset>
+                <value>0x64</value>
+                <comment>threshold 25</comment>
+            </register>
+            <register>
+                <offset>0x4034</offset>
+                <value>0x64</value>
+                <comment>threshold 26</comment>
+            </register>
+            <register>
+                <offset>0x4036</offset>
+                <value>0x64</value>
+                <comment>threshold 27</comment>
+            </register>
+            <register>
+                <offset>0x4038</offset>
+                <value>0x64</value>
+                <comment>threshold 28</comment>
+            </register>
+            <register>
+                <offset>0x403a</offset>
+                <value>0x64</value>
+                <comment>threshold 29</comment>
+            </register>
+            <register>
+                <offset>0x403c</offset>
+                <value>0x64</value>
+                <comment>threshold 30</comment>
+            </register>
+            <register>
+                <offset>0x403e</offset>
+                <value>0x64</value>
+                <comment>threshold 31</comment>
+            </register>
+            <register>
+                <offset>0x6004</offset>
+                <value>0x2</value>
+                <comment>module id</comment>
+            </register>
+            <register>
+                <offset>0x601a</offset>
+                <value>0x0</value>
+                <comment>max trans data</comment>
+            </register>
+            <register>
+                <offset>0x6020</offset>
+                <value>0x1a</value>
+                <comment>cblt&amp;mcst ctrl</comment>
+            </register>
+            <register>
+                <offset>0x6036</offset>
+                <value>0x3</value>
+                <comment>multi event</comment>
+            </register>
+            <register>
+                <offset>0x6038</offset>
+                <value>0x3</value>
+                <comment>marking type</comment>
+            </register>
+            <register>
+                <offset>0x6042</offset>
+                <value>0x4</value>
+                <comment>adc res</comment>
+            </register>
+            <register>
+                <offset>0x6060</offset>
+                <value>0x2</value>
+                <comment>input range</comment>
+            </register>
+            <register>
+                <offset>0x606a</offset>
                 <value>0x1</value>
+                <comment>nim g1 osc</comment>
+            </register>
+            <register>
+                <offset>0x606c</offset>
+                <value>0x1</value>
+                <comment>nim fc res</comment>
+            </register>
+            <register>
+                <offset>0x6090</offset>
+                <value>0xc</value>
+                <comment>rst ctr</comment>
+            </register>
+            <register>
+                <offset>0x6096</offset>
+                <value>0x3</value>
+                <comment>ts src</comment>
+            </register>
+            <global_var>
+                <name>crate_n</name>
+                <value>0</value>
+                <comment>crate number</comment>
+            </global_var>
+            <global_var>
+                <name>slot_n</name>
+                <value>5</value>
+                <comment>slot number</comment>
+            </global_var>
+            <global_var>
+                <name>base</name>
+                <value>0x30030000</value>
+                <comment>base address</comment>
+            </global_var>
+            <global_var>
+                <name>am_reg</name>
+                <value>0xd</value>
+                <comment>am used to access most of the registers</comment>
+            </global_var>
+            <global_var>
+                <name>type</name>
+                <value>T</value>
+                <comment>type of module (Trigg/Scal)</comment>
+            </global_var>
+            <global_var>
+                <name>period</name>
+                <value>1000</value>
+                <comment>period of reading for scaler type modules</comment>
+            </global_var>
+            <global_var>
+                <name>max_crate</name>
+                <value>1</value>
+                <comment>max crate</comment>
+            </global_var>
+            <global_var>
+                <name>name</name>
+                <value>MADC32001</value>
+                <comment>name of the module</comment>
+            </global_var>
+            <advance_var>
+                <name>is_trig_mod</name>
+                <value>0</value>
+                <comment>is_trig_mod</comment>
+            </advance_var>
+        </vme_module>
+        <vme_module>
+            <register>
+                <offset>0x0</offset>
+                <value>0x0</value>
+                <comment>acq mode</comment>
+            </register>
+            <register>
+                <offset>0x1</offset>
+                <value>0x96</value>
+                <comment>window width</comment>
+            </register>
+            <register>
+                <offset>0x2</offset>
+                <value>0xff88</value>
+                <comment>window offset</comment>
+            </register>
+            <register>
+                <offset>0x3</offset>
+                <value>0xa</value>
+                <comment>ex search</comment>
+            </register>
+            <register>
+                <offset>0x4</offset>
+                <value>0x5</value>
+                <comment>reject</comment>
+            </register>
+            <register>
+                <offset>0x5</offset>
+                <value>0x0</value>
+                <comment>sub trig T</comment>
+            </register>
+            <register>
+                <offset>0x6</offset>
+                <value>0x2</value>
+                <comment>edge detect</comment>
+            </register>
+            <register>
+                <offset>0x7</offset>
+                <value>0x2</value>
+                <comment>LSB</comment>
+            </register>
+            <register>
+                <offset>0x8</offset>
+                <value>0x0</value>
+                <comment>pair res.</comment>
+            </register>
+            <register>
+                <offset>0xa</offset>
+                <value>0x0</value>
+                <comment>tdc h&amp;tr</comment>
+            </register>
+            <register>
+                <offset>0x10</offset>
+                <value>0xffffffff</value>
+                <comment>enable msk0</comment>
+            </register>
+            <register>
+                <offset>0x11</offset>
+                <value>0x0</value>
+                <comment>enable msk1</comment>
+            </register>
+            <register>
+                <offset>0x12</offset>
+                <value>0x0</value>
+                <comment>enable msk2</comment>
+            </register>
+            <register>
+                <offset>0x13</offset>
+                <value>0x0</value>
+                <comment>enable msk3</comment>
+            </register>
+            <register>
+                <offset>0x1f4</offset>
+                <value>0xa01</value>
+                <comment>ctrl bit set</comment>
+            </register>
+            <register>
+                <offset>0x100e</offset>
+                <value>0x1</value>
+                <comment>geo</comment>
+            </register>
+            <register>
+                <offset>0x1024</offset>
+                <value>0x0</value>
+                <comment>blt evt N</comment>
+            </register>
+            <global_var>
+                <name>crate_n</name>
+                <value>0</value>
+                <comment>crate number</comment>
+            </global_var>
+            <global_var>
+                <name>slot_n</name>
+                <value>8</value>
+                <comment>slot number</comment>
+            </global_var>
+            <global_var>
+                <name>base</name>
+                <value>0x40040000</value>
+                <comment>base address</comment>
+            </global_var>
+            <global_var>
+                <name>am_reg</name>
+                <value>0xd</value>
+                <comment>am used to access most of the registers</comment>
+            </global_var>
+            <global_var>
+                <name>type</name>
+                <value>T</value>
+                <comment>type of module (Trigg/Scal)</comment>
+            </global_var>
+            <global_var>
+                <name>period</name>
+                <value>1000</value>
+                <comment>period of reading for scaler type modules</comment>
+            </global_var>
+            <global_var>
+                <name>max_crate</name>
+                <value>1</value>
+                <comment>max crate</comment>
+            </global_var>
+            <global_var>
+                <name>name</name>
+                <value>V1190A000</value>
+                <comment>name of the module</comment>
+            </global_var>
+        </vme_module>
+        <vme_module>
+            <register>
+                <offset>0x1100</offset>
+                <value>0xffffffff</value>
+                <comment>ch enable</comment>
+            </register>
+            <register>
+                <offset>0x1104</offset>
+                <value>0x2625a0</value>
+                <comment>Dwell T</comment>
+            </register>
+            <register>
+                <offset>0x110a</offset>
+                <value>0xb2</value>
+                <comment>ctrl bit set</comment>
+            </register>
+            <global_var>
+                <name>crate_n</name>
+                <value>0</value>
+                <comment>crate number</comment>
+            </global_var>
+            <global_var>
+                <name>slot_n</name>
+                <value>11</value>
+                <comment>slot number</comment>
+            </global_var>
+            <global_var>
+                <name>base</name>
+                <value>0x0c000000</value>
+                <comment>base address</comment>
+            </global_var>
+            <global_var>
+                <name>am_reg</name>
+                <value>0xd</value>
+                <comment>am used to access most of the registers</comment>
+            </global_var>
+            <global_var>
+                <name>type</name>
+                <value>S</value>
+                <comment>type of module (Trigg/Scal)</comment>
+            </global_var>
+            <global_var>
+                <name>period</name>
+                <value>1000</value>
+                <comment>period of reading for scaler type modules</comment>
+            </global_var>
+            <global_var>
+                <name>max_crate</name>
+                <value>1</value>
+                <comment>max crate</comment>
+            </global_var>
+            <global_var>
+                <name>name</name>
+                <value>V830000</value>
+                <comment>name of the module</comment>
+            </global_var>
+            <advance_var>
+                <name>is_trig_mod</name>
+                <value>0</value>
                 <comment>is_trig_mod</comment>
             </advance_var>
         </vme_module>
         <advanced_fe>
-            <name>blt_buf_sz</name>
-            <value>0x1e84800</value>
-            <comment>blt_buf_sz</comment>
+            <name>rd_start_t</name>
+            <value>100000</value>
+            <comment>rd_start_t</comment>
         </advanced_fe>
     </frontend>
     <event_builder>
         <advanced_ebd>
-            <name>merge_glom</name>
-            <value>0x1000</value>
-            <comment>merge_glom</comment>
+            <name>sort_freq</name>
+            <value>40000000</value>
+            <comment>sort_freq</comment>
         </advanced_ebd>
     </event_builder>
     <GUI_ctl/>
@@ -266,11 +807,11 @@
             <type>TH1D</type>
             <name>hist0</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -278,11 +819,11 @@
             <type>TH1D</type>
             <name>hist1</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -290,11 +831,11 @@
             <type>TH1D</type>
             <name>hist2</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -302,11 +843,11 @@
             <type>TH1D</type>
             <name>hist3</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -314,11 +855,11 @@
             <type>TH1D</type>
             <name>hist4</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -326,11 +867,11 @@
             <type>TH1D</type>
             <name>hist5</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -338,11 +879,11 @@
             <type>TH1D</type>
             <name>hist6</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -350,11 +891,11 @@
             <type>TH1D</type>
             <name>hist7</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -362,11 +903,11 @@
             <type>TH1D</type>
             <name>hist8</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -374,11 +915,11 @@
             <type>TH1D</type>
             <name>hist9</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -386,11 +927,11 @@
             <type>TH1D</type>
             <name>hist10</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -398,11 +939,11 @@
             <type>TH1D</type>
             <name>hist11</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -410,11 +951,11 @@
             <type>TH1D</type>
             <name>hist12</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -422,11 +963,11 @@
             <type>TH1D</type>
             <name>hist13</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -434,11 +975,11 @@
             <type>TH1D</type>
             <name>hist14</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -446,11 +987,11 @@
             <type>TH1D</type>
             <name>hist15</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -458,11 +999,11 @@
             <type>TH1D</type>
             <name>hist16</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -470,11 +1011,11 @@
             <type>TH1D</type>
             <name>hist17</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -482,11 +1023,11 @@
             <type>TH1D</type>
             <name>hist18</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -494,11 +1035,11 @@
             <type>TH1D</type>
             <name>hist19</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -506,11 +1047,11 @@
             <type>TH1D</type>
             <name>hist20</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -518,11 +1059,11 @@
             <type>TH1D</type>
             <name>hist21</name>
             <folder>folder</folder>
-            <nbinsX>100</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
-            <X_min>2000.0</X_min>
+            <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>2200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -530,11 +1071,11 @@
             <type>TH1D</type>
             <name>hist22</name>
             <folder>folder</folder>
-            <nbinsX>3500</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
             <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>3500.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -542,11 +1083,11 @@
             <type>TH1D</type>
             <name>hist23</name>
             <folder>folder</folder>
-            <nbinsX>3500</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
             <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>3500.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
@@ -554,335 +1095,95 @@
             <type>TH1D</type>
             <name>hist24</name>
             <folder>folder</folder>
-            <nbinsX>3500</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
             <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>3500.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
             <id>25</id>
             <type>TH1D</type>
-            <name>beam1</name>
+            <name>hist25</name>
             <folder>folder</folder>
-            <nbinsX>10000</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
             <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>10000.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
             <id>26</id>
             <type>TH1D</type>
-            <name>beam2</name>
+            <name>hist26</name>
             <folder>folder</folder>
-            <nbinsX>10000</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
             <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>10000.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
             <id>27</id>
             <type>TH1D</type>
-            <name>test</name>
+            <name>hist27</name>
             <folder>folder</folder>
-            <nbinsX>10000</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
             <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>1000.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
             <id>28</id>
             <type>TH1D</type>
-            <name>wave0</name>
+            <name>hist28</name>
             <folder>folder</folder>
-            <nbinsX>3000</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
             <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>3000.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
             <id>29</id>
             <type>TH1D</type>
-            <name>wave1</name>
+            <name>hist29</name>
             <folder>folder</folder>
-            <nbinsX>3000</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
             <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>3000.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
             <id>30</id>
             <type>TH1D</type>
-            <name>wave2</name>
+            <name>hist30</name>
             <folder>folder</folder>
-            <nbinsX>3000</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
             <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>3000.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
         <hist_ana>
             <id>31</id>
             <type>TH1D</type>
-            <name>wave3</name>
+            <name>hist31</name>
             <folder>folder</folder>
-            <nbinsX>200</nbinsX>
+            <nbinsX>1000</nbinsX>
             <nbinsY>0</nbinsY>
             <X_min>0.0</X_min>
             <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>32</id>
-            <type>TH1D</type>
-            <name>wave4</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>33</id>
-            <type>TH1D</type>
-            <name>wave5</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>34</id>
-            <type>TH1D</type>
-            <name>wave6</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>35</id>
-            <type>TH1D</type>
-            <name>wave7</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>36</id>
-            <type>TH1D</type>
-            <name>wave8</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>37</id>
-            <type>TH1D</type>
-            <name>wave9</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>38</id>
-            <type>TH1D</type>
-            <name>wave10</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>39</id>
-            <type>TH1D</type>
-            <name>wave11</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>40</id>
-            <type>TH1D</type>
-            <name>wave12</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>41</id>
-            <type>TH1D</type>
-            <name>wave13</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>42</id>
-            <type>TH1D</type>
-            <name>wave14</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>43</id>
-            <type>TH1D</type>
-            <name>wave15</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>44</id>
-            <type>TH1D</type>
-            <name>wave16</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>45</id>
-            <type>TH1D</type>
-            <name>wave17</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>46</id>
-            <type>TH1D</type>
-            <name>wave18</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>47</id>
-            <type>TH1D</type>
-            <name>wave19</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>48</id>
-            <type>TH1D</type>
-            <name>wave20</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>49</id>
-            <type>TH1D</type>
-            <name>wave21</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>50</id>
-            <type>TH1D</type>
-            <name>wave22</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
-            <Y_max>0</Y_max>
-        </hist_ana>
-        <hist_ana>
-            <id>51</id>
-            <type>TH1D</type>
-            <name>wave23</name>
-            <folder>folder</folder>
-            <nbinsX>200</nbinsX>
-            <nbinsY>0</nbinsY>
-            <X_min>0.0</X_min>
-            <Y_min>0</Y_min>
-            <X_max>200.0</X_max>
+            <X_max>8192.0</X_max>
             <Y_max>0</Y_max>
         </hist_ana>
     </analyzer>
