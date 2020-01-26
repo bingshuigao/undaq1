@@ -63,7 +63,7 @@ int ana_roody_svr::conn_roody()
 	else if (tsock == NULL) {
 		return -E_SYSCALL;
 	}
-//	tsock->SetOption(kNoBlock, 1);
+	tsock->SetOption(kNoBlock, 1);
 
 	return 0;
 }
@@ -114,6 +114,7 @@ int ana_roody_svr::main_proc()
 	/* In this function, the current thread receives and send messages to
 	 * roody. (codes copied from MIDAS)*/
 	char request[256];
+	int ret;
 
 	if (!tsock) {
 		/* connection not established yet! */
@@ -122,9 +123,16 @@ int ana_roody_svr::main_proc()
 	}
 
 	/* close connection if client has disconnected */
-	if (tsock->Recv(request, sizeof(request)) <= 0) {
+	ret = tsock->Recv(request, sizeof(request));
+	if (ret <= 0) {
+		if (ret == -4) {
+			/* Nothing to be received */
+			usleep(1000);
+			return 0;
+		}
 	// printf("Closed connection to %s\n", 
 	//         sock->GetInetAddress().GetHostName());
+		/* otherwise the connection must have been closed */
 		tsock->Close();
 		delete tsock;
 		tsock = NULL;
