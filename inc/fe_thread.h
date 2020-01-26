@@ -41,7 +41,7 @@
  *             |_____________________________|
  *             | true body                   |
  *             |_____________________________|
- *
+ *             
  *             The module id and crate n are in most significant two bytes and
  *             least significant two bytes, respectively.
  *             The type is the type of data:
@@ -60,6 +60,23 @@
  * 7 --> v775n;
  * 8 --> v785;
  * 9 --> v785n;
+ *
+ *             The true body has the following format: (see modules.h):
+ *                  _______________
+ *                  | length      |
+ *                  |_____________|
+ *                  | mask        |
+ *                  |_____________|
+ *                  | data block  |
+ *                  |_____________|
+ *                  | length      |
+ *                  |_____________|
+ *                  | mask        |
+ *                  |_____________|
+ *                  | data block  |
+ *                  |_____________|
+ *                  | ...         |
+ *                  |_____________|
  *
  *
   * By B.Gao Oct. 2018 */

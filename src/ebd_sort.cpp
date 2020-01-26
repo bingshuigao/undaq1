@@ -607,7 +607,7 @@ int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
 		slot = slot_map[SLOT_MAP_IDX(crate,mod_id,geo)];
 
 	/* find the ettt and trailer */
-	for (i = 1; i < max_len; i++) {
+	for (i = 0; i < max_len; i++) {
 		sig = evt[i] >> 27;
 		if (sig == 0x11) {
 			/* ETTT */
@@ -615,8 +615,8 @@ int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
 			has_ettt = true;
 		}
 		else if (sig == 0x8) {
-			/* header */
-			evt_cnt = (evt[i] & 0x7ffffff) >> 5;
+			/* header, (note that the counter starts from 0)  */
+			evt_cnt = 1 + ((evt[i] & 0x7ffffff) >> 5);
 		}
 		else if (sig == 0x10) {
 			/* trailer */

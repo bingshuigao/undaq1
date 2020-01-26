@@ -29,7 +29,7 @@ int ana_madc32::parse_raw(uint32_t* raw_data, uint32_t* val)
 			break;
 		if (sig == 0) {
 			sub_sig = entry >> 21;
-			if (sub_sig == 0x20)
+			if (sub_sig != 0x20)
 				continue;
 			ch = (entry >> 16) & 0x1f;
 			val[ch] = entry & 0x1fff;

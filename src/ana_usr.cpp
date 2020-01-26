@@ -42,6 +42,7 @@ int ana_usr_trig(void* p_evt, hist_man& hists, bool is_bor)
 			/* v1190, for example */
 		}
 
+		p_dw -= 5;
 		p_dw += len_frag+1;
 	} 
 	
