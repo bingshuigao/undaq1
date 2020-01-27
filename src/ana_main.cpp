@@ -130,7 +130,7 @@ int ana_main::try_do_analysis(int id, bool& success)
 		if (id == 1)
 			evt_sz *= 4;
 		/* debug ... */
-		std::cout<<"evt size: "<<evt_sz<<std::endl;
+		//std::cout<<"evt size: "<<evt_sz<<std::endl;
 
 		if (ret < 4) {
 			rb->rel_lock();

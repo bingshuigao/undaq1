@@ -31,7 +31,7 @@ class svr:
                 return None
             end_mark = msg[-1]
             head = int.from_bytes(msg[:4], 'little')
-            if head != 1000
+            if head != 1000:
                 msg_all += msg[:4]
             msg_all += msg[4:124]
             if end_mark == 0:
