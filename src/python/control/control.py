@@ -257,7 +257,8 @@ class control:
         elif msg_type == 4:
             tot_sz = int.from_bytes(msg[4:8], 'little')
             use_sz = int.from_bytes(msg[8:12],'little')
-            print('frontend buffer: %d/%d' % (use_sz, tot_sz))
+            #print('frontend buffer: %d/%d' % (use_sz, tot_sz))
+            self.rb_tab.draw_rb_fe(i, tot_sz, use_sz)
 
 
 
@@ -302,7 +303,8 @@ class control:
                 ptr += 4
                 sz_use = int.from_bytes(msg[ptr:ptr+4], 'little')
                 ptr += 4
-                print('ebd buffer: %d/%d', (sz_use, sz_tot))
+            #    print('ebd buffer: %d/%d', (sz_use, sz_tot))
+                self.rb_tab.draw_rb_ebd_recv(self.fe_num, i, sz_tot, sz_use)
             # the individual vme module buffers (the number is n_mod)
             for i in range(self.n_mod):
                 crate_slot = int.from_bytes(msg[ptr:ptr+4], 'little')
@@ -311,20 +313,23 @@ class control:
                 ptr += 4
                 sz_use = int.from_bytes(msg[ptr:ptr+4], 'little')
                 ptr += 4
-                print('ebd buffer (crate: %d, slot %d): %d/%d',
-                        (crate_slot&0xff, (crate_slot>>8)&0xff, sz_use, sz_tot))
+                #print('ebd buffer (crate: %d, slot %d): %d/%d',
+                        #(crate_slot&0xff, (crate_slot>>8)&0xff, sz_use, sz_tot))
+                self.rb_tab.draw_rb_ebd_sort(i, crate_slot, sz_tot, sz_use)
             # the scaler buffer
             sz_tot = int.from_bytes(msg[ptr:ptr+4], 'little')
             ptr += 4
             sz_use = int.from_bytes(msg[ptr:ptr+4], 'little')
             ptr += 4
-            print('scaler buffer: %d/%d', (sz_use, sz_tot))
+#            print('scaler buffer: %d/%d', (sz_use, sz_tot))
+            self.rb_tab.draw_rb_ebd_scal(self.n_mod, sz_tot, sz_use)
             # the built-event buffer
             sz_tot = int.from_bytes(msg[ptr:ptr+4], 'little')
             ptr += 4
             sz_use = int.from_bytes(msg[ptr:ptr+4], 'little')
             ptr += 4
-            print('built event buffer: %d/%d', (sz_use, sz_tot))
+#            print('built event buffer: %d/%d', (sz_use, sz_tot))
+            self.rb_tab.draw_rb_ebd_merger(sz_tot, sz_use)
                 
 
     def _handle_ana_msg(self, msg):
@@ -341,10 +346,12 @@ class control:
         elif msg_type == 4:
             sz_tot = int.from_bytes(msg[4:8], 'little')
             sz_use = int.from_bytes(msg[8:12],'little')
-            print('ana scaler buffer: %d/%d', (sz_use, sz_tot))
+#            print('ana scaler buffer: %d/%d', (sz_use, sz_tot))
+            self.rb_tab.draw_rb_ana_scal(sz_tot, sz_use)
             sz_tot = int.from_bytes(msg[12:16], 'little')
             sz_use = int.from_bytes(msg[16:20],'little')
-            print('ana trig buffer: %d/%d', (sz_use, sz_tot))
+#            print('ana trig buffer: %d/%d', (sz_use, sz_tot))
+            self.rb_tab.draw_rb_ana_trig(sz_tot, sz_use)
 
     def _handle_log_msg(self, msg):
         if not msg:
@@ -360,10 +367,12 @@ class control:
         elif msg_type == 4:
             sz_tot = int.from_bytes(msg[4:8], 'little')
             sz_use = int.from_bytes(msg[8:12],'little')
-            print('ana scaler buffer: %d/%d', (sz_use, sz_tot))
+#            print('ana scaler buffer: %d/%d', (sz_use, sz_tot))
+            self.rb_tab.draw_rb_log_scal(sz_tot, sz_use)
             sz_tot = int.from_bytes(msg[12:16], 'little')
             sz_use = int.from_bytes(msg[16:20],'little')
-            print('ana trig buffer: %d/%d', (sz_use, sz_tot))
+#            print('ana trig buffer: %d/%d', (sz_use, sz_tot))
+            self.rb_tab.draw_rb_log_trig(sz_tot, sz_use)
 
     def _check_stat(self):
         # send a query status message to the clients
