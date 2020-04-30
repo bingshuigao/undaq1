@@ -20,7 +20,7 @@ class v1190(vme_mod):
         # GEO
         self.reg_map.append({
                  'off' : 0x100e,
-                 'value' : 'default',
+                 'value' : 1,
                  'name' : 'geo',
                  'nbit' : 5,
                  'has_set_wid' : True,

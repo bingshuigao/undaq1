@@ -31,6 +31,17 @@ class ana_hist:
         # hist[10] = 'if delete (bool)'
         self.hists = []
         self.widgets = []
+        self.h_id = 'id'
+        self.h_type = 'type'
+        self.h_name = 'name'
+        self.h_folder = 'folder'
+        self.h_nbinsX = 'nbinsX'
+        self.h_nbinsY = 'nbinsY'
+        self.h_X_min = 'X_min'
+        self.h_X_max = 'X_max'
+        self.h_Y_min = 'Y_min'
+        self.h_Y_max = 'Y_max'
+
 
     # get a list of histos
     def get_all_hists(self):
@@ -179,35 +190,66 @@ class ana_hist:
             if wid['var_del'].get():
                 continue
             tmp = []
-            tmp.append(int(wid['id'].get()))
-            tmp.append(wid['type'].get())
-            tmp.append(wid['name'].get())
-            tmp.append(wid['folder'].get())
-            tmp.append(int(wid['nbinsX'].get()))
-            tmp.append(float(wid['X_min'].get()))
-            tmp.append(float(wid['X_max'].get()))
+            self.h_id = int(wid['id'].get())
+            self.h_type = wid['type'].get()
+            self.h_name = wid['name'].get()
+            self.h_folder = wid['folder'].get()
+            self.h_nbinsX = int(wid['nbinsX'].get())
+            self.h_X_min = float(wid['X_min'].get())
+            self.h_X_max = float(wid['X_max'].get())
             if wid['type'].get() == 'TH1D':
-                tmp.append('0')
-                tmp.append('0')
-                tmp.append('0')
+                self.h_nbinsY = 0
+                self.h_Y_min = 0
+                self.h_Y_max = 0
             elif wid['type'].get() == 'TH2D':
-                tmp.append(int(wid['nbinsY'].get()))
-                tmp.append(float(wid['Y_min'].get()))
-                tmp.append(float(wid['Y_max'].get()))
+                self.h_nbinsY = wid['nbinsY'].get()
+                self.h_Y_min = wid['Y_min'].get() 
+                self.h_Y_max = wid['Y_max'].get() 
+            tmp.append(self.h_id)
+            tmp.append(self.h_type)
+            tmp.append(self.h_name)
+            tmp.append(self.h_folder)
+            tmp.append(self.h_nbinsX)
+            tmp.append(self.h_X_min)
+            tmp.append(self.h_X_max)
+            tmp.append(self.h_nbinsY)
+            tmp.append(self.h_Y_min)
+            tmp.append(self.h_Y_max)
             tmp.append(False)
             self.hists.append(tmp)
+
 
 
     def _OK(self):
         self._update_hists()
         self.win.destroy()
 
+    def _increment_id(self):
+        try:
+            self.h_id += 1
+            name_id = 0
+            base = 1
+            for ch in reversed(self.h_name):
+                if ch in [str(i) for i in range(10)]:
+                    name_id += base * int(ch)
+                    base *= 10
+                else:
+                    break
+            name_hd = self.h_name[0:len(self.h_name)-len(str(base//10))]
+            fmat = '%%s%%0%dd' % len(str(base//10))
+#            print(base)
+            self.h_name = fmat % (name_hd,name_id+1)
+        except:
+            pass
+
 
     # add a hist
     def _add(self):
         self._update_hists()
-        h = ['id', 'type', 'name', 'folder', 'nbinsX', 'X_min', 'X_max',
-                'nbinsY', 'Y_min', 'Y_max', False]
+        self._increment_id()
+        h = [self.h_id, self.h_type, self.h_name, self.h_folder, self.h_nbinsX,
+                self.h_X_min, self.h_X_max, self.h_nbinsY, self.h_Y_min,
+                self.h_Y_max, False]
         self.add_hist(h)
         self._update_wid()
 
@@ -227,17 +269,17 @@ class ana_hist:
 
     def _rm_wid(self):
         for wid in self.widgets:
-            wid['id'].place(x=0,y=0,width=0,height=0)
-            wid['type'].place(x=0,y=0,width=0,height=0)
-            wid['name'].place(x=0,y=0,width=0,height=0)
-            wid['folder'].place(x=0,y=0,width=0,height=0)
-            wid['nbinsX'].place(x=0,y=0,width=0,height=0)
-            wid['X_min'].place(x=0,y=0,width=0,height=0)
-            wid['X_max'].place(x=0,y=0,width=0,height=0)
-            wid['nbinsY'].place(x=0,y=0,width=0,height=0)
-            wid['Y_min'].place(x=0,y=0,width=0,height=0)
-            wid['Y_max'].place(x=0,y=0,width=0,height=0)
-            wid['del'].place(x=0,y=0,width=0,height=0)
+            wid['id'].destroy()
+            wid['type'].destroy()
+            wid['name'].destroy()
+            wid['folder'].destroy()
+            wid['nbinsX'].destroy()
+            wid['X_min'].destroy()
+            wid['X_max'].destroy()
+            wid['nbinsY'].destroy()
+            wid['Y_min'].destroy()
+            wid['Y_max'].destroy()
+            wid['del'].destroy()
             
 
     # place the hist in row

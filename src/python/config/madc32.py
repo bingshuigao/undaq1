@@ -30,7 +30,7 @@ class madc32(vme_mod):
         # module id
         self.reg_map.append(
                 {'off' : 0x6004,
-                 'value' : 'default',
+                 'value' : 0,
                  'name' : 'module id',
                  'nbit' : 8,
                  'has_set_wid' : True,
