@@ -144,7 +144,7 @@ int v2718::send_pulse(bool invt)
 {
 	int ret, val;
 //	std::cout<<"in v2718"<<std::endl;
-	val = 0xc;
+	val = 0xf;
 	ret = write_reg(0xc, &val);
 	RET_IF_NONZERO(ret);
 	val = 0x800;
@@ -171,7 +171,7 @@ int v2718::send_pulse1(bool invt)
 {
 	int ret, val;
 //	std::cout<<"in v2718"<<std::endl;
-	val = 0x3;
+	val = 0xf;
 	ret = write_reg(0xc, &val);
 	RET_IF_NONZERO(ret);
 	val = 0x400;

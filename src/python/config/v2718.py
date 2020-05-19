@@ -98,7 +98,7 @@ class v2718(vme_mod):
         # output multiplexer set/clr
         self.reg_map.append({
                  'off' : 0x0c,
-                 'value' : 'default',
+                 'value' : 0xf,
                  'name' : 'output mulp set',
                  'nbit' : 15,
                  'has_set_wid' : True,
