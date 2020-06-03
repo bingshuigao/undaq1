@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "err_code.h"
+#include <string.h>
 
 log_save::log_save()
 {
@@ -44,6 +45,7 @@ int log_save::handle_msg(uint32_t* msg_body)
 		if (msg_body[1] == DAQ_RUN) {
 			run_num = msg_body[2];
 			save = msg_body[3];
+			strcpy(reinterpret_cast<char*>(msg_body+4), run_title);
 			/* debug ...*/
 			std::cout<<"run number:  "<<run_num<<std::endl;
 			/* ***********/
@@ -62,6 +64,7 @@ int log_save::start()
 	/* open a file for write if the save flag is set */
 	if (save) {
 		char buf[100];
+		int ret;
 		std::string f_name;
 		sprintf(buf, "run%05d.trig", run_num);
 		f_name = path + '/' + buf;
@@ -71,6 +74,14 @@ int log_save::start()
 		fp_scal = fopen(f_name.c_str(), "wb");
 		if ((!fp_trig) || (!fp_scal))
 			return -E_OPEN_FILE;
+
+		/* write the title */
+		ret = fwrite(run_title, 1, 128, fp_trig);
+		if (ret != 128) 
+			return -E_SYSCALL;
+		ret = fwrite(run_title, 1, 128, fp_scal);
+		if (ret != 128) 
+			return -E_SYSCALL;
 	}
 
 	/* proporgate the start to next thread */

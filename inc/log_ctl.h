@@ -45,6 +45,7 @@ private:
 	static int log_ctl_init(my_thread* This, initzer* the_initzer);
 	int run_num;
 	int if_save;
+	char run_title[128];
 };
 
 #endif

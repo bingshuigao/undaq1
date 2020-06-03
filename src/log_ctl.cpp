@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/select.h>
+#include <string.h>
 
 log_ctl::log_ctl()
 {
@@ -34,7 +35,7 @@ int log_ctl::handle_msg(uint32_t* msg_body)
 
 int log_ctl::start()
 {
-	uint32_t new_msg[3];
+	uint32_t new_msg[3+128/4];
 	int ret = ctl_start();
 	RET_IF_NONZERO(ret);
 
@@ -42,10 +43,11 @@ int log_ctl::start()
 	new_msg[0] = real_stat; /* new status */
 	new_msg[1] = run_num; /* run number */
 	new_msg[2] = if_save; /* if save flag */
+	strcpy(reinterpret_cast<char*>(new_msg+3), run_title);
 	/* debug ...*/
 	std::cout<<"run number from ctrl: "<<run_num<<std::endl;
 	/* ************/
-	return send_msg(2, 1, new_msg, 12);
+	return send_msg(2, 1, new_msg, 12+128);
 }
 
 int log_ctl::stop()
@@ -112,6 +114,7 @@ int log_ctl::handle_GUI_msg(unsigned char* msg)
 			 * are in p_msg[2] and p_msg[3]. */
 			run_num = p_msg[2];
 			if_save = p_msg[3];
+			strcpy(run_title, reinterpret_cast<char*>(p_msg+4));
 			/* debug ...*/
 //			std::cout<<"run_num "<<run_num<<std::endl;
 			/* ********...*/

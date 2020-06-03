@@ -96,6 +96,11 @@ class control:
                 variable=self.save_flag_var).place(x=135, y=600, 
                         width=60, height=25)
         self.save_flag_var.set(1)
+        # the title of this run
+        self.run_title_entry = tk.Entry(self.root_win)
+        self.run_title_entry.place(x=200, y=600, width=550, height=25)
+        self.run_title_entry.insert(tk.END, 
+                'set run title here (less then 100 letters)')
 
 
     def _create_status_lable(self):
@@ -469,8 +474,9 @@ class control:
                 byteorder='little')
         if_save = self.save_flag_var.get().to_bytes(length=4,
                 byteorder='little')
-        msg_tail = bytes([0 for i in range(112)])
-        msg = msg_type + run_stat + run_num + if_save + msg_tail
+        run_title = self.run_title_entry.get()[:100].encode('utf-8') + b'\0\n'
+        msg_tail = bytes([0 for i in range(112-len(run_title))])
+        msg = msg_type + run_stat + run_num + if_save + run_title + msg_tail
         self.svr_log.send_all(msg)
         # disable the 'star', 'stop' and 'quit' buttons
         self.butt_start.config(state=tk.DISABLED)

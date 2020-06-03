@@ -80,6 +80,7 @@ int main(int argc, char* argv[])
 	TFile* f_out;
 	TTree* tree;
 	char f_name[100];
+	char run_title[128];
 
 	if (argc != 2) {
 		fprintf(stderr, "usage: ./xxx <raw file>\n");
@@ -113,6 +114,7 @@ int main(int argc, char* argv[])
 	/* do the loop */
 	proc_size = 0;
 	n_read = 0;
+	fread(run_title, 1, 128, fp);
 	while (!feof(fp)) {
 		if (1 != fread(evt_buf, 4, 1, fp))
 			break;

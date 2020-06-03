@@ -44,6 +44,7 @@ private:
 	FILE* fp_scal;
 	unsigned char* data_buf;
 	int buf_len;
+	char run_title[128];
 };
 
 

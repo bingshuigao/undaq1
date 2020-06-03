@@ -27,6 +27,7 @@ int main(int argc, char* argv[])
 {
 	FILE* fp_in, *fp_out;
 	char f_name[100];
+	char run_title[128];
 
 	if (argc != 2) {
 		fprintf(stderr, "usage: ./xxx <input file>\n");
@@ -48,6 +49,7 @@ int main(int argc, char* argv[])
 	fprintf(fp_out, "%-20s%-20s%-20s%-20s%-20s\n",
 			"unix_time", "collimator", "HPGe", "target", "NaI");
 	/* do the loop */
+	fread(run_title, 1, 128, fp_in);
 	while (!feof(fp_in)) {
 		if (1 != fread(evt_buf, 4, 1, fp_in)) 
 			break;
