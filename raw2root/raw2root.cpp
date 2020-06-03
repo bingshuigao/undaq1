@@ -50,7 +50,7 @@ void decompose()
 	len_tot = evt_hd.get_len();
 
 	/* loop the fragments */
-	p_dw += 3;
+	p_dw += 5;
 	while (p_dw - p_dw1 != len_tot) {
 		/* parse fragment header */
 		frag_hd.parse_hd(p_dw);

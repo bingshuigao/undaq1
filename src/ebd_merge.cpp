@@ -1,6 +1,7 @@
 #include "ebd_merge.h"
 #include <unistd.h>
 #include <string.h>
+#include <time.h>
 
 
 
@@ -153,6 +154,7 @@ int ebd_merge::do_build(bool force_merge, bool& all_clr)
 	uint64_t ts_cur;
 	uint32_t head[4];
 	int ret, tot_len_wd;
+	struct timespec unix_t;
 
 	/* if the force_merge flag is set, we need to remove all the EOR if
 	 * any. 
@@ -212,10 +214,13 @@ start:
 
 	/* second, pull out events from ring buffers whose timestamps are close
 	 * enough to the minimum, and then merge them into a complete event. */
-	tot_len_wd = 3; /* the header */
+	clock_gettime(CLOCK_REALTIME_COARSE, &unix_t);
+	tot_len_wd = 5; /* the header */
 //	merged_buf[0] = 4;
 	merged_buf[1] = ts_min >> 32;
 	merged_buf[2] = ts_min & 0xFFFFFFFF;
+	merged_buf[3] = unix_t.tv_sec >> 32;
+	merged_buf[4] = unix_t.tv_sec & 0xFFFFFFFF;
 	for (auto it = rb_data.begin(); it != rb_data.end(); it++) {
 		int len_wd;
 		bool set;
@@ -252,7 +257,7 @@ start:
 	merged_buf[0] = tot_len_wd;
 
 	/* if no fragments any more, we should return. */
-	if (merged_buf[0] == 3) {
+	if (merged_buf[0] == 5) {
 		all_clr = true;
 		return 0;
 	}

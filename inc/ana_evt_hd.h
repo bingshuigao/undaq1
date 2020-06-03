@@ -25,10 +25,12 @@ public:
 	/* get length the header information */
 	uint32_t get_len() {return len;}
 	uint64_t get_ts() {return ts;}
+	uint64_t get_unix_t() {return unix_t;}
 
 private:
 	uint32_t len;
 	uint64_t ts;
+	uint64_t unix_t;
 };
 
 
