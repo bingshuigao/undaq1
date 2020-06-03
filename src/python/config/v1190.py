@@ -152,7 +152,7 @@ class v1190(vme_mod):
         # window offset:
         self.reg_map.append({
                  'off' : 2,
-                 'value' : -120,
+                 'value' : 0xff88,
                  'name' : 'window offset',
                  'nbit' : 16,
                  'has_set_wid' : True,
