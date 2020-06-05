@@ -29,7 +29,7 @@ int ebd_merge::ebd_merge_init(my_thread* This, initzer* the_initzer)
 		ptr->glom = 0;
 
 	/* debug ... */
-	std::cout<<"ebd typexxxxxx:   "<<ptr->ebd_type<<std::endl;
+//	std::cout<<"ebd typexxxxxx:   "<<ptr->ebd_type<<std::endl;
 	/* ******* ... */
 	return 0;
 }

@@ -264,7 +264,14 @@ class control:
             use_sz = int.from_bytes(msg[8:12],'little')
             #print('frontend buffer: %d/%d' % (use_sz, tot_sz))
             self.rb_tab.draw_rb_fe(i, tot_sz, use_sz)
+        elif msg_type == 5:
+            # text messages from clients 
+            self._handle_text_msg(msg)
 
+    def _handle_text_msg(self, msg):
+            level = int.from_tytes(msg[4:8], 'little')
+            msg_body = msg[8:].decode('utf-8')
+            self.log_tab.insert_log(msg_body, not level)
 
 
 
@@ -335,7 +342,9 @@ class control:
             ptr += 4
 #            print('built event buffer: %d/%d', (sz_use, sz_tot))
             self.rb_tab.draw_rb_ebd_merger(sz_tot, sz_use)
-                
+        elif msg_type == 5:
+            # text messages from clients 
+            self._handle_text_msg(msg)
 
     def _handle_ana_msg(self, msg):
         if not msg:
@@ -357,6 +366,9 @@ class control:
             sz_use = int.from_bytes(msg[16:20],'little')
 #            print('ana trig buffer: %d/%d', (sz_use, sz_tot))
             self.rb_tab.draw_rb_ana_trig(sz_tot, sz_use)
+        elif msg_type == 5:
+            # text messages from clients 
+            self._handle_text_msg(msg)
 
     def _handle_log_msg(self, msg):
         if not msg:
@@ -378,6 +390,10 @@ class control:
             sz_use = int.from_bytes(msg[16:20],'little')
 #            print('ana trig buffer: %d/%d', (sz_use, sz_tot))
             self.rb_tab.draw_rb_log_trig(sz_tot, sz_use)
+        elif msg_type == 5:
+            # text messages from clients 
+            self._handle_text_msg(msg)
+
 
     def _check_stat(self):
         # send a query status message to the clients

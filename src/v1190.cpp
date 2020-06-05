@@ -175,7 +175,7 @@ int v1190::on_start()
 		if (ret != -E_VME_BUS)
 			RET_IF_NONZERO(ret);
 		/* debug...*/
-		std::cout<<"sz_out = "<<sz_out<<std::endl;
+//		std::cout<<"sz_out = "<<sz_out<<std::endl;
 		
 	} while (sz_out != 0);
 

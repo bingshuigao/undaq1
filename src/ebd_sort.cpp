@@ -68,7 +68,7 @@ int ebd_sort::ebd_sort_init(my_thread* This, initzer* the_initzer)
 	ptr->ebd_type = the_initzer->get_ebd_merge_type();
 
 	/* debug ...*/
-	std::cout<<"ebd type: "<<ptr->ebd_type<<std::endl;
+//	std::cout<<"ebd type: "<<ptr->ebd_type<<std::endl;
 
 	return 0;
 }
@@ -286,7 +286,7 @@ int ebd_sort::handle_evt()
 	int evt_type = evt_buf[2];
 
 	/* debug ...*/
-	std::cout<<"evt_type: "<<evt_type<<std::endl;
+//	std::cout<<"evt_type: "<<evt_type<<std::endl;
 
 	switch (evt_type) {
 	case 0:
@@ -512,14 +512,14 @@ int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 		goto err_data;
 
 	/* debug ...*/
-	std::cout<<"OK1"<<std::endl;
+//	std::cout<<"OK1"<<std::endl;
 	/* ***********/
 	/* get slot number if necessary  */
 	if (slot == -1)
 		slot = slot_map[SLOT_MAP_IDX(crate,mod_id,(evt[0]>>16)&0xFF)];
 
 	/* debug ...*/
-	std::cout<<"OK2"<<std::endl;
+//	std::cout<<"OK2"<<std::endl;
 	/* ***********/
 	
 	switch (ebd_type) {
@@ -536,7 +536,7 @@ int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 		if (evt[idx] == 0)
 			/* this is a filler */
 			idx--;
-		std::cout<<idx<<std::endl;
+//		std::cout<<idx<<std::endl;
 		sig = evt[idx] >> 21;
 		if (sig == 0x24)
 			has_et = true;
@@ -545,19 +545,19 @@ int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 			ts += (ts_hi<<30);
 		}
 		/* debug ...*/
-		std::cout<<"OK3"<<std::endl;
+//		std::cout<<"OK3"<<std::endl;
 		/* ***********/
 
 
 		/* calculate the monotonic time stamp */
 		/* debug ...*/
-		printf("clk_map pointer: 0x%016x", clk_map);
+//		printf("clk_map pointer: 0x%016x", clk_map);
 		/* ***********/
 		
 		clk_freq = clk_map[CLK_MAP_IDX(crate, slot)];
 		clk_off = clk_off_map[CLK_OFF_MAP_IDX(crate, slot)];
 		/* debug ...*/
-		std::cout<<"clk: "<<"clk_freq"<<std::endl;
+//		std::cout<<"clk: "<<"clk_freq"<<std::endl;
 		/* ***********/
 		ts = get_mono_ts(ts, has_et ? 46 : 30, clk_freq, clk_off);
 		if (ts == 0)
@@ -596,7 +596,7 @@ int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
 	sig = evt[0] >> 27;
 	if (sig != 0x08) {
 		/* debug...*/
-		std::cout<<"error 1"<<std::endl;
+//		std::cout<<"error 1"<<std::endl;
 
 		goto err_data;
 	}
@@ -622,7 +622,7 @@ int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
 			/* trailer */
 			if (!has_ettt) {
 				/* debug...*/
-				std::cout<<"error 2"<<std::endl;
+//				std::cout<<"error 2"<<std::endl;
 			
 				goto err_data;
 			}
@@ -631,7 +631,7 @@ int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
 			evt_len_wd = ((evt[i]>>5) & 0xFFFF);
 			if (((i+1) != evt_len_wd) || (evt_len_wd >= 1900)) {
 				/* debug...*/
-				std::cout<<"error 3"<<std::endl;
+//				std::cout<<"error 3"<<std::endl;
 				
 				goto err_data;
 			}
@@ -645,7 +645,7 @@ int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
 	case EBD_TYPE_TS:
 		if (!has_ettt) {
 			/* debug...*/
-			std::cout<<"error 4"<<std::endl;
+//			std::cout<<"error 4"<<std::endl;
 		
 			goto err_data;
 		}
@@ -745,14 +745,14 @@ int ebd_sort::handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len,
 		goto err_data;
 
 	/* debug ...*/
-	std::cout<<"OK1"<<std::endl;
+//	std::cout<<"OK1"<<std::endl;
 	/* ***********/
 	/* get slot number if necessary  */
 	if (slot == -1)
 		slot = slot_map[SLOT_MAP_IDX(crate,mod_id,(evt[0]>>16)&0xFF)];
 
 	/* debug ...*/
-	std::cout<<"OK2"<<std::endl;
+//	std::cout<<"OK2"<<std::endl;
 	/* ***********/
 	
 	switch (ebd_type) {

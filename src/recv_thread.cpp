@@ -28,15 +28,15 @@ int recv_thread::recv_start()
 	std::string err;
 	if (sock == -1) {
 		/* debug ...*/
-		std::cout<<"connecting: port: "<<port<<" ip: "<<svr_addr.c_str()<<std::endl;
+//		std::cout<<"connecting: port: "<<port<<" ip: "<<svr_addr.c_str()<<std::endl;
 		/* *********/
 		sock = my_tcp_clt::connect(port, svr_addr.c_str(), &err);
 		if (sock == -1) {
-			std::cout<<err<<std::endl;
+//			std::cout<<err<<std::endl;
 			return -E_SYSCALL;
 		}
 		/* debug ...*/
-		std::cout<<"connected"<<std::endl;
+//		std::cout<<"connected"<<std::endl;
 		/* *********/
 	}
 	return 0;

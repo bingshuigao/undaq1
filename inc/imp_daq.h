@@ -127,6 +127,20 @@
 #define DEF_EBD_MERGE_TYPE EBD_TYPE_EVT_CNT
 #define DEF_SAVE_PATH_LOG "."
 
+/* generic control thread id (for send messages). This useful when the control
+ * thread id is not know (e.g. in base classes) */
+#define THREAD_CTL 100
+
+
+/* message types */
+#define MSG_TEXT 100 /* text messages (to gui) */
+
+/* message levels */
+#define MSG_LEV_FATAL 0 /* fatal errors */
+#define MSG_LEV_INFO 1 /* generic information */
+#define MSG_LEV_WARN 2 /* warning messages */
+
+
 static inline int do_send(int sock, void* buf, int sz, int flag)
 {
 	unsigned char* p_buf = reinterpret_cast<unsigned char*>(buf);

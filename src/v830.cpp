@@ -100,6 +100,6 @@ int v830::on_start()
 
 int v830::on_stop()
 {
-	std::cout<<"v830 stopped"<<std::endl;
+//	std::cout<<"v830 stopped"<<std::endl;
 	return 0;
 }

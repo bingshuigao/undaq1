@@ -1,4 +1,6 @@
 #include "ana_roody_svr.h"
+#include "imp_daq.h"
+#include <string.h>
 #define POINTER_T unsigned long
 
 ana_roody_svr::ana_roody_svr()
@@ -118,6 +120,8 @@ int ana_roody_svr::main_proc()
 	/* In this function, the current thread receives and send messages to
 	 * roody. (codes copied from MIDAS)*/
 	char request[256];
+	char msg[100];
+	int *p_msg = (int*)msg;
 	int ret;
 
 	if (!tsock) {
@@ -136,8 +140,10 @@ int ana_roody_svr::main_proc()
 			usleep(1000);
 			return 0;
 		}
-	 printf("Closed connection to %s, error code: %d\n", 
+	 sprintf(msg, "Closed connection to %s, error code: %d\n", 
 	         tsock->GetInetAddress().GetHostName(), ret);
+	 printf(msg);
+	 send_text_mes(msg, MSG_LEV_INFO);
 		/* otherwise the connection must have been closed */
 		tsock->Close();
 		delete tsock;
@@ -155,7 +161,7 @@ int ana_roody_svr::main_proc()
 			message->Reset(kMESS_OBJECT);
 			message->WriteObject(NULL);
 			tsock->Send(*message);
-			std::cout<<"debug-->1"<<std::endl;
+//			std::cout<<"debug-->1"<<std::endl;
 			delete message;
 			return 0;
 		}
@@ -179,7 +185,7 @@ int ana_roody_svr::main_proc()
 			delete(TObjString *) names->At(i);
 		delete names;
 		delete message;
-		std::cout<<"debug-->2"<<std::endl;
+//		std::cout<<"debug-->2"<<std::endl;
 	} 
 	else if (strncmp(request, "FindObject", 10) == 0) {
 		TFolder *folder = ReadFolderPointer(tsock);
@@ -201,7 +207,7 @@ int ana_roody_svr::main_proc()
 		}
 
 		/* clean up */
-		std::cout<<"debug-->3"<<std::endl;
+//		std::cout<<"debug-->3"<<std::endl;
 		delete message;
 
 	} else if (strncmp(request, "FindFullPathName", 16) == 0) {
@@ -223,7 +229,7 @@ int ana_roody_svr::main_proc()
 		}
 
 		/* clean up */
-		std::cout<<"debug-->4"<<std::endl;
+//		std::cout<<"debug-->4"<<std::endl;
 		delete message;
 
 	} else if (strncmp(request, "Occurence", 9) == 0) {
@@ -244,7 +250,7 @@ int ana_roody_svr::main_proc()
 
 		/* clean up */
 		delete message;
-		std::cout<<"debug-->5"<<std::endl;
+//		std::cout<<"debug-->5"<<std::endl;
 
          } else if (strncmp(request, "GetPointer", 10) == 0) {
 		/* find object */
@@ -258,10 +264,10 @@ int ana_roody_svr::main_proc()
 
 		/* clean up */
 		delete message;
-		std::cout<<"debug-->6"<<std::endl;
+//		std::cout<<"debug-->6"<<std::endl;
 
 	} else if (strncmp(request, "Command", 7) == 0) {
-		std::cout<<"debug-->7"<<std::endl;
+//		std::cout<<"debug-->7"<<std::endl;
 		char objName[100], method[100];
 		tsock->Recv(objName, sizeof(objName));
 		tsock->Recv(method, sizeof(method));
@@ -271,7 +277,7 @@ int ana_roody_svr::main_proc()
 			static_cast < TH1 * >(object)->Reset();
 
 	} else if (strncmp(request, "SetCut", 6) == 0) {
-		std::cout<<"debug-->8"<<std::endl;
+//		std::cout<<"debug-->8"<<std::endl;
 		/* read new settings for a cut */
 		char name[256];
 		tsock->Recv(name, sizeof(name));
@@ -294,8 +300,10 @@ int ana_roody_svr::main_proc()
 		delete newc;
 
 	} else {
-		printf("SocketServer: Received unknown command \"%s\"\n", 
+		sprintf(msg, "SocketServer: Received unknown command \"%s\"\n", 
 				request);
+		send_text_mes(msg, MSG_LEV_INFO);
+		printf(msg);
 	}
 	
 	return 0;

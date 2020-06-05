@@ -10,6 +10,7 @@ daq_thread::daq_thread()
 	rb_msg = NULL;
 	acq_stat = 0;
 	the_timer.reset();
+	is_ctl_thread = false;
 }
 
 daq_thread::~daq_thread()
@@ -20,6 +21,8 @@ void* daq_thread::main_loop(void* arg)
 {
 	int* p_ret = reinterpret_cast<int*>(ret_val);
 	int ret;
+	char buf[100];
+	int* p_buf = reinterpret_cast<int*>(buf);
 	while (true) {
 begin:
 		if (ret = rd_msg()) {
@@ -47,6 +50,9 @@ begin:
 
 finish:
 	printf("thread (%d) exits with return code (%d)\n", thread_id, *p_ret);
+	sprintf(buf, "thread (%d) exits with return code (%d)\n", 
+			thread_id, *p_ret);
+	send_text_mes(buf, MSG_LEV_FATAL);
 	return ret_val;
 }
 
@@ -93,11 +99,21 @@ int daq_thread::send_msg(int id, int type, void* msg, int len)
 	return 0;
 }
 
+int daq_thread::send_text_mes(const char* msg, int level)
+{
+	char buf[100];
+	int* p_buf = (int*)buf;
+	strncpy(buf+4, (const char*)msg, 96);
+	p_buf[0] = level;
+	buf[95] = 0;
+	return send_msg(THREAD_CTL, MSG_TEXT, buf, strlen(buf+4)+1+4);
+}
+
 int daq_thread::do_rd_msg()
 {
 	uint32_t msg_head;
 	uint32_t msg[100];
-	int cnt;
+	int cnt, msg_id;
 
 	
 	/* first we need to look at the ring buffer to see if the message is
@@ -111,7 +127,9 @@ int daq_thread::do_rd_msg()
 	}
 	if (cnt == 4) {
 		/* yes, there is a message found */
-		if ((msg_head>>24) == thread_id) {
+		msg_id = msg_head>>24;
+		if ((msg_id == thread_id) || 
+				((msg_id == THREAD_CTL) && is_ctl_thread)) {
 			/* the header shows that this message is for the
 			 * current thread  */
 			int32_t sz = (msg_head & 0xFFFFFF);

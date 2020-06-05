@@ -62,7 +62,7 @@ int fe_sender::start()
 	acq_stat = 1;
 
 	/* debug ... */
-	std::cout<<"start command received by fe_sender thread"<<std::endl;
+//	std::cout<<"start command received by fe_sender thread"<<std::endl;
 
 
 

@@ -210,8 +210,8 @@ begin:
 	n_byte += sz_out;
 	if ((sz_out+100) >= sz_in) {
 		/* the blt_buf_sz is too small */
-		ret = send_warning(4, 
-			"blt_buf_sz is too small, please increase!");
+		ret = send_text_mes("blt_buf_sz is too small, need to increase!", 
+				MSG_LEV_WARN);
 		RET_IF_NONZERO(ret);
 		discard = true;
 		/* goto begin because we want to clear the buffer of the module

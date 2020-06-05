@@ -20,14 +20,24 @@ int log_ctl::handle_msg(uint32_t* msg_body)
 {
          /* The message type of the current thread are defined as following:
           * msg_type == 1 --> run status transition.                        
-          * msg_type == 2 --> to be defined yet */                          
+          * msg_type == 2 --> to be defined yet 
+	  * msg_type == MSG_TEXT (100) --> text message (to gui)
+	  * */                          
 
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
+	unsigned char gui_msg[128];
+	uint32_t* p_int = reinterpret_cast<uint32_t*>(gui_msg);
 
 	switch (msg_type) {
 	case 1:
 		/* run status transition */
 		return switch_run(msg_body[1]);
+	case MSG_TEXT:
+		p_int[0] = 5; /* gui message type */
+		p_int[1] = msg_body[1];
+		sprintf((char*)(gui_msg+8), "%s", (char*)(msg_body+2));
+		p_int[31] = 0;
+		return do_send(sock, gui_msg, 128, 0);
 	default:
 		return -E_MSG_TYPE;
 	}
@@ -45,7 +55,7 @@ int log_ctl::start()
 	new_msg[2] = if_save; /* if save flag */
 	strcpy(reinterpret_cast<char*>(new_msg+3), run_title);
 	/* debug ...*/
-	std::cout<<"run number from ctrl: "<<run_num<<std::endl;
+//	std::cout<<"run number from ctrl: "<<run_num<<std::endl;
 	/* ************/
 	return send_msg(2, 1, new_msg, 12+128);
 }
@@ -81,6 +91,8 @@ int log_ctl::log_ctl_init(my_thread* ptr, initzer* the_initzer)
 	This->sock = my_tcp_clt::connect(This->port, This->svr_addr.c_str());
 	if (This->sock == -1)
 		return -E_SYSCALL;
+
+	This->is_ctl_thread = true;
 	return 0;
 }
 

@@ -153,6 +153,13 @@ protected:
 	 * @return Return zero if succeed, otherwise return error code.*/
 	int send_msg(int id, int type, void* msg, int len);
 
+	/* send a text message to the control thread (then to the gui) 
+	 * @param msg. The text to be sent (less than 96 bytes).
+	 * @param lev. Message level (error, warning, info, etc.)
+	 * @return Return zero if succeed, otherwise return error code.
+	 * */
+	int send_text_mes(const char* msg, int lev);
+
 
 	/* handle the message. The pointer points to the message body (not
 	 * including the message header).
@@ -221,6 +228,9 @@ protected:
 	/* thread id (to identify the receiver/sender of messages, it should be
 	 * initialized in the constructor of subclasses*/
 	int thread_id;
+
+	/* true if the current thread is control thread */
+	bool is_ctl_thread;
 
 };
 

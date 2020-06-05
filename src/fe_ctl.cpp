@@ -23,6 +23,7 @@ int fe_ctl::handle_msg(uint32_t* msg_body)
 	  * msg_type == 3 --> A warning message
 	  * msg_type == 4 --> reply to the query of statistics (from rd_trig
 	  * thread)
+	  * msg_type == MSG_TEXT (100) --> text message (to gui)
 	  * */                          
 
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
@@ -34,7 +35,7 @@ int fe_ctl::handle_msg(uint32_t* msg_body)
 		/* run status transition */
 		return switch_run(msg_body[1]);
 	case 3:
-		/* this is a warning to be sent to controler */
+		/* this is a warning to be sent to controler (absoleted) */
 		std::cout<<"warning received!"<<std::endl;
 		return 0;
 	case 4:
@@ -44,7 +45,13 @@ int fe_ctl::handle_msg(uint32_t* msg_body)
 		p_int[2] = msg_body[2];
 		p_int[3] = msg_body[3];
 		p_int[4] = msg_body[4];
-		std::cout<<"sending rates..."<<std::endl;
+//		std::cout<<"sending rates..."<<std::endl;
+		p_int[31] = 0;
+		return do_send(sock, gui_msg, 128, 0);
+	case MSG_TEXT:
+		p_int[0] = 5; /* gui message type */
+		p_int[1] = msg_body[1];
+		sprintf((char*)(gui_msg+8), "%s", (char*)(msg_body+2));
 		p_int[31] = 0;
 		return do_send(sock, gui_msg, 128, 0);
 	default:
@@ -94,6 +101,8 @@ int fe_ctl::fe_ctl_init(my_thread* ptr, initzer* the_initzer)
 	 * quit. */
 	This->acq_stat = 1;
 
+	This->is_ctl_thread = true;
+
 	return 0;
 }
 
@@ -114,16 +123,18 @@ int fe_ctl::handle_GUI_msg(unsigned char* msg)
 		/* a run status transition is requested. */
 		stat = p_msg[1];
 		if (stat == 0) {
-			/* to stop a run, thread 1 initiate the chain */
-			/* debug ... */
-			std::cout<<"stop command received"<<std::endl;
-			return send_msg(1, 1, &stat, 4);
+			ret = send_msg(1, 1, &stat, 4);
+			RET_IF_NONZERO(ret);
+			return send_text_mes("stop command received", 
+					MSG_LEV_INFO);
 		}
 		else if (stat == 1) {
 			/* to start a run, thread 4 initiate the chain */
-			/* debug ... */
-			std::cout<<"start command received"<<std::endl;
-			return send_msg(4, 1, &stat, 4);
+			ret = send_msg(4, 1, &stat, 4);
+			RET_IF_NONZERO(ret);
+			return send_text_mes("start command received", 
+					MSG_LEV_INFO);
+			
 		}
 		else if (stat == 2) {
 			/* to quit the daq, all the thread exit in parallel. */

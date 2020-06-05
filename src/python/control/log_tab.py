@@ -17,6 +17,8 @@ class log_tab:
         self.frm = tk.Frame(parent)
         # create all sub windows inside the main frame
         self._create_all()
+        # highlight tags
+        hl_tag = 0
 
     def get_frm(self):
         return self.frm
@@ -33,8 +35,15 @@ class log_tab:
         scrollbar.pack(side='right', fill='y')
         self.text.pack(side='left', fill='both', expand=True)
         text_frm.place(x=0, y=0, width=800, height=525)
-        self.text.insert(tk.END, 'begin logging...')
+        self.text.insert(tk.END, 'begin logging...\n')
         self.text.config(state=tk.DISABLED)
+
+    def insert_log(self, txt, hl=False):
+        self.text.insert(tk.END, datetime.datetime.now().ctime()+txt+'\n')
+        if hl:
+            hl_tag += 1
+            self.text.tag_add(str(hl_tag), str(tk.END)+'.0', str(tk.END)+'.100')
+            self.text.tag_config(str(hl_tag), foreground='red')
 
 
 

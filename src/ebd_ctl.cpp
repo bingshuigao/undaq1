@@ -20,12 +20,14 @@ int ebd_ctl::handle_msg(uint32_t* msg_body)
          /* The message type of the current thread are defined as following:
           * msg_type == 1 --> run status transition.                        
           * msg_type == 2 --> n_mod
+	  * msg_type == MSG_TEXT (100) --> text message (to gui)
 	  * */                          
 
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
 	uint32_t n_mod;
 	unsigned char msg_send[128];
 	uint32_t* p;
+	uint32_t* p_int = reinterpret_cast<uint32_t*>(msg_send);
 
 	switch (msg_type) {
 	case 1:
@@ -38,6 +40,12 @@ int ebd_ctl::handle_msg(uint32_t* msg_body)
 		p[0] = 3;
 		p[1] = n_mod;
 		p[31] = 0;
+		return do_send(sock, msg_send, 128, 0);
+	case MSG_TEXT:
+		p_int[0] = 5; /* gui message type */
+		p_int[1] = msg_body[1];
+		sprintf((char*)(msg_send+8), "%s", (char*)(msg_body+2));
+		p_int[31] = 0;
 		return do_send(sock, msg_send, 128, 0);
 	default:
 		return -E_MSG_TYPE;
@@ -84,6 +92,7 @@ int ebd_ctl::ebd_ctl_init(my_thread* ptr, initzer* the_initzer)
 	This->sock = my_tcp_clt::connect(This->port, This->svr_addr.c_str());
 	if (This->sock == -1)
 		return -E_SYSCALL;
+	This->is_ctl_thread = true;
 
 	return 0;
 }
