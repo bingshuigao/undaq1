@@ -9,6 +9,7 @@ __metaclass__ = type
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+import datetime
 
 
 class log_tab:
@@ -18,7 +19,7 @@ class log_tab:
         # create all sub windows inside the main frame
         self._create_all()
         # highlight tags
-        hl_tag = 0
+        self.hl_tag = 0
 
     def get_frm(self):
         return self.frm
@@ -39,11 +40,19 @@ class log_tab:
         self.text.config(state=tk.DISABLED)
 
     def insert_log(self, txt, hl=False):
-        self.text.insert(tk.END, datetime.datetime.now().ctime()+txt+'\n')
+        self.text.config(state=tk.NORMAL)
+        self.text.insert(tk.END, datetime.datetime.now().ctime()+',\t'+txt)
+        if txt[-1] != '\n':
+            self.text.insert(tk.END, '\n')
+
+       #print(txt)
         if hl:
-            hl_tag += 1
-            self.text.tag_add(str(hl_tag), str(tk.END)+'.0', str(tk.END)+'.100')
-            self.text.tag_config(str(hl_tag), foreground='red')
+            self.hl_tag += 1
+            line_n = int(self.text.index('end-1c').split('.')[0])
+            #print(line_n)
+            self.text.tag_add(str(self.hl_tag), str(line_n-1)+'.0', str(line_n-1)+'.100')
+            self.text.tag_config(str(self.hl_tag), foreground='red')
+        self.text.config(state=tk.DISABLED)
 
 
 

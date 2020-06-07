@@ -73,6 +73,9 @@ int rd_scal::try_rd_fe(bool force_rd)
 		}
 	}
 
+	/* take a short break before returnning */
+	usleep(100000);
+
 	return 0;
 }
 

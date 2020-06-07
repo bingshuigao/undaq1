@@ -1,4 +1,5 @@
 #include "madc32.h"
+#include <unistd.h>
 
 madc32::madc32()
 {
@@ -83,6 +84,13 @@ int madc32::get_cblt_conf(uint16_t* addr, int* cblt_enable, int* cblt_first,
 {
 	int ret;
 	uint16_t val;
+
+	/* if we are in test mode, return cblt enable false */
+	if (get_ctl()->get_name() == "text_ctl") {
+		*cblt_enable = 0;
+		return 0;
+	}
+
 	/* get address */
 	if (addr) {
 		ret = read_reg(0x6022, 16, addr);
@@ -119,6 +127,14 @@ int madc32::if_trig(bool& x)
 {
 	uint16_t data_ready;
 	int ret;
+
+	/* if we are in test mode, always return true */
+	if (get_ctl()->get_name() == "test_ctl") {
+		x = true;
+//		std::cout<<"xxxxxxxxxx"<<std::endl;
+		usleep(1000);
+		return 0;
+	}
 
 	ret = read_reg(0x603e, 16, &data_ready);
 	RET_IF_NONZERO(ret);

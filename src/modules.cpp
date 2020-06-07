@@ -129,10 +129,11 @@ int modules::update_read_list()
 	chain.clear();
 
 	/* If the vme controller is v2718 */
-	if (get_ctl_name() == "v2718") 
+	if ((get_ctl_name() == "v2718") || (get_ctl_name() == "test_ctl")) 
 		return update_read_list_v2718();
-	else
+	else 
 		/* up to now no other vme controllers are supported */
+//		std::cout<<"errrrrrrrrrrr"<<std::endl;
 		return -E_NOT_SUPPORT;
 }
 

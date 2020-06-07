@@ -321,11 +321,14 @@ static int create_mod(std::string& name, module*& mod)
 			mod = new v785n;
 	}
 	else {
-		if (name.find("V2718") == std::string::npos)
+		if ((name.find("V2718") == std::string::npos) &&
+		    (name.find("TEST_CTL") == std::string::npos)) {
 			/* unknown module found */
+//			std::cout<<"errorxxx"<<std::endl<<name<<std::endl;;
 			return -E_UNKOWN_MOD;
+		}
 		else
-			/* V2718 module should not be created here */
+			/* vme controller module should not be created here */
 			mod = NULL;
 	}
 
@@ -819,6 +822,8 @@ int initzer::init_vme_mod()
 	ret = init_v2718();
 	RET_IF_NONZERO(ret);
 	/* try another supported vme controller here */
+	ret = init_test_ctl();
+	RET_IF_NONZERO(ret);
 
 
 	/* Now we can initialize the vme modules */
@@ -848,6 +853,34 @@ int initzer::init_vme_mod()
 	return 0;
 }
 
+
+int initzer::init_test_ctl()
+{
+	/* We need to know the range of crate numbers. Because there exists an
+	 * offset between the board numbers and crate numbers. */
+	int min_crate = 100000;
+	int crate;
+	for (auto it = vme_conf.begin(); it != vme_conf.end(); it++) {
+		std::string name = get_mod_name(*it);
+		if (name.find("TEST_CTL") != std::string::npos) {
+			crate = get_mod_crate(*it);
+			min_crate = (crate < min_crate) ? crate : min_crate;
+		}
+	}
+
+	/* now we initialize the test_ctl one by one */
+	for (auto it = vme_conf.begin(); it != vme_conf.end(); it++) {
+		std::string name = get_mod_name(*it);
+		if (name.find("TEST_CTL") != std::string::npos) {
+			test_ctl* tmp = do_init_test_ctl(*it, min_crate);
+			if (!tmp) 
+				return -E_INIT_TEST_CTL;
+			p_test_ctl.push_back(tmp);
+		}
+	}
+	return 0;
+}
+
 int initzer::init_v2718()
 {
 	/* We need to know the range of crate numbers. Because there exists an
@@ -874,6 +907,36 @@ int initzer::init_v2718()
 	}
 	return 0;
 }
+
+test_ctl* initzer::do_init_test_ctl(std::vector<struct conf_vme_mod> &the_conf, 
+		int crate_off)
+{
+	test_ctl* tmp_test_ctl = new test_ctl;
+	int crate = -1;
+	uint16_t reg_val;
+
+	/* get the crate number */
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name == "crate_n") {
+			crate = (*it).val.val_uint64;
+			tmp_test_ctl->set_crate(crate);
+			break;
+		}
+	}
+	if (crate == -1) 
+		/* cannot get the crate number */
+		goto fail;
+
+	/* Now let's try to open it. */
+	if (tmp_test_ctl->open(NULL)) 
+		goto fail;
+		
+	return tmp_test_ctl;
+fail:
+	delete tmp_test_ctl;
+	return NULL;
+}
+
 
 v2718* initzer::do_init_v2718(std::vector<struct conf_vme_mod> &the_conf, 
 		int crate_off)
@@ -1041,7 +1104,13 @@ int initzer::init_global_var(module* mod,
 			break;
 		}
 	}
-	/* then try other supported controllers */
+	/* then try other supported controllers (test_ctl)*/
+	for (auto it = p_test_ctl.begin(); it != p_test_ctl.end(); it++) {
+		if (crate == (*it)->get_crate()) {
+			mod->set_ctl(*it);
+			break;
+		}
+	}
 
 	/* make sure the module has a vme controller assigned */
 	if (!mod->get_ctl())
@@ -1111,7 +1180,7 @@ static int get_num_mod(std::vector<module*>& mods, char type)
 /* get one modules object from the vector of modules */
 static modules* get_one_modules(std::vector<module*>& mods, char type)
 {
-	int crate;
+	int crate, ret;
 	uint32_t t;
 	std::string name;
 	modules* the_modules = new modules;
@@ -1137,13 +1206,21 @@ static modules* get_one_modules(std::vector<module*>& mods, char type)
 			/* For scaler-type, addtional requirements exist */
 			if (type == 'S') {
 				if ((*it)->get_period() == t) {
-					the_modules->add_mod(*it);
+					ret = the_modules->add_mod(*it);
+					if (ret) {
+						printf("exit with error code: %d",ret);
+						exit(ret);
+					}
 					mods.erase(it);
 					continue;
 				}
 			}
 			else {
-				the_modules->add_mod(*it);
+				ret = the_modules->add_mod(*it);
+				if (ret) {
+					printf("exit with error code: %d",ret);
+					exit(ret);
+				}
 				mods.erase(it);
 				continue;
 			}

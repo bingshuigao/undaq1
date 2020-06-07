@@ -20,6 +20,7 @@
 #include "modules.h"
 #include "madc32.h"
 #include "v2718.h"
+#include "test_ctl.h"
 #include "v1190.h"
 #include "v830.h"
 #include "v1740.h"
@@ -315,11 +316,21 @@ private:
 	/* find and init all the v2718 modules.
 	 * Return 0 if succeed, otherwise return error code. */
 	int init_v2718();
+
+	/* find and init all the test_ctl modules.
+	 * Return 0 if succeed, otherwise return error code. */
+	int init_test_ctl();
 	
 	/* Init the vme module according to its configurations. The offset is
 	 * the offset between board numbers and crate numbers. Return the
 	 * pointer to the vme object. Return NULL in case of error. */
 	v2718* do_init_v2718(std::vector<struct conf_vme_mod> &the_conf, int offset);
+
+
+	/* Init the vme module according to its configurations. The offset is
+	 * the offset between board numbers and crate numbers. Return the
+	 * pointer to the vme object. Return NULL in case of error. */
+	test_ctl* do_init_test_ctl(std::vector<struct conf_vme_mod> &the_conf, int offset);
 
 
 	/* initialize the global variables of the given module 
@@ -387,6 +398,7 @@ private:
 #ifdef MAKE_FRONTEND
 	std::vector<module*> p_module;
 	std::vector<v2718*> p_v2718;
+	std::vector<test_ctl*> p_test_ctl;
 #endif
 	std::vector<std::vector<struct conf_vme_mod> > vme_conf;
 

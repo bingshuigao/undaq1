@@ -45,9 +45,9 @@ int log_save::handle_msg(uint32_t* msg_body)
 		if (msg_body[1] == DAQ_RUN) {
 			run_num = msg_body[2];
 			save = msg_body[3];
-			strcpy(reinterpret_cast<char*>(msg_body+4), run_title);
+			strcpy(run_title, reinterpret_cast<char*>(msg_body+4));
 			/* debug ...*/
-			std::cout<<"run number:  "<<run_num<<std::endl;
+//			std::cout<<"run number:  "<<run_num<<std::endl;
 			/* ***********/
 		}
 		return switch_run(msg_body[1]);
@@ -76,6 +76,7 @@ int log_save::start()
 			return -E_OPEN_FILE;
 
 		/* write the title */
+//		std::cout<<"title:  "<<run_title<<std::endl;
 		ret = fwrite(run_title, 1, 128, fp_trig);
 		if (ret != 128) 
 			return -E_SYSCALL;

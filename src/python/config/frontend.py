@@ -23,6 +23,7 @@ from v1190 import v1190
 from v830 import v830
 from v977 import v977
 from v2718 import v2718
+from test_ctl import test_ctl
 from adv_conf_fe import adv_conf_fe
 from v1740 import v1740
 from v775 import v775
@@ -36,7 +37,7 @@ class frontend:
         # number of crates
         self.n_crate = 1 
         # list of supported modules
-        self.sup_mods_lst = ['V2718', 'MADC32', 'V1190A', 'V830', 'V977',
+        self.sup_mods_lst = ['V2718', 'TEST_CTL', 'MADC32', 'V1190A', 'V830', 'V977',
                 'V1740', 'V775', 'V775N', 'V785', 'V785N']
         # list of selected modules (note: the element is an object of the
         # vme_mod class, not a string as in the sup_mods_list)
@@ -139,6 +140,8 @@ class frontend:
             tmp = v830(self._get_uniq_name(name), mod)
         elif name == 'V2718':
             tmp = v2718(self._get_uniq_name(name), mod)
+        elif name == 'TEST_CTL':
+            tmp = test_ctl(self._get_uniq_name(name), mod)
         elif name == 'V977':
             tmp = v977(self._get_uniq_name(name), mod)
         elif name == 'V1740':

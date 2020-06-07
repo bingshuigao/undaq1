@@ -266,12 +266,20 @@ class control:
             self.rb_tab.draw_rb_fe(i, tot_sz, use_sz)
         elif msg_type == 5:
             # text messages from clients 
-            self._handle_text_msg(msg)
+            self._handle_text_msg(msg, 'frontend'+str(i))
 
-    def _handle_text_msg(self, msg):
-            level = int.from_tytes(msg[4:8], 'little')
-            msg_body = msg[8:].decode('utf-8')
-            self.log_tab.insert_log(msg_body, not level)
+    def _handle_text_msg(self, msg, client):
+            level = int.from_bytes(msg[4:8], 'little')
+            # debug
+            # print(msg[8:])
+            txt_len = 0
+            for b in msg[8:]:
+                if b:
+                    txt_len += 1
+                else:
+                    break;
+            msg_body = msg[8:8+txt_len].decode('utf-8')
+            self.log_tab.insert_log('(%s) %s' % (client, msg_body), not level)
 
 
 
@@ -344,7 +352,7 @@ class control:
             self.rb_tab.draw_rb_ebd_merger(sz_tot, sz_use)
         elif msg_type == 5:
             # text messages from clients 
-            self._handle_text_msg(msg)
+            self._handle_text_msg(msg, 'event builder')
 
     def _handle_ana_msg(self, msg):
         if not msg:
@@ -368,7 +376,7 @@ class control:
             self.rb_tab.draw_rb_ana_trig(sz_tot, sz_use)
         elif msg_type == 5:
             # text messages from clients 
-            self._handle_text_msg(msg)
+            self._handle_text_msg(msg, 'analyzer')
 
     def _handle_log_msg(self, msg):
         if not msg:
@@ -392,7 +400,7 @@ class control:
             self.rb_tab.draw_rb_log_trig(sz_tot, sz_use)
         elif msg_type == 5:
             # text messages from clients 
-            self._handle_text_msg(msg)
+            self._handle_text_msg(msg, 'logger')
 
 
     def _check_stat(self):

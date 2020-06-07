@@ -128,6 +128,7 @@ int log_ctl::handle_GUI_msg(unsigned char* msg)
 			if_save = p_msg[3];
 			strcpy(run_title, reinterpret_cast<char*>(p_msg+4));
 			/* debug ...*/
+//			std::cout<<"title: "<<run_title<<std::endl;
 //			std::cout<<"run_num "<<run_num<<std::endl;
 			/* ********...*/
 			return send_msg(3, 1, &stat, 4);

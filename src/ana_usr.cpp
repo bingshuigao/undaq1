@@ -32,7 +32,7 @@ int ana_usr_trig(void* p_evt, hist_man& hists, bool is_bor)
 		p_dw += 5;
 		slot = frag_hd.get_slot();
 		len_frag = frag_hd.get_len();
-		if (slot == 4) {
+		if (slot == 1) {
 			/* madc */
 			evt_madc.parse_raw(p_dw, madc_val);
 			((TH1D*)hists.get(0))->Fill(madc_val[0]);
