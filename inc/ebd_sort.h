@@ -89,6 +89,8 @@ private:
 			return handle_single_evt_v785(evt, evt_len, max_len);
 		case 9: 
 			return handle_single_evt_v785n(evt, evt_len, max_len);
+		case 10:
+			return handle_single_evt_fake_module(evt, evt_len, max_len);
 		default:
 			return -E_UNKOWN_MOD;
 		}
@@ -101,6 +103,7 @@ private:
 	int handle_single_evt_v775n(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v785(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v785n(uint32_t* evt, int& evt_len, int max_len);
+	int handle_single_evt_fake_module(uint32_t* evt, int& evt_len, int max_len);
 
 
 	/* initialize the rb_map. 

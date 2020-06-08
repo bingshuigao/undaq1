@@ -718,6 +718,13 @@ uint64_t ebd_sort::get_mono_evt_cnt(uint64_t evt_cnt, int n_bit)
 	return n_range * p_udata[3] + p_udata[2];
 }
 
+int ebd_sort::handle_single_evt_fake_module(uint32_t* evt, int& evt_len, int max_len)
+{
+	return -E_DATA_FAKE_MODULE;
+}
+
+
+
 int ebd_sort::handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len,
 		int sub_mod_id)
 {

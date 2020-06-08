@@ -28,6 +28,7 @@
 #include "v785.h"
 #include "v775n.h"
 #include "v785n.h"
+#include "fake_module.h"
 #endif
 
 struct mod_rb_par

@@ -59,6 +59,7 @@
 #define E_DATA_V785N           50 /* corrupted v785 data */
 #define E_DATA_EVT             51 /* corrupted whole event */
 #define E_INIT_TEST_CTL        52 /* error initializing the test_ctl module */
+#define E_DATA_FAKE_MODULE     53 /* data error of the fake module */
 
 
 

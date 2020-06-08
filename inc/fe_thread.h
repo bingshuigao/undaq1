@@ -60,6 +60,7 @@
  * 7 --> v775n;
  * 8 --> v785;
  * 9 --> v785n;
+ * 10 --> fake_module;
  *
  *             The true body has the following format: (see modules.h):
  *                  _______________

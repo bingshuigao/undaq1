@@ -308,6 +308,9 @@ static int create_mod(std::string& name, module*& mod)
 	else if (name.find("V1740") != std::string::npos) {
 		mod = new v1740;
 	}
+	else if (name.find("FAKE_MODULE") != std::string::npos) {
+		mod = new fake_module;
+	}
 	else if (name.find("V775") != std::string::npos) {
 		if (name.find("V775N") == std::string::npos)
 			mod = new v775;
@@ -477,6 +480,15 @@ do_init_v775(v775* mod, std::vector<struct conf_vme_mod> &the_conf)
 
 	return 0;
 }
+
+
+/* initialize vme module, return 0 if succeed, otherwise return error code */
+static int 
+do_init_fake_module(fake_module* mod, std::vector<struct conf_vme_mod> &the_conf)
+{
+	return 0;
+}
+
 
 /* initialize vme module, return 0 if succeed, otherwise return error code */
 static int 
@@ -800,6 +812,8 @@ static int do_init_mod(module* mod, std::vector<struct conf_vme_mod> &the_conf)
 		return do_init_v830(static_cast<v830*>(mod), the_conf);
 	if (name == "v1740")
 		return do_init_v1740(static_cast<v1740*>(mod), the_conf);
+	if (name == "fake_module")
+		return do_init_fake_module(static_cast<fake_module*>(mod), the_conf);
 	if (name == "v775" || name == "v775n")
 		return do_init_v775(static_cast<v775*>(mod), the_conf);
 	if (name == "v785" || name == "v785n")
