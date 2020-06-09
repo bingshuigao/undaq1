@@ -17,7 +17,7 @@
  * processing. When we use this feature, it usually means there is a problem
  * with the DAQ or for debugging purposes. So we define it as a macro, other
  * than as a configurable parameter. */
-# define USE_DIRECT_SAVE 
+//# define USE_DIRECT_SAVE 
 
 class rd_fe : public fe_thread
 {
