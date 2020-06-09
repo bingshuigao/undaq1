@@ -46,6 +46,11 @@ int rd_trig::handle_msg(uint32_t* msg_body)
 		stat[3] = cur_t & 0xffffffff;  /* low word of time */
 //		std::cout<<"sending rates from rd_trig..."<<std::endl;
 		return send_msg(4, 4, stat, 16);
+	case 5: 
+		/* data stream pipe line is broken */
+		is_pipe_broken = true;
+		return send_text_mes("broken pipe line, stop writing to ring buffer!", 
+				MSG_LEV_FATAL);
 	default:
 		return -E_MSG_TYPE;
 	}

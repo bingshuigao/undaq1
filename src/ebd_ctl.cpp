@@ -47,6 +47,11 @@ int ebd_ctl::handle_msg(uint32_t* msg_body)
 		sprintf((char*)(msg_send+8), "%s", (char*)(msg_body+2));
 		p_int[31] = 0;
 		return do_send(sock, msg_send, 128, 0);
+	case 3:
+		/* broken pipe */
+		p_int[0] = 6; /* gui message type */
+		p_int[31] = 0; 
+		return do_send(sock, msg_send, 128, 0);
 	default:
 		return -E_MSG_TYPE;
 	}

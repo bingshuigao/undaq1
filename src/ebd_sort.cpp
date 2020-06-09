@@ -276,7 +276,14 @@ int ebd_sort::main_proc()
 		}
 		(*it)->rel_lock();
 		ret = handle_evt();
-		RET_IF_NONZERO(ret);
+		if (ret) {
+//			send_text_mes("broken pipe", MSG_LEV_FATAL);
+			send_msg(5, 3, NULL, 0);
+			return ret;
+		}
+		/* debug */
+//		send_msg(5, 3, NULL, 0);
+//		return -E_DATA_MADC32;
 	}
 	return 0;
 }

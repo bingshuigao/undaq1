@@ -14,6 +14,7 @@ rd_fe::rd_fe()
 	the_timer.reset();
 	n_byte = 0;
 	blt_buf = NULL;
+	is_pipe_broken = false;
 
 	init_fun.push_back(&rd_fe_init);
 }
@@ -72,6 +73,13 @@ int rd_fe::start()
 		return send_msg(1, 1, &acq_stat, 4);
 	}
 
+#ifdef USE_DIRECT_SAVE
+	fp_direct_write = fopen("direct_save.dat", "wb");
+	if (!fp_direct_write) {
+		send_text_mes("cannot open file for direct save!", MSG_LEV_FATAL);
+		return -E_SYSCALL;
+	}
+#endif
 	return 0;
 }
 
@@ -110,8 +118,12 @@ int rd_fe::stop()
 	}
 
 	/* proporgate the stop message to next thread (if any)*/
-	if (thread_id == 1)
+	if (thread_id == 1) {
+#ifdef USE_DIRECT_SAVE
+		fclose(fp_direct_write);
+#endif
 		return send_msg(2, 1, &acq_stat, 4);
+	}
 	else if (thread_id == 2)
 		return send_msg(3, 1, &acq_stat, 4);
 
@@ -219,6 +231,14 @@ begin:
 		goto begin;
 	}
 	if (discard)
+		goto begin;
+#ifdef USE_DIRECT_SAVE
+	fwrite(blt_buf+head_sz, 1, sz_out, fp_direct_write);
+#endif
+
+	/* if the pipe line for the data stream is broken, we stop writting
+	 * into it */
+	if (is_pipe_broken) 
 		return 0;
 
 	/* compose the header */

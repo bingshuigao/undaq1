@@ -12,6 +12,13 @@
 #include "my_timer.h"
 #include "fe_thread.h"
 
+/* if this macro is defined, the data readout from vme modules are directly
+ * saved in the disk, apart from sendint to downstream workers for further
+ * processing. When we use this feature, it usually means there is a problem
+ * with the DAQ or for debugging purposes. So we define it as a macro, other
+ * than as a configurable parameter. */
+# define USE_DIRECT_SAVE 
+
 class rd_fe : public fe_thread
 {
 public:
@@ -91,6 +98,7 @@ protected:
 private:
 	static int rd_fe_init(my_thread* This, initzer* the_initzer);
 
+
 protected:
 
 	/* the trigger-type modules which should be readout at each trigger */
@@ -108,6 +116,19 @@ protected:
 
 	/* the vme crate controller */
 	vme_ctl* the_ctl;
+
+#ifdef USE_DIRECT_SAVE
+	/* a file pointer used for saving data directly after reading out from
+	 * modules. This feature is used only when there is problems with other
+	 * components in the data flow path (usually the event builder). In
+	 * that case, basically only the frontend works, all other compoents
+	 * stops working.  */
+	FILE *fp_direct_write;
+#endif
+
+	/* indicates if the data stream pipe line (e.g. the event builder) is
+	 * broken */
+	bool is_pipe_broken;
 
 };
 

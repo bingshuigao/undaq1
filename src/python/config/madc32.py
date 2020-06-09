@@ -39,12 +39,11 @@ class madc32(vme_mod):
         # max transfer data
         self.reg_map.append(
                 {'off' : 0x601a,
-                 'value' : 0,
+                 'value' : 20,
                  'name' : 'max trans data',
                  'nbit' : 14,
                  'has_set_wid' : True,
-                 'set_wid_type' : 'comb',
-                 'set_wid_values' : ['unlimited', 'default'],
+                 'set_wid_type' : 'entry',
                  })
         # cblt and mcst contrl:
         self.reg_map.append(

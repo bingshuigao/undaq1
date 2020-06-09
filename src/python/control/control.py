@@ -353,6 +353,18 @@ class control:
         elif msg_type == 5:
             # text messages from clients 
             self._handle_text_msg(msg, 'event builder')
+        elif msg_type == 6:
+            # broken pipe
+#            print('broken pipe ...')
+            msg_type = (5).to_bytes(length=4, byteorder='little')
+            msg_tail = bytes([0 for i in range(124)])
+            msg = msg_type + msg_tail
+            # send the message to all
+            for i in range(self.fe_num):
+                self.svr_fe[i].send_all(msg)
+
+
+
 
     def _handle_ana_msg(self, msg):
         if not msg:

@@ -184,6 +184,11 @@ int fe_ctl::handle_GUI_msg(unsigned char* msg)
 		ret = do_send(sock, msg_send, 128, 0);
 		RET_IF_NONZERO(ret);
 		break;
+	case 5:
+		/* data stream pipe line is broken */
+		ret = send_msg(1, 5, NULL, 0);
+		RET_IF_NONZERO(ret);
+		break;
 	default:
 		/* unknown message type */
 		return -E_MSG_TYPE;

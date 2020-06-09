@@ -61,7 +61,7 @@ class v1190(vme_mod):
         # BLT event number:
         self.reg_map.append({
                  'off' : 0x1024,
-                 'value' : 0,
+                 'value' : 20,
                  'name' : 'blt evt N',
                  'nbit' : 8,
                  'has_set_wid' : True,
