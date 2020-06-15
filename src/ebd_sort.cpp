@@ -496,6 +496,7 @@ int ebd_sort::handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len)
 err_data:
 	/* see comments in the handle_single_evt_madc32 */
 	evt_len = max_len*4;
+	send_text_mes("corrupted v1740 data", MSG_LEV_WARN);
 	return 0;
 //	return -E_DATA_V1740;
 }
@@ -595,6 +596,7 @@ err_data:
 	 * event. We only need to figure out the length of this event and
 	 * return it in the param 'evt_len'*/
 	evt_len = max_len*4; //abonden the whole block of data.
+	send_text_mes("corrupted madc32 data", MSG_LEV_WARN);
 	return 0;
 //	return -E_DATA_MADC32;
 }
@@ -688,6 +690,7 @@ err_data:
 
 	/* see comments in the handle_single_evt_madc32 */
 	evt_len = max_len*4;
+	send_text_mes("corrupted v1190 data", MSG_LEV_WARN);
 	return 0;
 //	return -E_DATA_V1190;
 }
@@ -803,6 +806,7 @@ err_data:
 
 	/* see comments in the handle_single_evt_madc32 */
 	evt_len = max_len*4;
+	send_text_mes("corrupted v775/785 data", MSG_LEV_WARN);
 	return 0;
 
 	switch (sub_mod_id) {

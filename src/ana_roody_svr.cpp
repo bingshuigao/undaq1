@@ -143,7 +143,7 @@ int ana_roody_svr::main_proc()
 	 sprintf(msg, "Closed connection to %s, error code: %d\n", 
 	         tsock->GetInetAddress().GetHostName(), ret);
 	 printf(msg);
-	 send_text_mes(msg, MSG_LEV_INFO);
+//	 send_text_mes(msg, MSG_LEV_INFO);
 		/* otherwise the connection must have been closed */
 		tsock->Close();
 		delete tsock;
@@ -302,7 +302,7 @@ int ana_roody_svr::main_proc()
 	} else {
 		sprintf(msg, "SocketServer: Received unknown command \"%s\"\n", 
 				request);
-		send_text_mes(msg, MSG_LEV_INFO);
+//		send_text_mes(msg, MSG_LEV_INFO);
 		printf(msg);
 	}
 	
