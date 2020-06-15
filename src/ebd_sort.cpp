@@ -494,8 +494,12 @@ int ebd_sort::handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len)
 	return save_evt(single_evt_buf, evt, evt_len_w, ts);
 
 err_data:
-	return -E_DATA_V1740;
+	/* see comments in the handle_single_evt_madc32 */
+	evt_len = max_len*4;
+	return 0;
+//	return -E_DATA_V1740;
 }
+
 
 int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 {
@@ -586,7 +590,13 @@ int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 	return save_evt(buf, evt, evt_len_w, ts);
 
 err_data:
-	return -E_DATA_MADC32;
+	/* we changed the policy with corrupted data, since it does happen from
+	 * time to time. We don't return errors, instead, we just abanden this
+	 * event. We only need to figure out the length of this event and
+	 * return it in the param 'evt_len'*/
+	evt_len = max_len*4; //abonden the whole block of data.
+	return 0;
+//	return -E_DATA_MADC32;
 }
 
 int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
@@ -675,7 +685,11 @@ int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
 	return save_evt(buf, evt, evt_len_wd, ts);
 
 err_data:
-	return -E_DATA_V1190;
+
+	/* see comments in the handle_single_evt_madc32 */
+	evt_len = max_len*4;
+	return 0;
+//	return -E_DATA_V1190;
 }
 
 
@@ -786,6 +800,10 @@ int ebd_sort::handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len,
 	return save_evt(buf, evt, evt_len_w, ts);
 
 err_data:
+
+	/* see comments in the handle_single_evt_madc32 */
+	evt_len = max_len*4;
+	return 0;
 
 	switch (sub_mod_id) {
 	case 0:
