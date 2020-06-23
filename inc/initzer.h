@@ -384,13 +384,8 @@ private:
 			std::string* value2 = NULL)
 	{return get_adv_var(5, var_name, found, value2); }
 
-
-
-	/* get the module name */
 	char* get_mod_name(std::vector<struct conf_vme_mod> &the_conf);
-	/* get the module crate number  */
 	int64_t get_mod_crate(std::vector<struct conf_vme_mod> &the_conf);
-
 
 
 private: 

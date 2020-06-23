@@ -60,6 +60,7 @@
 #define E_DATA_EVT             51 /* corrupted whole event */
 #define E_INIT_TEST_CTL        52 /* error initializing the test_ctl module */
 #define E_DATA_FAKE_MODULE     53 /* data error of the fake module */
+#define E_V1740_N_PT           54 /* unknow v1740 number of points */
 
 
 

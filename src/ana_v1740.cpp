@@ -5,14 +5,13 @@ ana_v1740::ana_v1740(int n)
 {
 	int i;
 	n_samp = n;
-	wave = new struct v1740_data;
 	for (i = 0; i < 64; i++) 
-		wave->samp[i].reserve(n);
+		samp[i].reserve(n);
+	mod_id = 5;
 }
 
 ana_v1740::~ana_v1740()
 {
-	delete wave;
 }
 
 
@@ -59,7 +58,7 @@ void ana_v1740::get_ch_samples(uint32_t* raw_data, int grp)
 	int i, j;
 	for (i = 0; i < 8; i++) 
 		for (j = 0; j < n_samp; j++) 
-			wave->samp[i+grp*8][j] = do_get_ch_samples(raw_data, i, j);
+			samp[i+grp*8][j] = do_get_ch_samples(raw_data, i, j);
 }
 
 int ana_v1740::parse_raw(uint32_t* raw_data)

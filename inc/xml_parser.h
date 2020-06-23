@@ -117,5 +117,69 @@ private:
 };
 
 
+static inline 
+uint64_t get_conf_val_u64(std::vector<struct conf_vme_mod>& the_conf, 
+		const char* name)
+{
+	uint64_t val;
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name == name) {
+			val = (*it).val.val_uint64;
+			break;
+		}
+	}
+	return val;
+}
+
+static inline 
+char get_conf_val_ch(std::vector<struct conf_vme_mod>& the_conf, 
+		const char* name)
+{
+	char val;
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name == name) {
+			val = (*it).val.val_char;
+			break;
+		}
+	}
+	return val;
+}
+
+static inline 
+char* get_conf_val_str(std::vector<struct conf_vme_mod>& the_conf, 
+		const char* name)
+{
+	char* val;
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name == name) {
+			val = (*it).val.val_str;
+			break;
+		}
+	}
+	return val;
+}
+
+static inline 
+uint64_t get_conf_val_reg(std::vector<struct conf_vme_mod>& the_conf, 
+		uint32_t offset, bool& found)
+{
+	uint64_t val;
+	uint32_t off;
+
+	found = false;
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name != "") 
+			continue;
+		/* this is a register setting */
+		off = (*it).offset;
+		val = (*it).val.val_uint64;
+		if (off == offset) {
+			found = true;
+			break;
+		}
+	}
+	return val;
+}
+
 
 #endif

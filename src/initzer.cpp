@@ -1035,79 +1035,35 @@ int initzer::init_global_var(module* mod,
 	int crate = -1;
 
 	/* get the crate number */
-	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
-		if ((*it).name == "crate_n") {
-			crate = (*it).val.val_uint64;
-			mod->set_crate(crate);
-			break;
-		}
-	}
+	crate = get_conf_val_u64(the_conf, "crate_n");
+	mod->set_crate(crate);
 	if (crate == -1) 
 		/* cannot get the crate number */
 		return -E_CRATE_NUM;
 
 	/* get the slot number */
-	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
-		if ((*it).name == "slot_n") {
-			mod->set_slot((*it).val.val_uint64);
-			break;
-		}
-	}
+	mod->set_slot(get_conf_val_u64(the_conf, "slot_n"));
 
 	/* get base address */
-	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
-		if ((*it).name == "base") {
-			mod->set_base((*it).val.val_uint64);
-			break;
-		}
-	}
+	mod->set_base(get_conf_val_u64(the_conf, "base"));
 
 	/* get am */
-	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
-		if ((*it).name == "am_reg") {
-			mod->set_am((*it).val.val_uint64);
-			break;
-		}
-	}
+	mod->set_am(get_conf_val_u64(the_conf, "am_reg"));
 
 	/* get trigger/scaler type */
-	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
-		if ((*it).name == "type") {
-			mod->set_type((*it).val.val_char);
-			break;
-		}
-	}
+	mod->set_type(get_conf_val_ch(the_conf, "type"));
 
 	/* get peroid (only makes sense for scaler-type modules */
-	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
-		if ((*it).name == "period") {
-			mod->set_period((*it).val.val_uint64);
-			break;
-		}
-	}
+	mod->set_period(get_conf_val_u64(the_conf, "peroid"));
 	
 	/* get if is trigger module */
-	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
-		if ((*it).name == "is_trig_mod") {
-			mod->set_trig_mod((*it).val.val_uint64);
-			break;
-		}
-	}
+	mod->set_trig_mod(get_conf_val_u64(the_conf, "is_trig_mod"));
 
 	/* get clock frequency (to be used in event builder)*/
-	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
-		if ((*it).name == "clk_fre") {
-			mod->set_clk_freq((*it).val.val_uint64);
-			break;
-		}
-	}
+	mod->set_clk_freq(get_conf_val_u64(the_conf, "clk_fre"));
+	
 	/* get clock offset (to be used in event builder)*/
-	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
-		if ((*it).name == "clk_off") {
-			mod->set_clk_off((*it).val.val_uint64);
-			break;
-		}
-	}
+	mod->set_clk_off(get_conf_val_u64(the_conf, "clk_off"));
 
 	/* assign the correct vme controller to the module */
 	mod->set_ctl(NULL);

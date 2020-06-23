@@ -2,18 +2,20 @@
 #include "err_code.h"
 
 ana_v1190::ana_v1190()
-{}
+{
+	mod_id = 2;
+}
 
 ana_v1190::~ana_v1190()
 {}
 
-int ana_v1190::parse_raw(uint32_t* raw_data, struct v1190_data& v1190_data)
+int ana_v1190::parse_raw(uint32_t* raw_data)
 {
-	uint32_t sig, ch, entry, val;
+	uint32_t sig, ch, entry, ch_val;
 	int i;
 
 	for (i = 0; i < 128; i++) 
-		v1190_data.val[i].clear();
+		val[i].clear();
 	
 	/* check if the first word is header */
 	sig = raw_data[0] >> 27;
@@ -30,8 +32,8 @@ int ana_v1190::parse_raw(uint32_t* raw_data, struct v1190_data& v1190_data)
 			break;
 		if (sig == 0) {
 			ch = (entry >> 19) & 0x7f;
-			val = entry & 0x7ffff;
-			v1190_data.val[ch].push_back(val);
+			ch_val = entry & 0x7ffff;
+			val[ch].push_back(ch_val);
 		}
 	}
 

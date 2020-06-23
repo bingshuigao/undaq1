@@ -2,17 +2,19 @@
 #include "err_code.h"
 
 ana_madc32::ana_madc32()
-{}
+{
+	mod_id = 1;
+}
 
 ana_madc32::~ana_madc32()
 {}
 
-int ana_madc32::parse_raw(uint32_t* raw_data, uint32_t* val)
+int ana_madc32::parse_raw(uint32_t* raw_data)
 {
 	uint32_t sig, ch, sub_sig, entry;
 	int i = 32;
 	for (i = 0; i < 32; i++) 
-		val[i] = 0;
+		adc_val[i] = 0;
 	
 	/* check if the first word is header */
 	sig = raw_data[0] >> 30;
@@ -32,7 +34,7 @@ int ana_madc32::parse_raw(uint32_t* raw_data, uint32_t* val)
 			if (sub_sig != 0x20)
 				continue;
 			ch = (entry >> 16) & 0x1f;
-			val[ch] = entry & 0x1fff;
+			adc_val[ch] = entry & 0x1fff;
 		}
 	}
 
