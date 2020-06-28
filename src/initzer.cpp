@@ -1054,7 +1054,7 @@ int initzer::init_global_var(module* mod,
 	mod->set_type(get_conf_val_ch(the_conf, "type"));
 
 	/* get peroid (only makes sense for scaler-type modules */
-	mod->set_period(get_conf_val_u64(the_conf, "peroid"));
+	mod->set_period(get_conf_val_u64(the_conf, "period"));
 	
 	/* get if is trigger module */
 	mod->set_trig_mod(get_conf_val_u64(the_conf, "is_trig_mod"));

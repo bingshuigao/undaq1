@@ -71,7 +71,16 @@ public:
 	 * Note: if any of the parameters are NULL, the corresponding
 	 * information won't be returned */
 	int get_cblt_conf(uint16_t* addr, int* cblt_enable, int* cblt_first,
-			int* cblt_last) {*cblt_enable = 0; return 0;}
+			int* cblt_last) 
+	{
+		if (cblt_enable)
+			*cblt_enable = 0; 
+		if (cblt_first)
+			*cblt_first = 0;
+		if (cblt_last)
+			*cblt_last = 0;
+		return 0;
+	}
 
 };
 

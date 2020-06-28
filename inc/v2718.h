@@ -4,8 +4,8 @@
 #ifndef V2718_HHH
 #define V2718_HHH
 #include "vme_ctl.h"
-#include "CAENVMEtypes.h"
-#include "CAENVMElib.h"
+#include "../os_libs/CAENVMELib-2.50/include/CAENVMEtypes.h"
+#include "../os_libs/CAENVMELib-2.50/include/CAENVMElib.h"
 
 struct v2718_open_par
 {
