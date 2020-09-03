@@ -33,12 +33,6 @@ int rd_fe::start()
 	struct timespec ts1, ts2;
 	int ret;
 
-	/* first, send a pulse for whatever use (e.g. syncronize the
-	 * timestamps)*/
-	if (thread_id == 1) {
-		ret = the_ctl->send_pulse(false);
-		RET_IF_NONZERO(ret);
-	}
 
 	/* get the time stamp before the on_start() functions */
 	clock_gettime(CLOCK_MONOTONIC_COARSE, &ts1);
@@ -80,6 +74,13 @@ int rd_fe::start()
 		return -E_SYSCALL;
 	}
 #endif
+	/* lastly, send a pulse for whatever use (e.g. syncronize the
+	 * timestamps)*/
+	if (thread_id == 1) {
+		ret = the_ctl->send_pulse(false);
+		RET_IF_NONZERO(ret);
+	}
+
 	return 0;
 }
 

@@ -20,11 +20,21 @@ class v775(vme_mod):
         # geo
         self.reg_map.append(
                 {'off' : 0x1002,
-                 'value' : 'default',
+                 'value' : 1,
                  'name' : 'geo',
                  'nbit' : 5,
                  'has_set_wid' : True,
                  'set_wid_type' : 'entry', 
+                 })
+        # ctrl reg
+        self.reg_map.append(
+                {'off' : 0x1010,
+                 'value' : 0x20,
+                 'name' : 'ctrl reg1',
+                 'nbit' : 7,
+                 'has_set_wid' : True,
+                 'set_wid_type' : 'entry', 
+                 'get_set_wid_val' : self._get_val_hex,
                  })
         # cblt address
         self.reg_map.append(
@@ -58,7 +68,7 @@ class v775(vme_mod):
         # control bit set2
         self.reg_map.append(
                 {'off' : 0x1032,
-                 'value' : 'default',
+                 'value' : 0x500,
                  'name' : 'ctrl bit set2',
                  'nbit' : 15,
                  'has_set_wid' : True,
@@ -78,7 +88,7 @@ class v775(vme_mod):
         # full scale range
         self.reg_map.append(
                 {'off' : 0x1060,
-                 'value' : 'default',
+                 'value' : 100,
                  'name' : 'FSR',
                  'nbit' : 8,
                  'has_set_wid' : True,
@@ -97,7 +107,7 @@ class v775(vme_mod):
         for i in range(32):
             self.reg_map.append(
                     {'off' : 0x1080+i*2,
-                     'value' : 'default',
+                     'value' : 100,
                      'name' : 'threshold %02d' % i,
                      'nbit' : 9,
                      'has_set_wid' : True,

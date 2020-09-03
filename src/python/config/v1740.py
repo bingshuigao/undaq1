@@ -22,7 +22,7 @@ class v1740(vme_mod):
             name = 'trig_th_G%d' % i
             self.reg_map.append(
                 {'off' : off,
-                 'value' : 'default',
+                 'value' : 1000,
                  'name' : name,
                  'nbit' : 12,
                  'has_set_wid' : True,
@@ -34,7 +34,7 @@ class v1740(vme_mod):
             name = 'DC_off_G%d' % i
             self.reg_map.append(
                 {'off' : off,
-                 'value' : 'default',
+                 'value' : 50000,
                  'name' : name,
                  'nbit' : 16,
                  'has_set_wid' : True,
@@ -46,7 +46,7 @@ class v1740(vme_mod):
             name = 'enable_msk_G%d' % i
             self.reg_map.append(
                 {'off' : off,
-                 'value' : 'default',
+                 'value' : 0xff,
                  'name' : name,
                  'nbit' : 8,
                  'has_set_wid' : True,
@@ -92,7 +92,7 @@ class v1740(vme_mod):
         # buffer organization 
         self.reg_map.append(
                 {'off' : 0x800c,
-                 'value' : 'default',
+                 'value' : 10,
                  'name' : 'Nr. buf',
                  'nbit' : 4,
                  'has_set_wid' : True,
@@ -121,7 +121,7 @@ class v1740(vme_mod):
         # global trigger mask
         self.reg_map.append(
                 {'off' : 0x810c,
-                 'value' : 'default',
+                 'value' : 1,
                  'name' : 'trig msk',
                  'nbit' : 32,
                  'has_set_wid' : True,
@@ -141,7 +141,7 @@ class v1740(vme_mod):
         # post trigger
         self.reg_map.append(
                 {'off' : 0x8114,
-                 'value' : 'default',
+                 'value' : 1250,
                  'name' : 'post trig',
                  'nbit' : 32,
                  'has_set_wid' : True,
@@ -150,7 +150,7 @@ class v1740(vme_mod):
         # front panel io control
         self.reg_map.append(
                 {'off' : 0x811c,
-                 'value' : 'default',
+                 'value' : 0x400000,
                  'name' : 'IO ctl',
                  'nbit' : 23,
                  'has_set_wid' : True,
@@ -160,7 +160,7 @@ class v1740(vme_mod):
         # group enable mask
         self.reg_map.append(
                 {'off' : 0x8120,
-                 'value' : 'default',
+                 'value' : 2,
                  'name' : 'grp en msk',
                  'nbit' : 8,
                  'has_set_wid' : True,
@@ -236,7 +236,7 @@ class v1740(vme_mod):
         # readout control
         self.reg_map.append(
                 {'off' : 0xef00,
-                 'value' : 'default',
+                 'value' : 0x10,
                  'name' : 'rd ctl',
                  'nbit' : 9,
                  'has_set_wid' : True,
@@ -246,7 +246,7 @@ class v1740(vme_mod):
         # board id
         self.reg_map.append(
                 {'off' : 0xef08,
-                 'value' : 'default',
+                 'value' : 1,
                  'name' : 'bd id',
                  'nbit' : 5,
                  'has_set_wid' : True,
@@ -283,7 +283,7 @@ class v1740(vme_mod):
         # max event number in a blt
         self.reg_map.append(
                 {'off' : 0xef1c,
-                 'value' : 'default',
+                 'value' : 100,
                  'name' : 'max blt N',
                  'nbit' : 10,
                  'has_set_wid' : True,
@@ -292,7 +292,7 @@ class v1740(vme_mod):
         # decimation factor
         self.reg_map.append(
                 {'off' : 0x8044,
-                 'value' : 'default',
+                 'value' : 3,
                  'name' : 'decim',
                  'nbit' : 4,
                  'has_set_wid' : True,
