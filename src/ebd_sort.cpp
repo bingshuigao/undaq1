@@ -765,6 +765,11 @@ int ebd_sort::handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len,
 	
 	/* first, we make sure that it has event header */
 	sig = (evt[0] >> 24) & 0x7;
+	if (sig == 0x6) {
+		/* not valid data */
+		evt_len = max_len*4;
+		return 0;
+	}
 	if (sig != 0x2)
 		/* Opps! Not a header, corrupted data... */
 		goto err_data;
