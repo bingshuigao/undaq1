@@ -5,6 +5,8 @@
 #include "ana_frag_hd.h"
 #include "ana_madc32.h"
 #include "ana_v1190.h"
+#include "ana_v775.h"
+#include "ana_v785.h"
 #include <TH1D.h>
 #include <iostream>
 
@@ -12,6 +14,8 @@
 ana_evt_hd evt_hd;
 ana_frag_hd frag_hd;
 ana_madc32* evt_madc = new ana_madc32;
+ana_v775* evt_v775 = new ana_v775;
+ana_v785* evt_v785 = new ana_v785;
 ana_v1190*  evt_v1190= new ana_v1190;
 
 
@@ -39,6 +43,19 @@ int ana_usr_trig(void* p_evt, hist_man& hists, bool is_bor)
 			evt_madc->parse_raw(p_dw);
 			((TH1D*)hists.get(0))->Fill(evt_madc->get_adc_val()[0]);
 
+		}
+		else if (slot == 2) {
+			/* v775 */
+			evt_v775->parse_raw(p_dw);
+			auto tdcs = evt_v775->get_tdc_val();
+			((TH1D*)hists.get(2))->Fill(tdcs[0]*1. - tdcs[1]);
+		}
+		else if (slot == 4) {
+			/* v785 */
+			evt_v785->parse_raw(p_dw);
+			auto adcs = evt_v785->get_adc_val();
+			((TH1D*)hists.get(0))->Fill(adcs[0]);
+			((TH1D*)hists.get(1))->Fill(adcs[1]);
 		}
 		else if (slot == 3) {
 			/* v1190 */
