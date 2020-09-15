@@ -799,7 +799,8 @@ int ebd_sort::handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len,
 		sig = (evt[idx] >> 24) & 0x7;
 		if (sig != 0x4)
 			goto err_data;
-		evt_cnt = evt[idx] & 0xFFFFFF;
+		/* (note that the counter starts from 0)  */
+		evt_cnt = 1 + (evt[idx] & 0xFFFFFF);
 		ts = get_mono_evt_cnt(evt_cnt, 24);
 		break;
 	}

@@ -121,7 +121,7 @@ static inline
 uint64_t get_conf_val_u64(std::vector<struct conf_vme_mod>& the_conf, 
 		const char* name)
 {
-	uint64_t val;
+	uint64_t val = 0xFFFFFFFFFFFFFFFF;
 	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
 		if ((*it).name == name) {
 			val = (*it).val.val_uint64;

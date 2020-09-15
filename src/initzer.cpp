@@ -1057,13 +1057,16 @@ int initzer::init_global_var(module* mod,
 	mod->set_period(get_conf_val_u64(the_conf, "period"));
 	
 	/* get if is trigger module */
-	mod->set_trig_mod(get_conf_val_u64(the_conf, "is_trig_mod"));
+	if (get_conf_val_u64(the_conf, "is_trig_mod") != 0xFFFFFFFFFFFFFFFF)
+		mod->set_trig_mod(get_conf_val_u64(the_conf, "is_trig_mod"));
 
 	/* get clock frequency (to be used in event builder)*/
-	mod->set_clk_freq(get_conf_val_u64(the_conf, "clk_fre"));
+	if (get_conf_val_u64(the_conf, "clk_fre") != 0xFFFFFFFFFFFFFFFF)
+		mod->set_clk_freq(get_conf_val_u64(the_conf, "clk_fre"));
 	
 	/* get clock offset (to be used in event builder)*/
-	mod->set_clk_off(get_conf_val_u64(the_conf, "clk_off"));
+	if (get_conf_val_u64(the_conf, "clk_off") != 0xFFFFFFFFFFFFFFFF)
+		mod->set_clk_off(get_conf_val_u64(the_conf, "clk_off"));
 
 	/* assign the correct vme controller to the module */
 	mod->set_ctl(NULL);

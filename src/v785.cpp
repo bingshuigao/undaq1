@@ -105,6 +105,8 @@ int v785::on_start()
 	RET_IF_NONZERO(ret);
 	ret = write_reg(0x1034, 16, &dum);
 	RET_IF_NONZERO(ret);
+	ret = write_reg(0x1040, 16, &dum);
+	RET_IF_NONZERO(ret);
 
 	return 0;
 }
