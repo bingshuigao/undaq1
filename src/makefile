@@ -16,8 +16,8 @@ logger: logger.cpp log_save.cpp log_recv.cpp log_ctl.cpp log_thread.cpp recv_thr
 analyzer: analyzer.cpp ana_recv.cpp ana_main.cpp ana_ctl.cpp ana_roody_svr.cpp ana_usr.cpp ana_thread.cpp recv_thread.cpp daq_thread.cpp xml_parser.cpp initzer.cpp BigInteger.cpp ring_buf.cpp ctl_thread.cpp my_tcp_svr.cpp my_tcp_clt.cpp ana_evt_hd.cpp ana_frag_hd.h ana_madc32.cpp ana_v775.cpp ana_v785.cpp ana_v1190.cpp ana_v1740.cpp ana_recv.h ana_main.h ana_ctl.h ana_roody_svr.h ana_thread.h recv_thread.h daq_thread.h xml_parser.h initzer.h BigInteger.h ring_buf.h ctl_thread.h my_tcp_svr.h my_tcp_clt.h ana_evt_hd.h ana_frag_hd.h ana_madc32.h ana_v775.h ana_v785.h ana_v1190.h ana_v1740.h
 	g++ ${CFLAGS} --std=c++11 -DMAKE_ANALYZER -o analyzer `root-config --cflags --libs` analyzer.cpp ana_recv.cpp ana_main.cpp ana_ctl.cpp ana_roody_svr.cpp ana_usr.cpp ana_thread.cpp recv_thread.cpp daq_thread.cpp xml_parser.cpp initzer.cpp BigInteger.cpp ring_buf.cpp ctl_thread.cpp my_tcp_svr.cpp my_tcp_clt.cpp ana_evt_hd.cpp ana_frag_hd.cpp ana_madc32.cpp ana_v775.cpp ana_v785.cpp ana_v1190.cpp ana_v1740.cpp
 
-raw2root: raw2root.cpp ana_evt_hd.cpp ana_frag_hd.cpp ana_madc32.cpp ana_v1190.cpp ana_v1740.cpp xml_parser.cpp  ana_evt_hd.h ana_frag_hd.h ana_madc32.h ana_v1190.h ana_v1740.h xml_parser.h
-	g++ --std=c++11 `root-config --libs --cflags` -o raw2root raw2root.cpp ana_evt_hd.cpp ana_frag_hd.cpp ana_madc32.cpp ana_v1190.cpp ana_v1740.cpp xml_parser.cpp
+raw2root: raw2root.cpp ana_evt_hd.cpp ana_frag_hd.cpp ana_madc32.cpp ana_v775.cpp ana_v785.cpp ana_v1190.cpp ana_v1740.cpp xml_parser.cpp  ana_evt_hd.h ana_frag_hd.h ana_madc32.h ana_v1190.h ana_v1740.h xml_parser.h ana_v775.h ana_v785.h
+	g++ --std=c++11 `root-config --libs --cflags` -o raw2root raw2root.cpp ana_evt_hd.cpp ana_frag_hd.cpp ana_madc32.cpp ana_v1190.cpp ana_v1740.cpp xml_parser.cpp ana_v775.cpp ana_v785.cpp
 
 .PHONY: clean
 clean:
