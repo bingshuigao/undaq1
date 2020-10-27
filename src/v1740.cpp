@@ -118,6 +118,10 @@ int v1740::on_start()
 	ret = write_reg(0x8100, 32, &dum);
 	RET_IF_NONZERO(ret);
 
+	/* I don't need to reset the event counter explicitly, it must
+	 * have been reset somewhere in the above operations.
+	 * */
+
 	return 0;
 }
 

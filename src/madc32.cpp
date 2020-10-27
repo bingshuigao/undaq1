@@ -163,6 +163,11 @@ int madc32::on_start()
 	ret = write_reg(0x6034, 16, &dum);
 	RET_IF_NONZERO(ret);
 
+	/* reset event counter */
+	dum = 1;
+	ret = write_reg(0x6090, 16, &dum);
+	RET_IF_NONZERO(ret);
+
 	//printf("debuf\n");
 	return 0;
 }

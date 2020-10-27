@@ -166,6 +166,7 @@ int v1190::on_start()
 	 * which is not wanted. */
 	int ret, sz_in, sz_out;
 	char dst[8192];
+	int16_t dum = 0;
 
 	/* Note: berr has to be enabled,*/
 	sz_in = 8192;
@@ -182,6 +183,11 @@ int v1190::on_start()
 	/* we also want to reset the event counter in case of merging using
 	 * event counter. However, we don't do it softwarely, we do it
 	 * hardwarely, i.e. we should send the pulse to front panel CLR. */
+
+	/* now I changed my mind, we reset the event counter softwarely,
+	 * synchronization using time stamp is abandoned now */
+	ret = write_reg(0x1016, 16, &dum);
+	RET_IF_NONZERO(ret);
 
 	return 0;
 }
