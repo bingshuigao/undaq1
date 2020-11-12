@@ -218,8 +218,11 @@ static int get_lst_branches()
 		tmp->br_frag_hd.crate = get_conf_val_u64(*it, "crate_n");
 		tmp->br_frag_hd.daq = 0;
 		std::string name = get_conf_val_str(*it, "name");
+		char mod_type = get_conf_val_ch(*it, "type");
 //		std::cout<<name<<std::endl;
 
+		if (mod_type == 'S')
+			continue;
 		if (name.find("MADC32") != std::string::npos) {
 			tmp->br_frag_body = new ana_madc32();
 			lst_of_br.push_back(tmp);
@@ -271,6 +274,7 @@ TTree* set_br_addr(char* run_title)
 	ana_madc32*  tmp_madc;
 	ana_v775* tmp_v775;
 	ana_v785* tmp_v785;
+	
 	/* set branch addresses */
 	TTree* tree = new TTree("trigger", run_title);
 	tree->Branch("evt_head", &br_evt_hd,  "ts/l:unix_t");
@@ -282,13 +286,16 @@ TTree* set_br_addr(char* run_title)
 		case 1:
 			/* madc32 */
 			tmp_madc = static_cast<ana_madc32*>((*it)->br_frag_body);
-			tree->Branch("frag_madc", tmp_madc->get_adc_val(), "adc[32]/i");
+			sprintf(buf1, "frag_madc_crate%02d_slot%02d",
+					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
+			tree->Branch(buf1, tmp_madc->get_adc_val(), "adc[32]/i");
 			break;
 		case 2:
 			/* v1190 */
 			tmp_v1190 = static_cast<ana_v1190*>((*it)->br_frag_body);
 			for (i = 0; i < 128; i++) {
-				sprintf(buf1, "frag_v1190_ch%03d", i);
+				sprintf(buf1, "frag_v1190_crate%02d_slot%02d_ch%03d", 
+						(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot, i);
 				sprintf(buf2, "n_dw%03d/i:tdc[n_dw%03d]", i, i);
 				tmp_v1190->set_data_ptr(i, new struct v1190_channel_data);
 				tree->Branch(buf1, tmp_v1190->get_data_ptr(i), "n_hit/i:hit[n_hit]");
@@ -299,7 +306,8 @@ TTree* set_br_addr(char* run_title)
 			tmp_v1740 = static_cast<ana_v1740*>((*it)->br_frag_body);
 			n_samp = tmp_v1740->get_n_samp();
 			for (i = 0; i < 64; i++) {
-				sprintf(buf1, "frag_v1740_ch%02d", i);
+				sprintf(buf1, "frag_v1740_crate%02d_slot%02d_ch%02d", 
+						(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot, i);
 				sprintf(buf2, "pt[%d]", n_samp);
 				tmp_v1740->set_data_ptr(i, new uint16_t[n_samp]);
 				tree->Branch(buf1, tmp_v1740->get_data_ptr(i), buf2);
@@ -308,12 +316,16 @@ TTree* set_br_addr(char* run_title)
 		case 6:
 			/* v775 */ 
 			tmp_v775 = static_cast<ana_v775*>((*it)->br_frag_body);
-			tree->Branch("frag_v775", tmp_v775->get_tdc_val(), "tdc[32]/i");
+			sprintf(buf1, "frag_v775_crate%02d_slot%02d",
+					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
+			tree->Branch(buf1, tmp_v775->get_tdc_val(), "tdc[32]/i");
 			break;
 		case 8:
 			/* v785 */ 
 			tmp_v785 = static_cast<ana_v785*>((*it)->br_frag_body);
-			tree->Branch("frag_v785", tmp_v785->get_adc_val(), "adc[32]/i");
+			sprintf(buf1, "frag_v785_crate%02d_slot%02d",
+					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
+			tree->Branch(buf1, tmp_v785->get_adc_val(), "adc[32]/i");
 			break;
 		default:
 			std::cout<<"not supported module!"<<std::endl;
