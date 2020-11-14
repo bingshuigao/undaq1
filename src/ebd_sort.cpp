@@ -725,8 +725,56 @@ int ebd_sort::save_evt(uint32_t* buf, uint32_t* evt, int evt_len_wd, uint64_t ts
 
 int ebd_sort::handle_single_evt_v830(uint32_t* evt, int& evt_len, int max_len)
 {
-	/* it has no timestamp, thus cannot be used as a trigger-type module */
-	return -E_VME_GENERIC;
+	uint32_t sig;
+	uint32_t buf[50]; /* big enough to accomadate a v830 event plus the
+			     additional header .*/
+	uint64_t ts, ts_hi, ts_mono, clk_freq, evt_cnt, clk_off;
+	int idx, evt_len_w;
+	
+	/* first, we make sure that it has event header */
+	sig = (evt[0] >> 26) & 1;
+	if (sig != 1)
+		/* Opps! Not a header, corrupted data... */
+		goto err_data;
+
+	/* Now we try to get event length */
+	evt_len_w = ((evt[0]>>18) & 0x3f) + 1;
+	evt_len = evt_len_w * 4;
+	if (evt_len_w > max_len)
+		goto err_data;
+
+	/* debug ...*/
+//	std::cout<<"OK1"<<std::endl;
+	/* ***********/
+	/* get slot number if necessary  */
+	if (slot == -1)
+		slot = slot_map[SLOT_MAP_IDX(crate,mod_id,(evt[0]>>27)&0x1F)];
+
+	/* debug ...*/
+//	std::cout<<"OK2"<<std::endl;
+	/* ***********/
+	
+	switch (ebd_type) {
+	case EBD_TYPE_TS:
+		return -E_NOT_IMPLE;
+	case EBD_TYPE_EVT_CNT:
+		evt_cnt = evt[0] & 0xffff;
+		ts = get_mono_evt_cnt(evt_cnt, 16);
+		break;
+	}
+
+	/* save the event into the ring buffer */
+	return save_evt(buf, evt, evt_len_w, ts);
+
+err_data:
+	/* we changed the policy with corrupted data, since it does happen from
+	 * time to time. We don't return errors, instead, we just abanden this
+	 * event. We only need to figure out the length of this event and
+	 * return it in the param 'evt_len'*/
+	evt_len = max_len*4; //abonden the whole block of data.
+	send_text_mes("corrupted v830 data", MSG_LEV_WARN);
+	return 0;
+//	return -E_DATA_V830;
 }
 
 uint64_t ebd_sort::get_mono_evt_cnt(uint64_t evt_cnt, int n_bit)
