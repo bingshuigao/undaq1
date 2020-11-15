@@ -189,9 +189,11 @@ class frontend:
             # existing modules
             bad_base = False
             bad_slot = False
+            bad_geo = False
             base = mod.get_base()
             crate = mod.get_crate()
             slot = mod.get_slot()
+            mod_geo = mod.get_geo()
             for tmp in self.sel_mods_lst:
                 if tmp is mod:
                     continue
@@ -202,11 +204,16 @@ class frontend:
                     if slot == tmp.get_slot():
                         bad_slot = True
                         break
+                    if mod_geo == tmp.get_geo():
+                        bad_geo = True
             if bad_base:
                 self._show_msg('base address conflicts', 'err')
                 continue
             if bad_slot:
                 self._show_msg('slot number conflicts', 'err')
+                continue
+            if bad_geo:
+                self._show_msg('geo conflicts', 'err')
                 continue
             # if we reached this point, all the checks are passed, we need
             # to break the loop

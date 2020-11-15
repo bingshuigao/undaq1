@@ -17,6 +17,7 @@ class v1190(vme_mod):
         # we need to create the reg_map variable
         self.reg_map = []
 
+        self.geo_addr = 0x100e
         # GEO
         self.reg_map.append({
                  'off' : 0x100e,

@@ -269,6 +269,14 @@ class vme_mod:
                         'with tag name: ' + name
         return None
 
+    def get_geo(self):
+        for reg in self.reg_map:
+            if reg['off'] == self.geo_addr:
+                return reg['value']
+        self._show_msg('cannot get geo', 'err')
+        return None
+        
+
 
    
    # This method should be called when the user want to edit/view the

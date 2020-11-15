@@ -15,6 +15,7 @@ class v830(vme_mod):
     def __init__(self, name, mod = None):
         # we need to create the reg_map variable
         self.reg_map = []
+        self.geo_addr = 0x1110
 
         # channel enable pattern
         self.reg_map.append({

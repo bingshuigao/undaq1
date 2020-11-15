@@ -16,6 +16,7 @@ class v1740(vme_mod):
     def __init__(self, name1, mod=None):
         # we need to create the reg_map variable
         self.reg_map = []
+        self.geo_addr = 0xef08
         # group n trigger threashold
         for i in range(8):
             off = 0x1080 + 0x100*i

@@ -197,6 +197,8 @@ class madc32(vme_mod):
                  'has_set_wid' : True,
                  'set_wid_type' : 'entry',
                  })
+
+        self.geo_addr = 0x6004
         # others has no corresponding widget in the settings area. We add them
         # in a loop:
 #        for addr in range(0x6000, 0x60b0, 2):

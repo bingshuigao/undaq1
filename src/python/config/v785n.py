@@ -16,6 +16,7 @@ class v785n(vme_mod):
     def __init__(self, name, mod=None):
         # we need to create the reg_map variable
         self.reg_map = []
+        self.geo_addr = 0x1002
 
         # geo
         self.reg_map.append(
