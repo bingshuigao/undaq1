@@ -7,6 +7,7 @@
 #include "ana_v1190.h"
 #include "ana_v775.h"
 #include "ana_v785.h"
+#include "ana_v830.h"
 #include <TH1D.h>
 #include <iostream>
 
@@ -17,6 +18,7 @@ ana_madc32* evt_madc = new ana_madc32;
 ana_v775* evt_v775 = new ana_v775;
 ana_v785* evt_v785 = new ana_v785;
 ana_v1190*  evt_v1190= new ana_v1190;
+ana_v830* evt_v830 = new ana_v830;
 
 
 int ana_usr_trig(void* p_evt, hist_man& hists, bool is_bor)
@@ -41,7 +43,8 @@ int ana_usr_trig(void* p_evt, hist_man& hists, bool is_bor)
 		if (slot == 1) {
 			/* madc */
 			evt_madc->parse_raw(p_dw);
-			((TH1D*)hists.get(0))->Fill(evt_madc->get_adc_val()[0]);
+			auto adcs = evt_madc->get_adc_val();
+			((TH1D*)hists.get(0))->Fill(adcs[0]);
 
 		}
 		else if (slot == 2) {
@@ -65,10 +68,21 @@ int ana_usr_trig(void* p_evt, hist_man& hists, bool is_bor)
 				((TH1D*)hists.get(1))->Fill(tdc_val[0][0]);
 			}
 		}
+		else if (slot == 5) {
+			/* v830 */
+			evt_v830->parse_raw(p_dw);
+			auto scaler_val = evt_v830->get_scaler_val();
+			((TH1D*)hists.get(0))->Fill(scaler_val[0]);
+
+		}
 
 		p_dw -= 5;
 		p_dw += len_frag+1;
 	} 
+
+	/* if more complex analysis is needed (e.g. 2d hists), one usually need
+	 * to get the adc/tdc values from the above if/else statements and do
+	 * the more complex analysis here */
 	
 	return 0;
 }
