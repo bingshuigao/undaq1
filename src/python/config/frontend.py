@@ -194,6 +194,8 @@ class frontend:
             crate = mod.get_crate()
             slot = mod.get_slot()
             mod_geo = mod.get_geo()
+            mod_name = mod.get_name()[0:-3]
+            #print(mod_name)
             for tmp in self.sel_mods_lst:
                 if tmp is mod:
                     continue
@@ -205,7 +207,8 @@ class frontend:
                         bad_slot = True
                         break
                     if mod_geo == tmp.get_geo():
-                        bad_geo = True
+                        if mod_name == tmp.get_name()[0:-3]:
+                            bad_geo = True
             if bad_base:
                 self._show_msg('base address conflicts', 'err')
                 continue
