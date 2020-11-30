@@ -270,12 +270,12 @@ class vme_mod:
         return None
 
     def get_geo(self):
-        for reg in self.reg_map:
-            if reg['off'] == self.geo_addr:
-                return reg['value']
-        self._show_msg('cannot get geo', 'err')
-        return None
-        
+        if self.name.find('V2718') >= 0:
+            return int(self.name[5:])
+        else:
+            for reg in self.reg_map:
+                if reg['off'] == self.geo_addr:
+                    return reg['value']
 
 
    
