@@ -21,6 +21,7 @@ from ana import ana
 from ctl import ctl
 import xml.etree.ElementTree as et
 from xml.dom import minidom
+import os
 
 
 class config:
@@ -43,7 +44,7 @@ class config:
     # create the open and save buttons:
     def _create_buttons(self):
         self.butt_frm = tk.Frame(self.root_win)
-        self.butt_frm.place(x=0, y=0, width=250, height=25)
+        self.butt_frm.place(x=0, y=0, width=350, height=25)
         self.butt_open = tk.Button(self.butt_frm, text='open...',
                 command=self._open)
         self.butt_open.pack(side=tk.LEFT)
@@ -53,6 +54,9 @@ class config:
         self.butt_save = tk.Button(self.butt_frm, text='save',
                 command=self._save)
         self.butt_save.pack(side=tk.LEFT)
+        self.butt_link = tk.Button(self.butt_frm, text='create link',
+                command=self._link)
+        self.butt_link.pack(side=tk.LEFT)
 
     # create the notebook widget
     def _create_notebook(self):
@@ -224,6 +228,16 @@ class config:
             messagebox.showerror('error', 'cannot save to file: ' +
                     self.f_name, parent=self.root_win)
 
+
+    # create link
+    def _link(self):
+        if self.f_name:
+            os.system('ln -sf ' + self.f_name +' ../control/conf.xml')
+            os.system('ln -sf ' + self.f_name +' ../../config.xml')
+            messagebox.showinfo('info', 'link created!', parent=self.root_win)
+        else:
+            messagebox.showerror('error', 'please save file first',
+                    parent=self.root_win)
 
 
     # save the config file
