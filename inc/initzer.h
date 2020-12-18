@@ -24,6 +24,7 @@
 #include "v1190.h"
 #include "v830.h"
 #include "v1740.h"
+#include "v1751.h"
 #include "v775.h"
 #include "v785.h"
 #include "v775n.h"

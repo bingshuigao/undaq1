@@ -62,6 +62,7 @@
 #define E_DATA_FAKE_MODULE     53 /* data error of the fake module */
 #define E_V1740_N_PT           54 /* unknow v1740 number of points */
 #define E_DATA_V830            55 /* corrupted v830 data */
+#define E_INIT_V1751           56 /* error initializing v1751 */
 
 
 

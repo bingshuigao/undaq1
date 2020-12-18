@@ -308,6 +308,9 @@ static int create_mod(std::string& name, module*& mod)
 	else if (name.find("V1740") != std::string::npos) {
 		mod = new v1740;
 	}
+	else if (name.find("V1751") != std::string::npos) {
+		mod = new v1751;
+	}
 	else if (name.find("FAKE_MODULE") != std::string::npos) {
 		mod = new fake_module;
 	}
@@ -386,6 +389,23 @@ do_init_v830(v830* mod, std::vector<struct conf_vme_mod> &the_conf)
 	
 	return 0;
 }
+
+/* set v1751 dc offset */
+static int set_v1751_dc(v1751* mod, uint32_t off, uint32_t val)
+{
+	int ret;
+	uint32_t val1;
+	uint32_t off1 = 0x1088 + (off & 0xf00);
+	do {
+		ret = mod->read_reg(off1, 32, &val1);
+		RET_IF_NONZERO(ret);
+	} while (val1 & 0x4);
+	ret = mod->write_reg(off, 32, &val);
+	RET_IF_NONZERO(ret);
+
+	return 0;
+}
+
 
 /* set v1740 dc offset */
 static int set_v1740_dc(v1740* mod, uint32_t off, uint32_t val)
@@ -488,6 +508,69 @@ do_init_fake_module(fake_module* mod, std::vector<struct conf_vme_mod> &the_conf
 {
 	return 0;
 }
+
+/* set v1751 dc offset */
+static int calib_v1751(v1751* mod)
+{
+	int ret, i;
+	uint32_t val1, calib;
+	uint32_t off;
+	calib = 1;
+
+start_calib:
+	off = 0x1088;
+	for (i = 0; i < 8; i++) {
+		off += 0x100*i;
+		do {
+			ret = mod->read_reg(off, 32, &val1);
+			RET_IF_NONZERO(ret);
+		} while (val1 & 0x4);
+	}
+
+	off = 0x809c;
+	ret = mod->write_reg(off, 32, &calib);
+	RET_IF_NONZERO(ret);
+	if (calib) {
+		calib = 0;
+		goto start_calib;
+	}
+
+	return 0;
+}
+
+
+/* initialize vme module, return 0 if succeed, otherwise return error code */
+static int 
+do_init_v1751(v1751* mod, std::vector<struct conf_vme_mod> &the_conf)
+{
+	uint32_t dum = 0;
+	/* First, we need to soft-reset all settings */
+	if (mod->write_reg(0xef24, 32, &dum))
+		return -E_INIT_V1751;
+	/* then init all registers with non-default values */
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name != "") 
+			continue;
+		/* this is a register setting */
+		uint32_t off = (*it).offset;
+		uint32_t val = (*it).val.val_uint64;
+		if ((off >> 12) == 1 && (off & 0xff) == 0x98) {
+			/* if off == 0x1n98, additional check should be made
+			 * before writing, the same as v1740 */
+			if (set_v1751_dc(mod, off, val))
+				return -E_INIT_V1751;
+		}
+		else {
+			if (mod->write_reg(off, 32, &val))
+				return -E_INIT_V1751;
+		}
+	}
+	/* calibrate */
+	usleep(200000);
+	calib_v1751(mod);
+	return 0;
+}
+
 
 
 /* initialize vme module, return 0 if succeed, otherwise return error code */
@@ -812,6 +895,8 @@ static int do_init_mod(module* mod, std::vector<struct conf_vme_mod> &the_conf)
 		return do_init_v830(static_cast<v830*>(mod), the_conf);
 	if (name == "v1740")
 		return do_init_v1740(static_cast<v1740*>(mod), the_conf);
+	if (name == "v1751")
+		return do_init_v1751(static_cast<v1751*>(mod), the_conf);
 	if (name == "fake_module")
 		return do_init_fake_module(static_cast<fake_module*>(mod), the_conf);
 	if (name == "v775" || name == "v775n")

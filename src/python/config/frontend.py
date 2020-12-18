@@ -26,6 +26,7 @@ from v2718 import v2718
 from test_ctl import test_ctl
 from adv_conf_fe import adv_conf_fe
 from v1740 import v1740
+from v1751 import v1751
 from v775 import v775
 from v785 import v785
 from v775n import v775n
@@ -39,7 +40,7 @@ class frontend:
         self.n_crate = 1 
         # list of supported modules
         self.sup_mods_lst = ['V2718', 'TEST_CTL', 'MADC32', 'V1190A', 'V830', 'V977',
-                'V1740', 'V775', 'V775N', 'V785', 'V785N', 'FAKE_MODULE']
+                'V1740', 'V1751', 'V775', 'V775N', 'V785', 'V785N', 'FAKE_MODULE']
         # list of selected modules (note: the element is an object of the
         # vme_mod class, not a string as in the sup_mods_list)
         self.sel_mods_lst = []
@@ -147,6 +148,8 @@ class frontend:
             tmp = v977(self._get_uniq_name(name), mod)
         elif name == 'V1740':
             tmp = v1740(self._get_uniq_name(name), mod)
+        elif name == 'V1751':
+            tmp = v1751(self._get_uniq_name(name), mod)
         elif name == 'V775':
             tmp = v775(self._get_uniq_name(name), mod)
         elif name == 'V785':

@@ -447,6 +447,61 @@ uint64_t ebd_sort::get_mono_ts(uint64_t ts, int n_bit, int freq, int off)
 
 }
 
+int ebd_sort::handle_single_evt_v1751(uint32_t* evt, int& evt_len, int max_len)
+{
+	uint32_t sig;
+	uint64_t ts_hi, ts_mono, ts, clk_freq, clk_off, evt_cnt;
+	int idx, evt_len_w;
+	
+	/* first, we make sure that it has event header */
+	sig = evt[0] >> 28;
+	if (sig != 0xa)
+		/* Opps! Not a header, corrupted data... */
+		goto err_data;
+
+	/* Now we try to get event length */
+	evt_len_w = ((evt[0] & 0xFFFFFFF)); 
+	evt_len = evt_len_w * 4;
+	if (evt_len_w > max_len)
+		goto err_data;
+	if (evt_len_w > max_evt_len)
+		return -E_EBD_EVT_BUF_SZ;
+
+	/* get slot number if necessary  */
+	if (slot == -1) {
+		int geo = evt[1]>>27;
+		slot = slot_map[SLOT_MAP_IDX(crate,mod_id,geo)];
+	}
+
+	/* get time stamp and event counter */
+	ts = evt[3] & 0x7fffffff;
+	evt_cnt = evt[2] & 0xffffff;
+	
+	if (ebd_type == EBD_TYPE_TS) {
+		/* calculate the monotonic time stamp */
+		clk_freq = clk_map[CLK_MAP_IDX(crate, slot)];
+		clk_off = clk_off_map[CLK_OFF_MAP_IDX(crate, slot)];
+		ts = get_mono_ts(ts, 31, clk_freq, clk_off);
+		if (ts == 0)
+			return -E_SYNC_CLOCK;
+		ts = static_cast<uint64_t>(ts * (1. * hz / clk_freq));
+	}
+	else {
+		ts = get_mono_evt_cnt(evt_cnt, 24);
+	}
+
+	/* save the event into the ring buffer */
+	return save_evt(single_evt_buf, evt, evt_len_w, ts);
+
+err_data:
+	/* see comments in the handle_single_evt_madc32 */
+	evt_len = max_len*4;
+	send_text_mes("corrupted v1751 data", MSG_LEV_WARN);
+	return 0;
+//	return -E_DATA_V1740;
+}
+
+
 int ebd_sort::handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len)
 {
 	uint32_t sig;

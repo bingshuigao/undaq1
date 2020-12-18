@@ -200,6 +200,7 @@ protected:
 	 * v785   --> mod_id = 8;
 	 * v785n  --> mod_id = 9;
 	 * fake_module --> mod_id = 10;
+	 * v1751  --> mod_id = 11;
 	 * */
 	uint32_t mod_id;
 	

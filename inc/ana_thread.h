@@ -45,6 +45,7 @@
  * 8 --> v785
  * 9 --> v785n
  * 10 --> fake_module
+ * 11 --> v1751
  *
  *
  * For trigger events:

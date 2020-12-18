@@ -91,6 +91,8 @@ private:
 			return handle_single_evt_v785n(evt, evt_len, max_len);
 		case 10:
 			return handle_single_evt_fake_module(evt, evt_len, max_len);
+		case 11: 
+			return handle_single_evt_v1751(evt, evt_len, max_len);
 		default:
 			return -E_UNKOWN_MOD;
 		}
@@ -99,6 +101,7 @@ private:
 	int handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v830(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len);
+	int handle_single_evt_v1751(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len, int sub_mod_id = 0);
 	int handle_single_evt_v775n(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v785(uint32_t* evt, int& evt_len, int max_len);
