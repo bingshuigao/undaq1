@@ -38,6 +38,10 @@ public:
 	void set_data_ptr(int i, struct v1190_channel_data* ptr) {v1190_ch_data[i] = ptr;}
 
 private:
+	/* set data points for data_ptr */
+	int write_data_ptr();
+
+private:
 	std::vector<uint32_t> val[128];
 
 	/* this is for raw2root */

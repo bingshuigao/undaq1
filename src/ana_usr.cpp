@@ -8,6 +8,7 @@
 #include "ana_v775.h"
 #include "ana_v785.h"
 #include "ana_v830.h"
+#include "ana_v1751.h"
 #include <TH1D.h>
 #include <iostream>
 

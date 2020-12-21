@@ -16,6 +16,7 @@
 #include "ana_v785.h"
 #include "ana_v1190.h"
 #include "ana_v1740.h"
+#include "ana_v1751.h"
 #include "err_code.h"
 #include "imp_daq.h"
 #include "ana_module.h"
@@ -57,6 +58,7 @@ std::vector<struct br_frag*> lst_of_br;
 uint32_t evt_buf[MAX_LEN];
 
 
+/*
 void parse_and_fill_v1190(ana_v1190* tmp_v1190)
 {
 	int i;
@@ -86,11 +88,21 @@ void parse_and_fill_v1740(ana_v1740* tmp_v1740)
 		}
 	}
 }
+void parse_and_fill_v1751(ana_v1751* tmp_v1751)
+{
+	int i;
+	for (i = 0; i < 8; i++) {
+		int j, n;
+		n = tmp_v1751->get_n_samp();
+		for (j = 0; j < n; j++) {
+			tmp_v1751->get_data_ptr(i)[j] = tmp_v1751->get_samp()[i][j];
+		}
+	}
+}
+*/
 
 void parse_and_fill(uint32_t* p_raw, int daq, int crate, int slot)
 {
-	ana_v1190* tmp_v1190;
-	ana_v1740* tmp_v1740;
 	for (auto it = lst_of_br.begin(); it != lst_of_br.end(); it++) {
 		if ((*it)->br_frag_hd.daq != daq)
 			continue;
@@ -100,22 +112,6 @@ void parse_and_fill(uint32_t* p_raw, int daq, int crate, int slot)
 			continue;
 		(*it)->br_frag_body->parse_raw(p_raw);
 		(*it)->br_frag_hd.is_valid = 1;
-
-		switch ((*it)->br_frag_body->get_mod_id()) {
-		case 1:
-			/* madc32 */
-			break;
-		case 2:
-			/* v1190 */
-			tmp_v1190 = static_cast<ana_v1190*>((*it)->br_frag_body);
-			parse_and_fill_v1190(tmp_v1190);
-			break;
-		case 5:
-			/* v1740 */
-			tmp_v1740 = static_cast<ana_v1740*>((*it)->br_frag_body);
-			parse_and_fill_v1740(tmp_v1740);
-			break;
-		}
 	}
 }
 
@@ -124,6 +120,7 @@ void clear_buf()
 {
 	int i, n_samp;
 	ana_v1740* tmp_v1740;
+	ana_v1751* tmp_v1751;
 	ana_v1190* tmp_v1190;
 	ana_madc32* tmp_madc;
 	ana_v775* tmp_v775;
@@ -163,6 +160,15 @@ void clear_buf()
 			/* v785 */
 			tmp_v785 = static_cast<ana_v785*>((*it)->br_frag_body);
 			memset(tmp_v785->get_adc_val(), 0, 32*4);
+			break;
+		case 11:
+			/* v1751 */
+			tmp_v1751 = static_cast<ana_v1751*>((*it)->br_frag_body);
+			n_samp = tmp_v1751->get_n_samp();
+			for (i = 0; i < 8; i++) {
+				memset(tmp_v1751->get_data_ptr(i), 0,
+						n_samp*sizeof(uint16_t));
+			}
 			break;
 		}
 	}
@@ -249,6 +255,16 @@ static int get_lst_branches()
 			tmp->br_frag_body = new ana_v1740(192<<(10-n_buf));
 			lst_of_br.push_back(tmp);
 		}
+		else if (name.find("V1751") != std::string::npos) {
+			bool is_found;
+			int n_buf = get_conf_val_reg((*it), 0x800c, is_found);
+			if (!is_found) {
+				std::cout<<"do not know v1751 number of points, pls define it in the code"<<std::endl;
+				return -E_V1751_N_PT;
+			}
+			tmp->br_frag_body = new ana_v1751(1792<<(10-n_buf));
+			lst_of_br.push_back(tmp);
+		}
 		else if (name.find("V2718") != std::string::npos) {
 			delete tmp;
 		}
@@ -270,6 +286,7 @@ TTree* set_br_addr(char* run_title)
 	int i, n_samp, n_frag;
 	char buf1[100], buf2[100];
 	ana_v1740* tmp_v1740;
+	ana_v1751* tmp_v1751;
 	ana_v1190* tmp_v1190;
 	ana_madc32*  tmp_madc;
 	ana_v775* tmp_v775;
@@ -326,6 +343,18 @@ TTree* set_br_addr(char* run_title)
 			sprintf(buf1, "frag_v785_crate%02d_slot%02d",
 					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
 			tree->Branch(buf1, tmp_v785->get_adc_val(), "adc[32]/i");
+			break;
+		case 11:
+			/* v1751 */
+			tmp_v1751 = static_cast<ana_v1751*>((*it)->br_frag_body);
+			n_samp = tmp_v1751->get_n_samp();
+			for (i = 0; i < 8; i++) {
+				sprintf(buf1, "frag_v1751_crate%02d_slot%02d_ch%02d", 
+						(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot, i);
+				sprintf(buf2, "pt[%d]", n_samp);
+				tmp_v1751->set_data_ptr(i, new uint16_t[n_samp]);
+				tree->Branch(buf1, tmp_v1751->get_data_ptr(i), buf2);
+			}
 			break;
 		default:
 			std::cout<<"not supported module!"<<std::endl;

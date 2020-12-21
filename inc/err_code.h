@@ -63,6 +63,8 @@
 #define E_V1740_N_PT           54 /* unknow v1740 number of points */
 #define E_DATA_V830            55 /* corrupted v830 data */
 #define E_INIT_V1751           56 /* error initializing v1751 */
+#define E_V1751_N_PT           57 /* unknow v1751 number of points */
+#define E_DATA_V1751           58 /* corrupted v1751 data */
 
 
 

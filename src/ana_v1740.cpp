@@ -5,9 +5,12 @@ ana_v1740::ana_v1740(int n)
 {
 	int i;
 	n_samp = n;
-	for (i = 0; i < 64; i++) 
+	for (i = 0; i < 64; i++) {
 		samp[i].reserve(n);
+		data_ptr[i] = NULL;
+	}
 	mod_id = 5;
+
 }
 
 ana_v1740::~ana_v1740()
@@ -82,6 +85,20 @@ int ana_v1740::parse_raw(uint32_t* raw_data)
 			continue;
 		get_ch_samples(raw_data, i);
 		raw_data += 8*n_samp*12/32;
+	}
+
+	return write_data_ptr();
+}
+
+int ana_v1740::write_data_ptr()
+{
+	int i, j;
+	for (i = 0; i < 64; i++) {
+		if (!data_ptr[i])
+			continue;
+		for (j = 0; j < n_samp; j++) {
+			data_ptr[i][j] = samp[i][j];
+		}
 	}
 
 	return 0;
