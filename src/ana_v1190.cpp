@@ -21,15 +21,22 @@ int ana_v1190::parse_raw(uint32_t* raw_data)
 	sig = raw_data[0] >> 27;
 	if (sig != 8)
 		return -E_DATA_V1190;
+	else
+		evt_cnt = (raw_data[0]>>5) & 0x3fffff;
 
 	/* loop the event */
 	i = 1;
 	while (true) {
 		entry = raw_data[i++];
 		sig = entry >> 27;
-		if (sig == 0x10)
+		if (sig == 0x10) {
 			/* end of event */
+			ts += entry & 0x1f;
 			break;
+		}
+		if (sig == 0x11)
+			/* ETTT */
+			ts = entry<<5;
 		if (sig == 0) {
 			ch = (entry >> 19) & 0x7f;
 			ch_val = entry & 0x7ffff;

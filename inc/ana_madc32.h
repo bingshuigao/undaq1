@@ -23,6 +23,8 @@ public:
 	/* get adc values */
 	uint32_t* get_adc_val() {return adc_val;}
 
+
+
 private:
 	uint32_t adc_val[32];
 };

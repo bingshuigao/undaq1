@@ -73,6 +73,8 @@ int ana_v1740::parse_raw(uint32_t* raw_data)
 	if (sig != 0xa) 
 		return -E_DATA_V1740;
 
+	evt_cnt = raw_data[2] & 0xffffff;
+	ts = raw_data[3];
 	n_ch = set_grp_msk(raw_data[1]);
 	evt_sz = raw_data[0] & 0xfffffff;
 	n_samp1 = (evt_sz - 4 ) / (n_ch*8) * 32 / 12;

@@ -18,6 +18,7 @@ int ana_v830::parse_raw(uint32_t* raw_data)
 	
 	/* check if the first word is header */
 	sig = (raw_data[0] >> 26) & 1;
+	evt_cnt = raw_data[0] & 0xffff;
 	if (sig != 1)
 		return -E_DATA_V830;
 	n_ch = (raw_data[0] >> 18) & 0x3f;

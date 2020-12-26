@@ -475,7 +475,7 @@ int ebd_sort::handle_single_evt_v1751(uint32_t* evt, int& evt_len, int max_len)
 
 	/* get time stamp and event counter */
 	ts = evt[3] & 0x7fffffff;
-	evt_cnt = evt[2] & 0xffffff;
+	evt_cnt = 1 + (evt[2] & 0xffffff);
 	
 	if (ebd_type == EBD_TYPE_TS) {
 		/* calculate the monotonic time stamp */
@@ -530,7 +530,7 @@ int ebd_sort::handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len)
 
 	/* get time stamp and event counter */
 	ts = evt[3] & 0x7fffffff;
-	evt_cnt = evt[2] & 0xffffff;
+	evt_cnt = 1 + (evt[2] & 0xffffff);
 	
 	if (ebd_type == EBD_TYPE_TS) {
 		/* calculate the monotonic time stamp */

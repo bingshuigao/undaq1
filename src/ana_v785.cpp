@@ -26,9 +26,11 @@ int ana_v785::parse_raw(uint32_t* raw_data)
 	while (true) {
 		entry = raw_data[i++];
 		sig = (entry >> 24) & 0x7;
-		if (sig == 4)
+		if (sig == 4) {
 			/* end of event */
+			evt_cnt = entry & 0xffffff;
 			break;
+		}
 		if (sig == 0) {
 			ch = (entry >> 16) & 0x1f;
 			adc_val[ch] = entry & 0xfff;

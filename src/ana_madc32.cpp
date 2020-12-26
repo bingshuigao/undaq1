@@ -26,9 +26,12 @@ int ana_madc32::parse_raw(uint32_t* raw_data)
 	while (true) {
 		entry = raw_data[i++];
 		sig = entry >> 30;
-		if (sig == 3)
+		if (sig == 3) {
 			/* end of event */
+			ts = entry & 0x3fffffff;
+			evt_cnt = ts;
 			break;
+		}
 		if (sig == 0) {
 			sub_sig = entry >> 21;
 			if (sub_sig != 0x20)
@@ -40,3 +43,4 @@ int ana_madc32::parse_raw(uint32_t* raw_data)
 
 	return 0;
 }
+

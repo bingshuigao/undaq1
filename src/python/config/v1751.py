@@ -13,7 +13,7 @@ from vme_mod import vme_mod
 
 
 class v1751(vme_mod):
-    def __init__(self, name, mod=None):
+    def __init__(self, name1, mod=None):
         # we need to create the reg_map variable
         self.reg_map = []
         self.geo_addr = 0xef08
@@ -255,7 +255,7 @@ class v1751(vme_mod):
 
 
         # This method must be called at the **end**.
-        self._base_init(name, mod)
+        self._base_init(name1, mod)
     
     # get the value of the register in hexdecimal format
     def _get_val_hex(self, reg):

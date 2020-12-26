@@ -38,7 +38,7 @@ void ana_v1751::get_ch_samples(uint32_t* raw_data, int ch)
 	/* the algrithm below may be not fast, but easy to implement. */
 	int i;
 	for (i = 0; i < n_samp; i++) 
-		samp[ch][i] = (raw_data[i/3]>>((i%3)*10))&0xff;
+		samp[ch][i] = (raw_data[i/3]>>((i%3)*10))&0x3ff;
 }
 
 int ana_v1751::parse_raw(uint32_t* raw_data)
@@ -50,11 +50,13 @@ int ana_v1751::parse_raw(uint32_t* raw_data)
 	if (sig != 0xa) 
 		return -E_DATA_V1751;
 
+	evt_cnt = raw_data[2] & 0xffffff;
+	ts = raw_data[3];
 	n_ch = set_ch_msk(raw_data[1]);
 	evt_sz = raw_data[0] & 0xfffffff;
 	n_samp1 = (evt_sz - 4 ) / (n_ch) * 3;
-	mod = (((n_samp1*100)/1024/175)%2)+1;
-	n_samp1 -= mod;
+//	mod = (((n_samp1*100)/1024/175)%2)+1;
+//	n_samp1 -= mod;
 	if (n_samp1 != n_samp)
 		return -E_DATA_V1751;
 
@@ -66,7 +68,7 @@ int ana_v1751::parse_raw(uint32_t* raw_data)
 		raw_data += n_samp/3+1;
 	}
 
-	return 0;
+	return write_data_ptr();
 }
 
 int ana_v1751::write_data_ptr()

@@ -509,31 +509,31 @@ do_init_fake_module(fake_module* mod, std::vector<struct conf_vme_mod> &the_conf
 	return 0;
 }
 
-/* set v1751 dc offset */
+/* calibrate v1751 */
 static int calib_v1751(v1751* mod)
 {
 	int ret, i;
 	uint32_t val1, calib;
 	uint32_t off;
-	calib = 1;
 
-start_calib:
+	off = 0x809c;
+	calib = 0;
+	ret = mod->write_reg(off, 32, &calib);
+	calib = 2;
+	ret = mod->write_reg(off, 32, &calib);
+
 	off = 0x1088;
 	for (i = 0; i < 8; i++) {
 		off += 0x100*i;
 		do {
 			ret = mod->read_reg(off, 32, &val1);
 			RET_IF_NONZERO(ret);
-		} while (val1 & 0x4);
+		} while (!(val1 & 0x40));
 	}
-
+	
 	off = 0x809c;
+	calib = 0;
 	ret = mod->write_reg(off, 32, &calib);
-	RET_IF_NONZERO(ret);
-	if (calib) {
-		calib = 0;
-		goto start_calib;
-	}
 
 	return 0;
 }

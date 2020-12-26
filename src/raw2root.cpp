@@ -325,7 +325,7 @@ TTree* set_br_addr(char* run_title)
 			for (i = 0; i < 64; i++) {
 				sprintf(buf1, "frag_v1740_crate%02d_slot%02d_ch%02d", 
 						(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot, i);
-				sprintf(buf2, "pt[%d]", n_samp);
+				sprintf(buf2, "pt[%d]/s", n_samp);
 				tmp_v1740->set_data_ptr(i, new uint16_t[n_samp]);
 				tree->Branch(buf1, tmp_v1740->get_data_ptr(i), buf2);
 			}
@@ -351,7 +351,7 @@ TTree* set_br_addr(char* run_title)
 			for (i = 0; i < 8; i++) {
 				sprintf(buf1, "frag_v1751_crate%02d_slot%02d_ch%02d", 
 						(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot, i);
-				sprintf(buf2, "pt[%d]", n_samp);
+				sprintf(buf2, "pt[%d]/s", n_samp);
 				tmp_v1751->set_data_ptr(i, new uint16_t[n_samp]);
 				tree->Branch(buf1, tmp_v1751->get_data_ptr(i), buf2);
 			}
