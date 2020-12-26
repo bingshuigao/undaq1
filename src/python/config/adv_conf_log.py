@@ -53,6 +53,8 @@ class adv_conf_log(adv_conf):
         self.var_lst.append({
                  'value' : 'default',
                  'name' : 'save_path',
+                 'str2int' : self._str2_big_int,
+                 'int2str' : self._big_int2_str,
                  'wid_type' : 'entry',
                  'comment' : None
                  })
