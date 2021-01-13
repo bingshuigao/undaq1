@@ -58,6 +58,8 @@ private:
 	unsigned char* sock_buf;
 	int sock_buf_sz;
 
+	bool ana_reconn;
+
 };
 
 

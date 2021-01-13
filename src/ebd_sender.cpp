@@ -9,6 +9,7 @@ ebd_sender::ebd_sender()
 	sock_ana = -1;
 	sock_buf = NULL;
 	init_fun.push_back(&ebd_sender_init);
+	ana_reconn = false;
 }
 
 ebd_sender::~ebd_sender()
@@ -66,14 +67,15 @@ int ebd_sender::start()
 			return -E_SYSCALL;
 	}
 	
-	if (sock_ana == -1) {
+	/* the analyzer can be connected later (at any time), so we don't
+	 * connect it at the begin of run */
+/*	
+ *	if (sock_ana == -1) {
 		sock_ana = svr->accept();
-		/* we don't destroy the server because the analyzer may need to
-		 * re-connect if it goes wrong */
-//		svr->destroy();
 		if ((sock_ana == -1))
 			return -E_SYSCALL;
 	}
+*/
 
 	/* proporgate the message to the next thread */
 	return send_msg(3, 1, &acq_stat, 4);
@@ -94,11 +96,15 @@ int ebd_sender::stop()
 	if (do_send(sock_log, &n, 4, 0))
 		return -E_SYSCALL;
 	if (sock_ana != -1) {
-		if (do_send(sock_ana, &n, 4, 0)) {
+		if (do_send(sock_ana, &n, 4, MSG_NOSIGNAL)) {
 			sock_ana = -1;
-			ret = send_msg(4, 2, NULL, 0);
-			RET_IF_NONZERO(ret);
+			ana_reconn = false;
 		}
+	}
+	if (sock_ana == -1 && (!ana_reconn)) {
+		ana_reconn = true;
+		ret = send_msg(4, 2, NULL, 0);
+		RET_IF_NONZERO(ret);
 	}
 
 	/* proporgate the stop message to the next thread */
@@ -172,11 +178,15 @@ int ebd_sender::send_data(ring_buf* the_rb)
 	if (do_send(sock_log, &sz_out, 4, 0))
 		return -E_SYSCALL;
 	if (sock_ana != -1) {
-		if (do_send(sock_ana, &sz_out, 4, 0)) {
+		if (do_send(sock_ana, &sz_out, 4, MSG_NOSIGNAL)) {
 			sock_ana = -1;
-			ret = send_msg(4, 2, NULL, 0);
-			RET_IF_NONZERO(ret);
+			ana_reconn = false;
 		}
+	}
+	if (sock_ana == -1 && (!ana_reconn)) {
+		ana_reconn = true;
+		ret = send_msg(4, 2, NULL, 0);
+		RET_IF_NONZERO(ret);
 	}
 	if (the_rb == rb_evt)
 		sock_buf[0] = 2;
@@ -192,10 +202,15 @@ int ebd_sender::send_data(ring_buf* the_rb)
 	 * something goes wrong in the analyzer, instead we should let the
 	 * analyzer re-connect. */
 	if (sock_ana != -1) {
-		if (do_send(sock_ana, sock_buf, sz_out, 0)) {
+		if (do_send(sock_ana, sock_buf, sz_out, MSG_NOSIGNAL)) {
 			sock_ana = -1;
-			send_msg(4, 2, NULL, 0);
+			ana_reconn = false;
 		}
+	}
+	if (sock_ana == -1 && (!ana_reconn)) {
+		ana_reconn = true;
+		ret = send_msg(4, 2, NULL, 0);
+		RET_IF_NONZERO(ret);
 	}
 	
 	return 0;
@@ -269,6 +284,7 @@ int ebd_sender::re_conn_ana()
 	
 	/* now there is incoming connect request. */
 	sock_ana = svr->accept();
+	ana_reconn = false;
 	if ((sock_ana == -1))
 		return -E_SYSCALL;
 

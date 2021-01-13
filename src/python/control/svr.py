@@ -29,6 +29,18 @@ class svr:
                 msg = self.sock.recv(128, socket.MSG_WAITALL)
             except BlockingIOError:
                 return None
+            except ConnectionResetError:
+                msg = None
+            if not msg:
+                # broken connection:
+                self.sock = None
+                # message type
+                msg_all += (5).to_bytes(length=4, byteorder='little')
+                # message level
+                msg_all += (2).to_bytes(length=4, byteorder='little')
+                # message texts
+                msg_all += bytes('client disconnected!', 'utf-8')
+                return msg_all
             end_mark = msg[-1]
             head = int.from_bytes(msg[:4], 'little')
             if head != 1000:

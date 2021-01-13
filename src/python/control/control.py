@@ -178,6 +178,14 @@ class control:
             self.svr_ebd.set_sock(conn)
         elif name == 'analyzer':
             self.svr_ana.set_sock(conn)
+            # if we are already in 'run' status, send a 'start' command to the
+            # analyzer
+            if self._check_all_stat() == 'run':
+                msg_type = (0).to_bytes(length=4, byteorder='little')
+                run_stat = (1).to_bytes(length=4, byteorder='little')
+                msg_tail = bytes([0 for i in range(120)])
+                msg = msg_type + run_stat + msg_tail
+                self.svr_ana.send_all(msg)
         elif name == 'logger':
             self.svr_log.set_sock(conn)
         else:
@@ -210,6 +218,11 @@ class control:
         while msg:
             msg = self.svr_ana.try_recv()
             self._handle_ana_msg(msg)
+            if not self.svr_ana.sock:
+                # broken connection:
+                self.n_client -= 1
+                self.ana_stat_var.set('unkown')
+
 
     def _update_fe_stat(self):
         tmp = self.fe_stat_lst[0]
@@ -228,7 +241,8 @@ class control:
         ebd_stat= self.ebd_stat_var.get()
         log_stat= self.log_stat_var.get()
         ana_stat= self.ana_stat_var.get()
-        if self.ctrl_stat == fe_stat and self.ctrl_stat == ebd_stat and self.ctrl_stat == log_stat and self.ctrl_stat == ana_stat:
+#        if self.ctrl_stat == fe_stat and self.ctrl_stat == ebd_stat and self.ctrl_stat == log_stat and self.ctrl_stat == ana_stat:
+        if self.ctrl_stat == fe_stat and self.ctrl_stat == ebd_stat and self.ctrl_stat == log_stat:
             return self.ctrl_stat
         else:
             return 'inconsist'
