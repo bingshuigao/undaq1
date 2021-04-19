@@ -93,11 +93,14 @@ private:
 			return handle_single_evt_fake_module(evt, evt_len, max_len);
 		case 11: 
 			return handle_single_evt_v1751(evt, evt_len, max_len);
+		case 12:
+			return handle_single_evt_mqdc32(evt, evt_len, max_len);
 		default:
 			return -E_UNKOWN_MOD;
 		}
 	}
 	int handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len);
+	int handle_single_evt_mqdc32(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v830(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len);

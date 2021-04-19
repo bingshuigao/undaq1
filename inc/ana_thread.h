@@ -46,6 +46,7 @@
  * 9 --> v785n
  * 10 --> fake_module
  * 11 --> v1751
+ * 12 --> mqdc32
  *
  *
  * For trigger events:

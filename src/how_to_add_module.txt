@@ -41,5 +41,13 @@ This explains how to added a 'supported module' (v1740) to the DAQ
 	   module v1740
        c): add a new initialization function for the new module v1740:
 	   static int do_init_v1740() which is the called in do_init_mod()
-8, modify the makefile
-9, compile and run the code to test!
+8, create analysis class for the new module (use mqdc32 as example)
+       a) create the head file:
+	  # cp ana_madc32.h ana_mqdc32.h
+	  Then modify the header file accordingly
+       b) create the source file:
+          # cp ana_madc32.cpp ana_mqdc32.cpp
+	  Then modify the source file accordingly
+       c) add example code in the ana_usr.cpp
+9, modify the makefile
+10, compile and run the code to test!

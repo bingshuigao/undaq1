@@ -65,6 +65,8 @@
 #define E_INIT_V1751           56 /* error initializing v1751 */
 #define E_V1751_N_PT           57 /* unknow v1751 number of points */
 #define E_DATA_V1751           58 /* corrupted v1751 data */
+#define E_INIT_MQDC32          59 
+#define E_DATA_MQDC32          60 /* corrupted mqdc32 data */
 
 
 

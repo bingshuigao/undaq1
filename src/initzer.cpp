@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <string.h>
+#include <unistd.h>
 
 /* This function decodes the raw string to another string. The raw string
  * represents a very long integer like
@@ -298,6 +299,9 @@ static int create_mod(std::string& name, module*& mod)
 {
 	if (name.find("MADC32") != std::string::npos) {
 		mod = new madc32;
+	}
+	else if (name.find("MQDC32") != std::string::npos) {
+		mod = new mqdc32;
 	}
 	else if (name.find("V1190A") != std::string::npos) {
 		mod = new v1190; 
@@ -602,6 +606,42 @@ do_init_v1740(v1740* mod, std::vector<struct conf_vme_mod> &the_conf)
 	return 0;
 }
 
+
+/* initialize vme module, return 0 if succeed, otherwise return error code */
+static int 
+do_init_mqdc32(mqdc32* mod, std::vector<struct conf_vme_mod> &the_conf)
+{
+	/* special attention should be paid to the 0x6090 register. If set to
+	 * 0xc, one must first send a pulse to the fc/res port before writing
+	 * 0xc to this register, or else the result of the register will be 8
+	 * instead of 0xc (a bug???) */
+	uint16_t dum = 0;
+	/* First, we need to soft-reset all settings */
+	if (mod->write_reg(0x6008, 16, &dum))
+		return -E_INIT_MQDC32;
+	usleep(1200000);
+	/* then init all registers with non-default values */
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name != "") 
+			continue;
+		/* this is a register setting */
+		uint32_t off = (*it).offset;
+		uint16_t val = (*it).val.val_uint64;
+		if (((off >= 0x4000) && (off <= 0x4000+32*2)) ||
+		    ((off >= 0x6000) && (off <= 0x60b0))) {
+			/* this is a physical register */
+			if (mod->write_reg(off, 16, &val))
+				return -E_INIT_MQDC32;
+		}
+		else {
+			/* unknown register */
+			return -E_INIT_MQDC32;
+		}
+	}
+	return 0;
+}
+
+
 /* initialize vme module, return 0 if succeed, otherwise return error code */
 static int 
 do_init_madc32(madc32* mod, std::vector<struct conf_vme_mod> &the_conf)
@@ -889,6 +929,8 @@ static int do_init_mod(module* mod, std::vector<struct conf_vme_mod> &the_conf)
 	std::string name = mod->get_name();
 	if (name == "madc32")
 		return do_init_madc32(static_cast<madc32*>(mod), the_conf);
+	if (name == "mqdc32")
+		return do_init_mqdc32(static_cast<mqdc32*>(mod), the_conf);
 	if (name == "v1190")
 		return do_init_v1190(static_cast<v1190*>(mod), the_conf);
 	if (name == "v830")

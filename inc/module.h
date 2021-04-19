@@ -201,6 +201,7 @@ protected:
 	 * v785n  --> mod_id = 9;
 	 * fake_module --> mod_id = 10;
 	 * v1751  --> mod_id = 11;
+	 * mqdc32 --> mod_id = 12;
 	 * */
 	uint32_t mod_id;
 	

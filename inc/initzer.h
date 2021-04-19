@@ -19,6 +19,7 @@
 #ifdef MAKE_FRONTEND
 #include "modules.h"
 #include "madc32.h"
+#include "mqdc32.h"
 #include "v2718.h"
 #include "test_ctl.h"
 #include "v1190.h"
