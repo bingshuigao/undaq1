@@ -475,7 +475,7 @@ int ebd_sort::handle_single_evt_v1751(uint32_t* evt, int& evt_len, int max_len)
 
 	/* get time stamp and event counter */
 	ts = evt[3] & 0x7fffffff;
-	evt_cnt = 1 + (evt[2] & 0xffffff);
+	evt_cnt = (evt[2] & 0xffffff);
 	
 	if (ebd_type == EBD_TYPE_TS) {
 		/* calculate the monotonic time stamp */
@@ -530,7 +530,7 @@ int ebd_sort::handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len)
 
 	/* get time stamp and event counter */
 	ts = evt[3] & 0x7fffffff;
-	evt_cnt = 1 + (evt[2] & 0xffffff);
+	evt_cnt = (evt[2] & 0xffffff);
 	
 	if (ebd_type == EBD_TYPE_TS) {
 		/* calculate the monotonic time stamp */
@@ -639,6 +639,9 @@ int ebd_sort::handle_single_evt_mqdc32(uint32_t* evt, int& evt_len, int max_len)
 			goto err_data;
 		evt_cnt = evt[idx] & 0x3FFFFFFF;
 		ts = get_mono_evt_cnt(evt_cnt, 30);
+		/* note that the evt cnt starts from zero, which is different
+		 * from madc according to manual */
+	//	ts++;
 		break;
 	}
 
@@ -740,6 +743,8 @@ int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 			goto err_data;
 		evt_cnt = evt[idx] & 0x3FFFFFFF;
 		ts = get_mono_evt_cnt(evt_cnt, 30);
+		/* the evt cnt starts from 1 instead of zero */
+		ts--;
 		break;
 	}
 
@@ -791,7 +796,7 @@ int ebd_sort::handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len)
 		}
 		else if (sig == 0x8) {
 			/* header, (note that the counter starts from 0)  */
-			evt_cnt = 1 + ((evt[i] & 0x7ffffff) >> 5);
+			evt_cnt = ((evt[i] & 0x7ffffff) >> 5);
 		}
 		else if (sig == 0x10) {
 			/* trailer */
@@ -959,7 +964,8 @@ int ebd_sort::handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len,
 	/* sub_mod_id == 0 ---> v775 (default)
 	 * sub_mod_id == 1 ---> v775n
 	 * sub_mod_id == 2 ---> v785,
-	 * sub_mod_id == 3 ---> v785n */
+	 * sub_mod_id == 3 ---> v785n 
+	 * sub_mod_id == 4 ---> v792 */
 	uint32_t sig;
 	uint32_t buf[50]; /* big enough to accomadate a v775 event plus the
 			     additional header .*/
@@ -1004,7 +1010,7 @@ int ebd_sort::handle_single_evt_v775(uint32_t* evt, int& evt_len, int max_len,
 		if (sig != 0x4)
 			goto err_data;
 		/* (note that the counter starts from 0)  */
-		evt_cnt = 1 + (evt[idx] & 0xFFFFFF);
+		evt_cnt = (evt[idx] & 0xFFFFFF);
 		ts = get_mono_evt_cnt(evt_cnt, 24);
 		break;
 	}
@@ -1016,7 +1022,7 @@ err_data:
 
 	/* see comments in the handle_single_evt_madc32 */
 	evt_len = max_len*4;
-	send_text_mes("corrupted v775/785 data", MSG_LEV_WARN);
+	send_text_mes("corrupted v775/785/792 data", MSG_LEV_WARN);
 	return 0;
 
 	switch (sub_mod_id) {
@@ -1028,6 +1034,8 @@ err_data:
 		return -E_DATA_V785;
 	case 3:
 		return -E_DATA_V785N;
+	case 4:
+		return -E_DATA_V792;
 	default:
 		return -E_UNKOWN_MOD;
 	}
@@ -1049,3 +1057,9 @@ int ebd_sort::handle_single_evt_v785n(uint32_t* evt, int& evt_len, int max_len)
 {
 	return handle_single_evt_v775(evt, evt_len, max_len, 3);
 }
+
+int ebd_sort::handle_single_evt_v792(uint32_t* evt, int& evt_len, int max_len)
+{
+	return handle_single_evt_v775(evt, evt_len, max_len, 4);
+}
+

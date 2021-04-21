@@ -7,6 +7,7 @@
 #include "ana_mqdc32.h"
 #include "ana_v1190.h"
 #include "ana_v775.h"
+#include "ana_v792.h"
 #include "ana_v785.h"
 #include "ana_v830.h"
 #include "ana_v1751.h"
@@ -19,6 +20,7 @@ ana_frag_hd frag_hd;
 ana_madc32* evt_madc = new ana_madc32;
 ana_mqdc32* evt_mqdc = new ana_mqdc32;
 ana_v775* evt_v775 = new ana_v775;
+ana_v792* evt_v792 = new ana_v792;
 ana_v785* evt_v785 = new ana_v785;
 ana_v1190*  evt_v1190= new ana_v1190;
 ana_v830* evt_v830 = new ana_v830;
@@ -84,6 +86,12 @@ int ana_usr_trig(void* p_evt, hist_man& hists, bool is_bor)
 			auto qdcs = evt_mqdc->get_qdc_val();
 			((TH1D*)hists.get(0))->Fill(qdcs[0]);
 
+		}
+		else if (slot == 7) {
+			/* v792 */
+			evt_v792->parse_raw(p_dw);
+			auto qdcs = evt_v792->get_qdc_val();
+			((TH1D*)hists.get(0))->Fill(qdcs[0]);
 		}
 
 		p_dw -= 5;

@@ -63,6 +63,7 @@
  * 10 --> fake_module;
  * 11 --> v1751;
  * 12 --> mqdc32;
+ * 13 --> v792;
  *
  *             The true body has the following format: (see modules.h):
  *                  _______________

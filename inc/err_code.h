@@ -67,6 +67,8 @@
 #define E_DATA_V1751           58 /* corrupted v1751 data */
 #define E_INIT_MQDC32          59 
 #define E_DATA_MQDC32          60 /* corrupted mqdc32 data */
+#define E_INIT_V792            61 
+#define E_DATA_V792            62 /* corrupted v792 data */
 
 
 

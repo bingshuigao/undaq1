@@ -30,6 +30,7 @@ from v1740 import v1740
 from v1751 import v1751
 from v775 import v775
 from v785 import v785
+from v792 import v792
 from v775n import v775n
 from v785n import v785n
 from fake_module import fake_module
@@ -41,7 +42,7 @@ class frontend:
         self.n_crate = 1 
         # list of supported modules
         self.sup_mods_lst = ['V2718', 'TEST_CTL', 'MADC32', 'MQDC32', 'V1190A', 'V830', 'V977',
-                'V1740', 'V1751', 'V775', 'V775N', 'V785', 'V785N', 'FAKE_MODULE']
+                'V1740', 'V1751', 'V775', 'V775N', 'V785', 'V785N', 'V792', 'FAKE_MODULE']
         # list of selected modules (note: the element is an object of the
         # vme_mod class, not a string as in the sup_mods_list)
         self.sel_mods_lst = []
@@ -155,6 +156,8 @@ class frontend:
             tmp = v1751(self._get_uniq_name(name), mod)
         elif name == 'V775':
             tmp = v775(self._get_uniq_name(name), mod)
+        elif name == 'V792':
+            tmp = v792(self._get_uniq_name(name), mod)
         elif name == 'V785':
             tmp = v785(self._get_uniq_name(name), mod)
         elif name == 'V775N':

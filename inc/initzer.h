@@ -27,6 +27,7 @@
 #include "v1740.h"
 #include "v1751.h"
 #include "v775.h"
+#include "v792.h"
 #include "v785.h"
 #include "v775n.h"
 #include "v785n.h"
