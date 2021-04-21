@@ -62,6 +62,8 @@ public:
 	virtual int send_pulse(bool invt) {return 0;}
 	/* the out port 0 (the first port) will be used */
 	virtual int send_pulse1(bool invt) {return 0;}
+	/* the out port 0 (the first port) will be used */
+	virtual int send_pulse2(bool invt) {return 0;}
 };
 #endif
 

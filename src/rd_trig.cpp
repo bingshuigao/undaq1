@@ -87,6 +87,12 @@ int rd_trig::try_rd_fe(bool force_rd)
 			ret = do_rd_mods(*it);
 			RET_IF_NONZERO(ret);
 		}
+		/* send a pulse for whatever use (e.g. reset the busy) */
+		for (auto it = mods.begin(); it != mods.end(); it++) {
+			ret = (*it)->get_1st_mod()->get_ctl()->send_pulse2(false);
+			RET_IF_NONZERO(ret);
+			break;
+		}
 		/* after reading all the trigger modules, do not forget add the
 		 * End Of Reading mark (EOR). This very useful for the event
 		 * builder. See comments in ebd_thread.h */

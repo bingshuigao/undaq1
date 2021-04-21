@@ -114,6 +114,7 @@ public:
 	 * */
 	virtual int send_pulse(bool invt) = 0;
 	virtual int send_pulse1(bool invt) = 0;
+	virtual int send_pulse2(bool invt) = 0;
 
 protected:
 	int am; /* address modifier */
