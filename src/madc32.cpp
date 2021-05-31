@@ -87,7 +87,9 @@ int madc32::get_cblt_conf(uint16_t* addr, int* cblt_enable, int* cblt_first,
 
 	/* if we are in test mode, return cblt enable false */
 	if (get_ctl()->get_name() == "test_ctl") {
-		*cblt_enable = 0;
+		if (cblt_first) *cblt_first = 0;
+		if (cblt_last) *cblt_last = 0;
+		if (cblt_enable) *cblt_enable = 0;
 		return 0;
 	}
 

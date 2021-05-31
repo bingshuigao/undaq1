@@ -68,9 +68,9 @@ int ctl_thread::ctl_main_proc()
 	 *      _________________________________________
 	 *      |  message type (4-byte int)            |
 	 *      |_______________________________________|
-	 *      |  complementary information (123 byte) |
+	 *      |  complementary information (120 byte) |
 	 *      |_______________________________________|
-	 *      | end of message mark (1 byte)          |
+	 *      | end of message mark (4-byte int)      |
 	 *      |_______________________________________|
 	 *
 	 * The message type is defined as following:
@@ -93,9 +93,9 @@ int ctl_thread::ctl_main_proc()
 	 *      _________________________________________
 	 *      |  message type (4-byte int)            |
 	 *      |_______________________________________|
-	 *      |  complementary information (123 byte) |
+	 *      |  complementary information (120 byte) |
 	 *      |_______________________________________|
-	 *      | end of message mark (1 byte)          |
+	 *      | end of message mark (4-byte int)      |
 	 *      |_______________________________________|
 	 *      
 	 *      The definations of message types are :

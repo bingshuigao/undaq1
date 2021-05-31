@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/select.h>
+#include <string.h>
 
 ebd_ctl::ebd_ctl()
 {
@@ -20,12 +21,14 @@ int ebd_ctl::handle_msg(uint32_t* msg_body)
          /* The message type of the current thread are defined as following:
           * msg_type == 1 --> run status transition.                        
           * msg_type == 2 --> n_mod
+	  * msg_type == 3 --> broken pipe
+	  * msg_type == 4 --> evt counts (from ebd sort)
 	  * msg_type == MSG_TEXT (100) --> text message (to gui)
 	  * */                          
 
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
 	uint32_t n_mod;
-	unsigned char msg_send[128];
+	unsigned char msg_send[1280];
 	uint32_t* p;
 	uint32_t* p_int = reinterpret_cast<uint32_t*>(msg_send);
 
@@ -52,6 +55,11 @@ int ebd_ctl::handle_msg(uint32_t* msg_body)
 		p_int[0] = 6; /* gui message type */
 		p_int[31] = 0; 
 		return do_send(sock, msg_send, 128, 0);
+	case 4:
+		/* evt cnts */
+		p_int[0] = 7; /* gui message type */
+		memcpy(msg_send+4, msg_body+1, 153*4);
+		return do_send_msg_all(sock, msg_send, 154*4, 0);
 	default:
 		return -E_MSG_TYPE;
 	}
@@ -205,6 +213,11 @@ int ebd_ctl::handle_GUI_msg(unsigned char* msg)
 		else {
 			ret = do_send_msg_all(sock, msg_send, p-p0, 0);
 		}
+		RET_IF_NONZERO(ret);
+		break;
+	case 5:
+		/* query evt couts of each module */
+		ret = send_msg(2, 6, NULL, 0);
 		RET_IF_NONZERO(ret);
 		break;
 	default:

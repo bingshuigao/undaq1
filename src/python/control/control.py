@@ -272,6 +272,7 @@ class control:
             delta_t = ts - self.cur_time[i]
             self.cur_time[i] = ts
             self.stat_tab.set_rate(1.*delta_n/delta_t)
+            self.stat_tab.set_data_sz(n_byte/1000000.)
             #print('fe_num = %d, n_byte = %d, ts = %d, rate = %f (kB/s)' % (i, n_byte, ts, 1.*delta_n/delta_t))
         elif msg_type == 4:
             tot_sz = int.from_bytes(msg[4:8], 'little')
@@ -376,8 +377,9 @@ class control:
             # send the message to all
             for i in range(self.fe_num):
                 self.svr_fe[i].send_all(msg)
-
-
+        elif msg_type == 7:
+            # the evt cnts
+            self.stat_tab.update_evt_cnt(msg[4:])
 
 
     def _handle_ana_msg(self, msg):
@@ -450,6 +452,12 @@ class control:
         for i in range(self.fe_num):
             self.svr_fe[i].send_all(msg)
             print('checking rate......')
+        # we also send a query to ebd
+        msg_type = (5).to_bytes(length=4, byteorder='little')
+        msg_tail = bytes([0 for i in range(124)])
+        msg = msg_type + msg_tail
+        self.svr_ebd.send_all(msg)
+
 
     def _clock(self):
         # we check the listening socket periodically

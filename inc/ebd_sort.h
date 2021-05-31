@@ -169,6 +169,9 @@ private:
 	int build_clk_map();
 	int build_clk_off_map();
 
+	/* compress the evt cnt (from tot_evt_cnts to compressed_cnt)*/
+	void compress_evt_cnt();
+
 
 private:
 	/* the starting time of the run (seconds) */
@@ -223,6 +226,36 @@ private:
 	 * the ring buffer for the module in crate n and slot m, just say:
 	 * return rb_map[n][m] */
 	ring_buf* rb_map[MAX_CRATE][MAX_MODULE];
+
+	/* the total number of evt (of each module) in the current run */
+	uint32_t tot_evt_cnts[MAX_CRATE][MAX_MODULE];
+
+	/* compressed total number of evt for each module 
+	 * this is to be sent to the control thread via message ring buffer.
+	 * currently the module number is limited to 100 (be aware that the
+	 * default size of message ring buffer is 2048 byte, see DEF_RB_FE_MSG)
+	 * it has the format as following (each entry is a 32-bit word):
+	 *     ___________________________
+	 *     | monototic time (ms) hi  |
+	 *     |_________________________|
+	 *     | monototic time (ms) lo  |
+	 *     |_________________________|
+	 *     | number of modules       |
+	 *     |_________________________|
+	 *     |crate2|slot2|crate1|slot1|
+	 *     |______|_____|______|_____|
+	 *     | .......    |crate3|slot3|
+	 *     |____________|______|_____|
+	 *     | ... (up to 100th module)|
+	 *     |_________________________|
+	 *     | evt cnt1                |
+	 *     |_________________________|
+	 *     | evt cnt2                |
+	 *     |_________________________|
+	 *     | ... (up to cnt100)      |
+	 *     |_________________________|
+	 * */
+	uint32_t compressed_cnt[153];
 
 	/* This is used to fast conversion from mask to slot number. Although
 	 * this could be a very large array (2MB), only 21 of the elements are

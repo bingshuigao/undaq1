@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <iostream>
+#include <time.h>
 
 
 ebd_sort::ebd_sort()
@@ -98,6 +99,7 @@ int ebd_sort::handle_msg(uint32_t* msg_body)
 	 * 3 --> clock map
 	 * 4 --> clock offset map
 	 * 5 --> query number of vme modules.
+	 * 6 --> query evt cnt
 	 * */
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
 	int ret, i, j;
@@ -152,10 +154,52 @@ int ebd_sort::handle_msg(uint32_t* msg_body)
 		}
 		ret = send_msg(5, 2, &n_mod, 4);
 		return ret;
+	case 6:
+		ret = 0;
+		compress_evt_cnt();
+		ret = send_msg(5, 4, compressed_cnt, 153*4);
+		return ret;
 	default:
 		return -E_MSG_TYPE;
 	}
 }
+
+
+void ebd_sort::compress_evt_cnt()
+{
+	struct timespec ts;
+	uint64_t ts_ms;
+	uint32_t i, j, n;
+
+	clock_gettime(CLOCK_MONOTONIC_COARSE, &ts);
+	ts_ms = ts.tv_sec * 1000L + ts.tv_nsec/1000000;
+	compressed_cnt[0] = ts_ms>>32;
+	compressed_cnt[1] = ts_ms & 0xffffffff;
+
+	n = 1;
+	for (i = 0; i < MAX_CRATE; i++) {
+		for (j = 0; j < MAX_MODULE; j++) {
+			if (rb_map[i][j] == 0) 
+				continue;
+			if ((n%2) == 1) {
+				compressed_cnt[(n-1)/2 + 3] = 0;
+				compressed_cnt[(n-1)/2 + 3] |= j;
+				compressed_cnt[(n-1)/2 + 3] |= i<<8;
+			}
+			else {
+				compressed_cnt[(n-1)/2 + 3] |= j<<16;
+				compressed_cnt[(n-1)/2 + 3] |= i<<24;
+			}
+			compressed_cnt[53+n-1] = tot_evt_cnts[i][j];
+			compressed_cnt[2] = n;
+			n++;
+			if (n > 100) {
+				return;
+			}
+		}
+	}
+}
+
 
 int ebd_sort::build_clk_off_map()
 {
@@ -199,8 +243,15 @@ int ebd_sort::build_slot_map()
 
 int ebd_sort::start()
 {
+	int i,j;
+
 	acq_stat = DAQ_RUN;
 	n_readout = 0;
+	for (i = 0; i < MAX_CRATE; i++) {
+		for (j = 0; j < MAX_MODULE; j++) {
+			tot_evt_cnts[i][j] = 0;
+		}
+	}
 	
 	/* proporgate the message to the next thread */
 	return send_msg(1, 1, &acq_stat, 4);
@@ -869,6 +920,8 @@ int ebd_sort::save_evt(uint32_t* buf, uint32_t* evt, int evt_len_wd, uint64_t ts
 	buf[3] = ts & 0xFFFFFFFF;
 	memcpy(buf + 4, evt, evt_len_wd*4);
 	
+	/* increate the evt count */
+	tot_evt_cnts[crate][slot]++;
 
 	/* copyt the event and save to the ring buffer */
 	len = buf[0] * 4;

@@ -112,7 +112,7 @@ int daq_thread::send_text_mes(const char* msg, int level)
 int daq_thread::do_rd_msg()
 {
 	uint32_t msg_head;
-	uint32_t msg[100];
+	uint32_t msg[700];
 	int cnt, msg_id;
 
 	
@@ -133,7 +133,7 @@ int daq_thread::do_rd_msg()
 			/* the header shows that this message is for the
 			 * current thread  */
 			int32_t sz = (msg_head & 0xFFFFFF);
-			if (sz > 100*4) {
+			if (sz > 100*7) {
 				rb_msg->rel_lock();
 				return -E_MSG_TOO_BIG;
 			}
