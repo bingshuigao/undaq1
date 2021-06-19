@@ -51,7 +51,7 @@ class adv_conf_log(adv_conf):
                  })
         # The data saving path
         self.var_lst.append({
-                 'value' : 'default',
+                 'value' : 0x617461642f2e2e,
                  'name' : 'save_path',
                  'str2int' : self._str2_big_int,
                  'int2str' : self._big_int2_str,

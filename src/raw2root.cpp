@@ -186,6 +186,8 @@ void decompose()
 	/* parse event header */
 	evt_hd.parse_hd(p_dw);
 	len_tot = evt_hd.get_len();
+	br_evt_hd.unix_t = evt_hd.get_unix_t();
+	br_evt_hd.ts = evt_hd.get_ts();
 
 	/* loop the fragments */
 	p_dw += 5;
