@@ -19,7 +19,7 @@ class stat_tab:
         self._create_all()
         
         self.cur_t = 0
-        self.cur_cnt = 0
+        self.cur_cnt = [0 for i in range(100)]
 
     def get_frm(self):
         return self.frm
@@ -58,15 +58,15 @@ class stat_tab:
             int_entry = int.from_bytes(msg[12+(i//2):16+(i//2)], 'little')
             slot = (int_entry >>((i%2)*16)) & 0xff
             crate = ((int_entry >> ((i%2)*16) + 8)) & 0xff
-            cnt = int.from_bytes(msg[53*4+i:54*4+i], 'little')
-            delta_cnt = cnt - self.cur_cnt
+            cnt = int.from_bytes(msg[53*4+i*4:54*4+i*4], 'little')
+            delta_cnt = cnt - self.cur_cnt[i]
             rate = delta_cnt*1000./delta_t
             rate_str = '%20d%20d%20d%20.3f' % (crate, slot, cnt, rate)
             print(rate_str)
             label_str += rate_str + '\n'
+            self.cur_cnt[i] = cnt
         self.trig_cnt_label.config(text=label_str)
         self.cur_t = ts
-        self.cur_cnt = cnt
 
 
 
