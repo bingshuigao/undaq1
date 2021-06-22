@@ -59,7 +59,7 @@ class v775n(vme_mod):
         # control bit set2
         self.reg_map.append(
                 {'off' : 0x1032,
-                 'value' : 0x538,
+                 'value' : 0x500,
                  'name' : 'ctrl bit set2',
                  'nbit' : 15,
                  'has_set_wid' : True,

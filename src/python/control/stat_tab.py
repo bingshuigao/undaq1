@@ -55,7 +55,7 @@ class stat_tab:
         label_str = ''
         cnt = 0
         for i in range(n_module):
-            int_entry = int.from_bytes(msg[12+(i//2):16+(i//2)], 'little')
+            int_entry = int.from_bytes(msg[12+(i//2)*4:16+(i//2)*4], 'little')
             slot = (int_entry >>((i%2)*16)) & 0xff
             crate = ((int_entry >> ((i%2)*16) + 8)) & 0xff
             cnt = int.from_bytes(msg[53*4+i*4:54*4+i*4], 'little')

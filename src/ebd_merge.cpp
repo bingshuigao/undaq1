@@ -193,6 +193,7 @@ start:
 			/* first let's see if we can remove the EOR */
 			ret = try_rm_EOR(*it, rm, chg);
 			RET_IF_NONZERO(ret);
+#ifndef USE_SLOW_MODE
 			if (rm) {
 				/* the EOR is removed */
 				if (chg) 
@@ -201,6 +202,9 @@ start:
 					it = rb_data.begin();
 				goto start;
 			}
+#else
+			ts_min = 1;
+#endif
 			/* if the EOR is not removed, we ignore this ring
 			 * buffer */
 			continue;
@@ -282,11 +286,13 @@ int ebd_merge::try_rm_EOR(ring_buf* rb, bool& rm, bool& chg)
 	bool set;
 	int ret;
 
+#ifndef USE_SLOW_MODE
 	if (p_int32[1] - cur_rd >= 1) {
 		rm = false;
 		chg = false;
 		return 0;
 	}
+#endif
 
 	/* now we should remove the EOR */
 	if (rb->get_lock())

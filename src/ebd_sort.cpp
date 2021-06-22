@@ -921,7 +921,11 @@ int ebd_sort::save_evt(uint32_t* buf, uint32_t* evt, int evt_len_wd, uint64_t ts
 	memcpy(buf + 4, evt, evt_len_wd*4);
 	
 	/* increate the evt count */
+#ifdef USE_SLOW_MODE
 	tot_evt_cnts[crate][slot]++;
+#else
+	tot_evt_cnts[crate][slot] = ts;
+#endif
 
 	/* copyt the event and save to the ring buffer */
 	len = buf[0] * 4;
@@ -993,6 +997,9 @@ err_data:
 
 uint64_t ebd_sort::get_mono_evt_cnt(uint64_t evt_cnt, int n_bit)
 {
+#ifdef USE_SLOW_MODE
+	return 1;
+#endif
 	uint64_t n_range = 1L << n_bit;
 	ring_buf* p_rb = rb_map[crate][slot];
 	uint32_t* p_udata = reinterpret_cast<uint32_t*>(p_rb->get_usr_data());
