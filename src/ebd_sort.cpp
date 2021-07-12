@@ -370,6 +370,7 @@ int ebd_sort::handle_EOR()
 	eor[1] = 1;
 	eor[2] = n_readout++;
 	for (auto it = rb_data.begin(); it != rb_data.end(); it++) {
+		(*it)->wait_buf_free(12);
 		if ((*it)->get_lock())
 			return -E_SYSCALL;
 		(*it)->write1(eor, 12);
@@ -434,6 +435,7 @@ int ebd_sort::handle_scal()
 	int sz = evt_buf[0];
 
 	/* we just make a copy of the event in the rb_scal ring buffer */
+	rb_scal->wait_buf_free(sz);
 	if (rb_scal->get_lock())
 		return -E_SYSCALL;
 	rb_scal->write1(evt_buf, sz);
