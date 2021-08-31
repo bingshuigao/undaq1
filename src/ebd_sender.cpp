@@ -93,6 +93,7 @@ int ebd_sender::stop()
 
 	/* Now we also need to send the client a zero length to indicate the
 	 * stop event. */
+	std::cout<<"ebd sender: sending stop to logger..."<<std::endl;
 	if (do_send(sock_log, &n, 4, 0))
 		return -E_SYSCALL;
 	if (sock_ana != -1) {

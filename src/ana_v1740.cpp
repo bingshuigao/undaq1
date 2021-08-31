@@ -7,7 +7,7 @@ ana_v1740::ana_v1740(int n)
 	n_samp = n;
 	for (i = 0; i < 64; i++) {
 		samp[i].reserve(n);
-		data_ptr[i] = NULL;
+		data_ptr[i] = 0;
 	}
 	mod_id = 5;
 

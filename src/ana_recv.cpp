@@ -49,6 +49,14 @@ int ana_recv::handle_msg(uint32_t* msg_body)
 int ana_recv::start()
 {
 	acq_stat = DAQ_RUN;
+	/* This is tricky here. The analyzer and logger share the same server
+	 * (event builder). However, the server cannot really distinguish
+	 * between the two clients. It assumes that the first connected client
+	 * is logger because the logger receives the 'start' signal ealier.
+	 * However, sometimes the analyzer gets connected earlier than logger,
+	 * which makes the DAQ malfunctioning. To prevent this from happening,
+	 * we wait for 1 second here, which is not a good solution though.*/
+	usleep(1000000);
 	int ret = recv_start();
 
 	RET_IF_NONZERO(ret);

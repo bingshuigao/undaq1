@@ -39,6 +39,7 @@ int log_recv::handle_msg(uint32_t* msg_body)
 	case 1:
 		/* run status transition
 		 * */
+		std::cout<<"logger receiver: switch run..."<<std::endl;
 		return switch_run(msg_body[1]);
 	default:
 		return -E_MSG_TYPE;
