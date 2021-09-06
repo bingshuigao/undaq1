@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/select.h>
+#include <string.h>
 
 ana_ctl::ana_ctl()
 {
@@ -19,6 +20,7 @@ int ana_ctl::handle_msg(uint32_t* msg_body)
 {
          /* The message type of the current thread are defined as following:
           * msg_type == 1 --> run status transition.                        
+	  * msg_type == 2 --> scaler counters from ana_main
 	  * msg_type == MSG_TEXT (100) --> text message (to gui)
 	  * */                          
 
@@ -30,6 +32,12 @@ int ana_ctl::handle_msg(uint32_t* msg_body)
 	case 1:
 		/* run status transition */
 		return switch_run(msg_body[1]);
+	case 2:
+		/* scaler counters */
+		p_int[0] = 6; /* gui message type */
+		memcpy(p_int+1, msg_body+1, 30*4);
+		p_int[31] = 0;
+		return do_send(sock, gui_msg, 128, 0);
 	case MSG_TEXT:
 		p_int[0] = 5; /* gui message type */
 		p_int[1] = msg_body[1];

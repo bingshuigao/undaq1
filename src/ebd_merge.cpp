@@ -40,6 +40,7 @@ int ebd_merge::handle_msg(uint32_t* msg_body)
 	/* The message type of the current thread are defined as following 
 	 * 1 --> run status transition
 	 * 2 --> rb_data is ready
+	 * 6 --> query evt cnt
 	 * */
 	uint32_t msg_type = msg_body[0] & 0xFFFFFF;
 	static int readyness = 0;
@@ -54,11 +55,26 @@ int ebd_merge::handle_msg(uint32_t* msg_body)
 		if (readyness == msg_body[1])
 			rb_data_ready = true;
 		return 0;
+	case 6:
+		get_evt_ts();
+		return send_msg(5, 5, evt_cnt_ts, 3*4);
 	default:
 		return -E_MSG_TYPE;
 	}
 }
 
+void ebd_merge::get_evt_ts()
+{
+	struct timespec ts;
+	uint64_t ts_ms;
+	uint32_t i, j, n;
+
+	clock_gettime(CLOCK_MONOTONIC_COARSE, &ts);
+	ts_ms = ts.tv_sec * 1000L + ts.tv_nsec/1000000;
+	evt_cnt_ts[0] = ts_ms>>32;
+	evt_cnt_ts[1] = ts_ms & 0xffffffff;
+
+}
 
 int ebd_merge::start()
 {
@@ -72,6 +88,8 @@ int ebd_merge::start()
 		p_int32[2] = 0; /* last event countr */
 		p_int32[3] = 0; /* number of event counter overflows */
 	}
+
+	evt_cnt_ts[2] = 0;
 
 	/* proporgate the message to the next thread */
 	return send_msg(2, 1, &acq_stat, 4);
@@ -272,6 +290,7 @@ start:
 		return -E_SYSCALL;
 	rb_evt->write1(merged_buf, tot_len_wd*4);
 	rb_evt->rel_lock();
+	evt_cnt_ts[2]++;
 
 	return 0;
 }

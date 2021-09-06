@@ -86,9 +86,19 @@ private:
 	 * */
 	int cal_cur_rd(bool& chg);
 
+	/* get time stamp for the event count (wall time)*/
+	void get_evt_ts();
+
 private:
 	/* for the meaning of this variables, refer to "ebd_thread.h" */
 	uint32_t cur_rd;
+
+	/* evt count and time stamp:
+	 * evt_cnt_ts[0] --> high word of ts 
+	 * evt_cnt_ts[1] --> low word of ts
+	 * evt_cnt_ts[2] --> evt count
+	 * */
+	uint32_t evt_cnt_ts[3];
 
 	/* this is the time interval (clock ticks) below which events should be
 	 * merged */

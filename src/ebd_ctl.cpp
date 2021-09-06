@@ -23,6 +23,7 @@ int ebd_ctl::handle_msg(uint32_t* msg_body)
           * msg_type == 2 --> n_mod
 	  * msg_type == 3 --> broken pipe
 	  * msg_type == 4 --> evt counts (from ebd sort)
+	  * msg_type == 5 --> evt counts (from ebd merger)
 	  * msg_type == MSG_TEXT (100) --> text message (to gui)
 	  * */                          
 
@@ -60,6 +61,11 @@ int ebd_ctl::handle_msg(uint32_t* msg_body)
 		p_int[0] = 7; /* gui message type */
 		memcpy(msg_send+4, msg_body+1, 153*4);
 		return do_send_msg_all(sock, msg_send, 154*4, 0);
+	case 5:
+		/* evt cnts */
+		p_int[0] = 8; /* gui message type */
+		memcpy(msg_send+4, msg_body+1, 3*4);
+		return do_send_msg_all(sock, msg_send, 4*4, 0);
 	default:
 		return -E_MSG_TYPE;
 	}
@@ -216,8 +222,11 @@ int ebd_ctl::handle_GUI_msg(unsigned char* msg)
 		RET_IF_NONZERO(ret);
 		break;
 	case 5:
-		/* query evt couts of each module */
+		/* query evt couts of each module (thread 2) and merged evt cnt
+		 * (thread 3) */
 		ret = send_msg(2, 6, NULL, 0);
+		RET_IF_NONZERO(ret);
+		ret = send_msg(3, 6, NULL, 0);
 		RET_IF_NONZERO(ret);
 		break;
 	default:

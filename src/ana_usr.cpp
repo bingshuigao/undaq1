@@ -1,4 +1,5 @@
 #include "hist_man.h"
+#include "scal_cnter.h"
 #include "imp_daq.h"
 #include "err_code.h"
 #include "ana_evt_hd.h"
@@ -13,6 +14,7 @@
 #include "ana_v1751.h"
 #include <TH1D.h>
 #include <iostream>
+
 
 
 ana_evt_hd evt_hd;
@@ -106,7 +108,7 @@ int ana_usr_trig(void* p_evt, hist_man& hists, bool is_bor)
 }
 
 
-int ana_usr_scal(void* p_evt, hist_man& hists, bool is_bor)
+int ana_usr_scal(void* p_evt, hist_man& hists, bool is_bor, scal_cnter& cnter)
 {
 	uint32_t* p_dw = static_cast<uint32_t*>(p_evt);
 	uint32_t len_w = p_dw[0]/4;
@@ -121,6 +123,7 @@ int ana_usr_scal(void* p_evt, hist_man& hists, bool is_bor)
 	if (len_w == 41) {
 		for (i = 0; i < 32; i++) {
 			std::cout<<"ch: "<<i<<" counts: "<<p_dw[9+i]<<std::endl;
+			cnter.set_cnt(0, p_dw[9+i]);
 		}
 	}
 

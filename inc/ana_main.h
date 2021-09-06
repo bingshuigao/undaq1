@@ -11,6 +11,7 @@
 
 #include "ana_thread.h"
 #include "hist_man.h"
+#include "scal_cnter.h"
 #include <string>
 
 /* root includes */
@@ -38,7 +39,7 @@
 /* declear the user code function, it should be implemented somewhere in a user
  * code source file. */
 int ana_usr_trig(void* p_evt, hist_man& hists, bool is_bor);
-int ana_usr_scal(void* p_evt, hist_man& hists, bool is_bor);
+int ana_usr_scal(void* p_evt, hist_man& hists, bool is_bor, scal_cnter& cnter);
 
 class ana_main : public ana_thread
 {
@@ -67,10 +68,14 @@ private:
 	{
 		n_evt[id-1]++;
 		bool is_bor = n_evt[id-1] == 1 ? true : false;
-		if (id == 1)
+		if (id == 1) {
 			return ana_usr_trig(p_evt, hists, is_bor);
-		else if (id == 2)
-			return ana_usr_scal(p_evt, hists, is_bor);
+		}
+		else if (id == 2) {
+			int ret = ana_usr_scal(p_evt, hists, is_bor, cnter);
+			RET_IF_NONZERO(ret);
+			return send_msg(4, 2, cnter.get_cnter_ptr(), 4*30);
+		}
 		return -E_GENERIC;
 	}
 
@@ -94,6 +99,9 @@ private:
 
 	/* the total number of events since start of the run */
 	uint64_t n_evt[2];
+
+	/* scaler counters */
+	scal_cnter cnter;
 };
 
 

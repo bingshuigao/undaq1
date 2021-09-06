@@ -380,6 +380,9 @@ class control:
         elif msg_type == 7:
             # the evt cnts
             self.stat_tab.update_evt_cnt(msg[4:])
+        elif msg_type == 8:
+            # the evt cnts
+            self.stat_tab.update_evt_cnt1(msg[4:])
 
 
     def _handle_ana_msg(self, msg):
@@ -405,6 +408,12 @@ class control:
         elif msg_type == 5:
             # text messages from clients 
             self._handle_text_msg(msg, 'analyzer')
+        elif msg_type == 6:
+            # scaler counters
+            cnts = []
+            for i in range(30):
+                cnts.append(msg[4+i*4:8+i*4])
+            self.stat_tab.update_scal_cnter(cnts)
 
     def _handle_log_msg(self, msg):
         if not msg:
