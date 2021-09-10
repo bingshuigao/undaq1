@@ -34,7 +34,8 @@ class stat_tab:
                 width=100, anchor='w')
         self.label_data_sz.place(x=0, y=25)
         tmp_txt = '-' * 100 
-        tmp_txt += '\n%15s%15s%25s%20s'%('crate', 'slot', 'total trig', 'rate(/s)')
+        tmp_txt += '\n%5s%15s%15s%25s%20s'%('id', 'crate', 'slot', 
+                'total trig', 'rate(/s)')
         tk.Label(self.frm, text=tmp_txt, height=2, width=300,
                 anchor='nw').place(x=0, y=50)
         self.trig_cnt_label = tk.Label(self.frm, text='',height=100, width=300,
@@ -42,6 +43,15 @@ class stat_tab:
         self.trig_cnt_label.place(x=0, y=90)
         self.rate_canv = tk.Canvas(self.frm, height=250, width=380, bg='white')
         self.rate_canv.place(x=410, y=10)
+        tk.Label(self.rate_canv, text='rate ID:', height=1,
+                width=7).place(x=200, y=3)
+        self.sel_rate_entry = tk.Entry(self.rate_canv)
+        self.sel_rate_entry.place(x=270,y=3,width=50,height=20)
+        self.sel_rate_entry.insert(tk.END, 0)
+        self._reset_rate_curve()
+        self.sel_rate_butt = tk.Button(self.rate_canv, text='set',
+                command=self._reset_rate_curve)
+        self.sel_rate_butt.place(x=325,y=3,width=30,height=20)
         self.scal_canv = tk.Canvas(self.frm, height=250, width=380, bg='white')
         self.scal_canv.place(x=410, y=275)
         self.comb_cnters = ttk.Combobox(self.scal_canv, values=['cnter%02d' % i
@@ -57,6 +67,17 @@ class stat_tab:
         self.scal_font_dec_butt.place(x=160, y=5, height=20)
         self.scal_font_sz = 30
         self.select_cnt = 0
+
+
+    def _reset_rate_curve(self):
+        self.rate_curv = []
+        try:
+            self.rate_id = int(self.sel_rate_entry.get())
+        except:
+            self.rate_id = 0
+        self.update_timer = 0
+        self.rate_min = 1000000
+        self.rate_max = 0
 
     def _scal_font_dec(self):
         self.scal_font_sz /= 1.1
@@ -103,10 +124,12 @@ class stat_tab:
             cnt = int.from_bytes(msg[53*4+i*4:54*4+i*4], 'little')
             delta_cnt = cnt - self.cur_cnt[i]
             rate = delta_cnt*1000./delta_t
-            rate_str = '%20d%20d%20d%20.3f' % (crate, slot, cnt, rate)
+            rate_str = '%02d%14d%20d%20d%20.3f' % (i+1, crate, slot, cnt, rate)
             print(rate_str)
             self.label_str += rate_str + '\n'
             self.cur_cnt[i] = cnt
+            if self.rate_id == (i+1):
+                self._update_rate_curve(rate)
 #        self.trig_cnt_label.config(text=label_str)
         self.cur_t = ts
     
@@ -118,11 +141,65 @@ class stat_tab:
         delta_t = ts - self.cur_t1
         delta_cnt = cnt - self.cur_cnt1
         rate = delta_cnt*1000./delta_t
-        rate_str = '%18s%18s%20d%20.3f' % ('merged rate', '', cnt, rate)
+        rate_str = '%02d%14s%15s%20d%20.3f' % (0, 'merged rate', '', cnt, rate)
         self.label_str += '-'*100 + '\n' + rate_str + '\n'
         self.cur_cnt1 = cnt
         self.trig_cnt_label.config(text=self.label_str)
         self.cur_t1 = ts
+        if self.rate_id == 0:
+            self._update_rate_curve(rate)
+
+
+    def _update_rate_curve(self, rate):
+        if rate < 0:
+            return
+        self.rate_curv.append(rate)
+        self.update_timer += 1
+        if self.update_timer % 3:
+            return
+        if len(self.rate_curv) > 1000:
+            self.rate_curv = self.rate_curv[-1000:]
+        self.rate_max = max(self.rate_curv)
+        self.rate_min = min(self.rate_curv)
+        if self.rate_max == self.rate_min:
+            self.rate_max += 1
+        self._draw_curve()
+
+
+    def _draw_curve(self):
+        #           (10,30) -------------- (370,30)
+        #              |                      |
+        #              |                      |
+        #              |                      |
+        #           (10,240) ------------- (370,240)   
+        self.rate_canv.delete('all')
+        self.rate_canv.create_line(10, 30, 370, 30, width=2)
+        self.rate_canv.create_line(10, 30, 10, 240, width=2)
+        self.rate_canv.create_line(10, 240, 370, 240, width=2)
+        self.rate_canv.create_line(370, 30, 370, 240, width=2)
+        self.rate_canv.create_line(10, 30+52*1, 370, 30+52*1, dash=(4,2))
+        self.rate_canv.create_line(10, 30+52*2, 370, 30+52*2, dash=(4,2))
+        self.rate_canv.create_line(10, 30+52*3, 370, 30+52*3, dash=(4,2))
+        self.rate_canv.create_line(10+90*1, 30, 10+90*1, 240, dash=(4,2))
+        self.rate_canv.create_line(10+90*2, 30, 10+90*2, 240, dash=(4,2))
+        self.rate_canv.create_line(10+90*3, 30, 10+90*3, 240, dash=(4,2))
+        if len(self.rate_curv) < 2:
+            return
+        for i in range(len(self.rate_curv)-1):
+            x0,y0 = self._convert_coor(i, self.rate_curv[i])
+            x1,y1 = self._convert_coor(i+1, self.rate_curv[i+1])
+            self.rate_canv.create_line(x0, y0, x1, y1, fill="red")
+        for i in range(5):
+            self.rate_canv.create_text((20, 10+52*i), anchor="nw",
+                    text = '%.1f' % (self.rate_max -
+                        (self.rate_max-self.rate_min)*(30+52*i-35)/200.))
+
+    def _convert_coor(self, x, y):
+        yy = 35 + (self.rate_max - y)/(self.rate_max - self.rate_min) * 200
+        xx = 15 + x/1000.*350
+        return (xx, yy)
+        
+
 
 
 
