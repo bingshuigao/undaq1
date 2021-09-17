@@ -797,7 +797,9 @@ int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 		evt_cnt = evt[idx] & 0x3FFFFFFF;
 		ts = get_mono_evt_cnt(evt_cnt, 30);
 		/* the evt cnt starts from 1 instead of zero */
+#ifndef USE_SLOW_MODE
 		ts--;
+#endif
 		break;
 	}
 
@@ -926,7 +928,7 @@ int ebd_sort::save_evt(uint32_t* buf, uint32_t* evt, int evt_len_wd, uint64_t ts
 #ifdef USE_SLOW_MODE
 	tot_evt_cnts[crate][slot]++;
 #else
-	tot_evt_cnts[crate][slot] = ts;
+	tot_evt_cnts[crate][slot] = ts+1;
 #endif
 
 	/* copyt the event and save to the ring buffer */

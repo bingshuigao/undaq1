@@ -13,6 +13,8 @@
 #include "ana_frag_hd.h"
 #include "ana_madc32.h"
 #include "ana_v775.h"
+#include "ana_v792.h"
+#include "ana_v830.h"
 #include "ana_v785.h"
 #include "ana_v1190.h"
 #include "ana_v1740.h"
@@ -112,6 +114,7 @@ void parse_and_fill(uint32_t* p_raw, int daq, int crate, int slot)
 			continue;
 		(*it)->br_frag_body->parse_raw(p_raw);
 		(*it)->br_frag_hd.is_valid = 1;
+		(*it)->br_frag_hd.ts = (*it)->br_frag_body->get_cnt();
 	}
 }
 
@@ -124,6 +127,8 @@ void clear_buf()
 	ana_v1190* tmp_v1190;
 	ana_madc32* tmp_madc;
 	ana_v775* tmp_v775;
+	ana_v792* tmp_v792;
+	ana_v830* tmp_v830;
 	ana_v785* tmp_v785;
 	
 	for (auto it = lst_of_br.begin(); it != lst_of_br.end(); it++) {
@@ -155,6 +160,16 @@ void clear_buf()
 			/* v775 */
 			tmp_v775 = static_cast<ana_v775*>((*it)->br_frag_body);
 			memset(tmp_v775->get_tdc_val(), 0, 32*4);
+			break;
+		case 13:
+			/* v792 */
+			tmp_v792 = static_cast<ana_v792*>((*it)->br_frag_body);
+			memset(tmp_v792->get_qdc_val(), 0, 32*4);
+			break;
+		case 3:
+			/* v830 */
+			tmp_v830 = static_cast<ana_v830*>((*it)->br_frag_body);
+			memset(tmp_v830->get_scaler_val(), 0, 32*4);
 			break;
 		case 8:
 			/* v785 */
@@ -239,6 +254,14 @@ static int get_lst_branches()
 			tmp->br_frag_body = new ana_v775();
 			lst_of_br.push_back(tmp);
 		}
+		else if (name.find("V792") != std::string::npos) {
+			tmp->br_frag_body = new ana_v792();
+			lst_of_br.push_back(tmp);
+		}
+		else if (name.find("V830") != std::string::npos) {
+			tmp->br_frag_body = new ana_v830();
+			lst_of_br.push_back(tmp);
+		}
 		else if (name.find("V785") != std::string::npos) {
 			tmp->br_frag_body = new ana_v785();
 			lst_of_br.push_back(tmp);
@@ -292,6 +315,8 @@ TTree* set_br_addr(char* run_title)
 	ana_v1190* tmp_v1190;
 	ana_madc32*  tmp_madc;
 	ana_v775* tmp_v775;
+	ana_v792* tmp_v792;
+	ana_v830* tmp_v830;
 	ana_v785* tmp_v785;
 	
 	/* set branch addresses */
@@ -338,6 +363,20 @@ TTree* set_br_addr(char* run_title)
 			sprintf(buf1, "frag_v775_crate%02d_slot%02d",
 					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
 			tree->Branch(buf1, tmp_v775->get_tdc_val(), "tdc[32]/i");
+			break;
+		case 13:
+			/* v792 */ 
+			tmp_v792 = static_cast<ana_v792*>((*it)->br_frag_body);
+			sprintf(buf1, "frag_v792_crate%02d_slot%02d",
+					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
+			tree->Branch(buf1, tmp_v792->get_qdc_val(), "qdc[32]/i");
+			break;
+		case 3:
+			/* v830 */ 
+			tmp_v830 = static_cast<ana_v830*>((*it)->br_frag_body);
+			sprintf(buf1, "frag_v830_crate%02d_slot%02d",
+					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
+			tree->Branch(buf1, tmp_v830->get_scaler_val(), "scl[32]/i");
 			break;
 		case 8:
 			/* v785 */ 
