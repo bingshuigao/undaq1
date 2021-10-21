@@ -287,7 +287,7 @@ static int get_lst_branches()
 				std::cout<<"do not know v1751 number of points, pls define it in the code"<<std::endl;
 				return -E_V1751_N_PT;
 			}
-			tmp->br_frag_body = new ana_v1751(1792<<(10-n_buf));
+			tmp->br_frag_body = new ana_v1751(14337<<(10-n_buf));
 			lst_of_br.push_back(tmp);
 		}
 		else if (name.find("V2718") != std::string::npos) {

@@ -1,5 +1,6 @@
 #include "ana_v1751.h"
 #include "err_code.h"
+#include <iostream>
 
 ana_v1751::ana_v1751(int n)
 {
@@ -57,8 +58,10 @@ int ana_v1751::parse_raw(uint32_t* raw_data)
 	n_samp1 = (evt_sz - 4 ) / (n_ch) * 3;
 //	mod = (((n_samp1*100)/1024/175)%2)+1;
 //	n_samp1 -= mod;
-	if (n_samp1 != n_samp)
+	if (n_samp1 != n_samp) {
+		std::cout<<"n_samp: "<<n_samp1<<std::endl;
 		return -E_DATA_V1751;
+	}
 
 	raw_data += 4;
 	for (i = 0; i < 8; i++) {
