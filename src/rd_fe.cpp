@@ -95,6 +95,12 @@ int rd_fe::stop()
 		RET_IF_NONZERO(ret);
 	}
 
+#ifdef DAQ_XIA
+	/* in case of xia daq, we need to perform the on_stop() action before
+	 * reading remaining data in the event buffer */
+	goto stop_pixie_run1;
+read_pixie_fifo:
+#endif
 	/* then read the remaining data in the readout buffer */
 	usleep(50000);
 	ret = try_rd_fe(true);
@@ -113,10 +119,18 @@ int rd_fe::stop()
 	}
 	
 	acq_stat = 0;
+#ifdef DAQ_XIA
+	goto stop_pixie_run2;
+stop_pixie_run1:
+#endif
 	for (auto it = mods.begin(); it != mods.end(); it++) {
 		ret = (*it)->on_stop();
 		RET_IF_NONZERO(ret);
 	}
+#ifdef DAQ_XIA
+	goto read_pixie_fifo;
+stop_pixie_run2:
+#endif
 
 	/* proporgate the stop message to next thread (if any)*/
 	if (thread_id == 1) {

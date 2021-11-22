@@ -32,6 +32,8 @@
 #include "v775n.h"
 #include "v785n.h"
 #include "fake_module.h"
+#include "pixie16.h"
+#include "pixie16_ctl.h"
 #endif
 
 struct mod_rb_par
@@ -182,6 +184,10 @@ public:
 	/* get the max length (32-byte words) of a single event */
 	int get_ebd_max_evt_len();
 
+	/* get the pixie clock source (use externel or internel clk source for
+	 * event building?). returns PIXIE_CLK_INT or PIXIE_CLK_EXT */
+	int get_ebd_pixie_clk_src();
+
 
 #endif
 
@@ -321,15 +327,25 @@ private:
 	 * Return 0 if succeed, otherwise return error code. */
 	int init_v2718();
 
+	/* find and init the pixie16_ctl controller.
+	 * Return 0 if succeed, otherwise return error code. */
+	int init_pixie16_ctl();
+
 	/* find and init all the test_ctl modules.
 	 * Return 0 if succeed, otherwise return error code. */
 	int init_test_ctl();
-	
+
+
 	/* Init the vme module according to its configurations. The offset is
 	 * the offset between board numbers and crate numbers. Return the
 	 * pointer to the vme object. Return NULL in case of error. */
 	v2718* do_init_v2718(std::vector<struct conf_vme_mod> &the_conf, int offset);
 
+	/* Init the pixie16_ctl controller according to its configurations
+	 * (the_config). The mod_n is the total number of pixie16 modules
+	 * included in the system Return NULL in case of error. */
+	pixie16_ctl* do_init_pixie16_ctl(std::vector<struct conf_vme_mod>
+			&the_conf, int mod_n);
 
 	/* Init the vme module according to its configurations. The offset is
 	 * the offset between board numbers and crate numbers. Return the
@@ -397,6 +413,7 @@ private:
 #ifdef MAKE_FRONTEND
 	std::vector<module*> p_module;
 	std::vector<v2718*> p_v2718;
+	std::vector<pixie16_ctl*> p_pixie16_ctl;
 	std::vector<test_ctl*> p_test_ctl;
 #endif
 	std::vector<std::vector<struct conf_vme_mod> > vme_conf;

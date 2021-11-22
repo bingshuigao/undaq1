@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <stdint.h>
 
+#define DAQ_XIA
 #define EBD_TYPE_TS 1
 #define EBD_TYPE_EVT_CNT 2
 
@@ -48,6 +49,8 @@
 #define DEF_SOCK_BUF_FE_SEND (1024*1024)
 /* frontend blt buffer size */
 #define DEF_BLT_BUF_FE (1024*1024*10)
+/* max data size of a single pixie16 evt (number of 32-bit words) */
+#define DEF_PIXIE16_EVT_MAX (10000)
 /********** logger buffers *************/
 /* trigger data sharing */
 #define DEF_RB_LOG_TRIG (1024*1024*10)
@@ -60,6 +63,7 @@
 /* analyzer buffer */
 #define DEF_RB_ANA (1024*1024*10)
 #define DEF_MAX_EVT_LEN (1024*1024*2);
+
 
 
 /* default socket settings */
@@ -92,7 +96,11 @@
 #define DEF_MADC32_CLK 16000000
 #define DEF_V1190_CLK 40000000
 #define DEF_V1740_CLK 125000000
+#define DEF_PIXIE_CLK 100000000
 
+/* pixie clock source */
+#define PIXIE_CLK_INT 0
+#define PIXIE_CLK_EXT 1
 
 /* run status */
 #define DAQ_STOP 0

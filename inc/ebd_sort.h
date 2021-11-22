@@ -97,6 +97,8 @@ private:
 			return handle_single_evt_mqdc32(evt, evt_len, max_len);
 		case 13: 
 			return handle_single_evt_v792(evt, evt_len, max_len);
+		case 14: 
+			return handle_single_evt_pixie16(evt, evt_len, max_len);
 		default:
 			return -E_UNKOWN_MOD;
 		}
@@ -113,6 +115,7 @@ private:
 	int handle_single_evt_v785n(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v792(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_fake_module(uint32_t* evt, int& evt_len, int max_len);
+	int handle_single_evt_pixie16(uint32_t* evt, int& evt_len, int max_len);
 
 
 	/* initialize the rb_map. 
@@ -269,6 +272,11 @@ private:
 	/* single event buffer and its length */
 	uint32_t* single_evt_buf;
 	int max_evt_len;
+
+#ifdef DAQ_XIA
+	/* pixie clock source (internal or external)*/
+	int pixie_clk_src;
+#endif
 
 };
 

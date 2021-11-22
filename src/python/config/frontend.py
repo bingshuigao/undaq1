@@ -34,6 +34,8 @@ from v792 import v792
 from v775n import v775n
 from v785n import v785n
 from fake_module import fake_module
+from pixie16 import pixie16
+from pixie16_ctl import pixie16_ctl
 
 
 class frontend:
@@ -42,7 +44,7 @@ class frontend:
         self.n_crate = 1 
         # list of supported modules
         self.sup_mods_lst = ['V2718', 'TEST_CTL', 'MADC32', 'MQDC32', 'V1190A', 'V830', 'V977',
-                'V1740', 'V1751', 'V775', 'V775N', 'V785', 'V785N', 'V792', 'FAKE_MODULE']
+                'V1740', 'V1751', 'V775', 'V775N', 'V785', 'V785N', 'V792', 'FAKE_MODULE', 'PIXIE16_MOD', 'PIXIE16_CTL']
         # list of selected modules (note: the element is an object of the
         # vme_mod class, not a string as in the sup_mods_list)
         self.sel_mods_lst = []
@@ -166,6 +168,10 @@ class frontend:
             tmp = v785n(self._get_uniq_name(name), mod)
         elif name == 'FAKE_MODULE':
             tmp = fake_module(self._get_uniq_name(name), mod)
+        elif name == 'PIXIE16_CTL':
+            tmp = pixie16_ctl(self._get_uniq_name(name), mod)
+        elif name == 'PIXIE16_MOD':
+            tmp = pixie16(self._get_uniq_name(name), mod)
         else:
             return None
         tmp.set_max_crate(self.n_crate)

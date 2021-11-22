@@ -3,6 +3,7 @@
  * By B.Gao, Jan. 12, 2020 */
 
 #include <stdint.h>
+#include "imp_daq.h"
 
 #ifndef ANA_EVT_HD_HHH
 #define ANA_EVT_HD_HHH

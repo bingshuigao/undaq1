@@ -41,7 +41,8 @@
 #define E_INIT_MODULE          32 /* error in the module initialization */
 #define E_DATA_V1190           33 /* corrupted v1190 data */
 #define E_V1190_CLOCK          34 /* The v1190 has wrong clock freqency (not 40MHz)*/
-#define E_SYNC_CLOCK           35 /* clock related errors (this clock is used to build events) */
+#define E_SYNC_CLOCK           35 /* clock related errors (this clock is used
+				     to build events) */
 #define E_MERGE_BUF_SZ         36 /* the merged buffer size too small */
 #define E_OPEN_FILE            37 /* cannot open file*/
 #define E_CLOSE_FILE           38 /* cannot close file*/
@@ -69,6 +70,25 @@
 #define E_DATA_MQDC32          60 /* corrupted mqdc32 data */
 #define E_INIT_V792            61 
 #define E_DATA_V792            62 /* corrupted v792 data */
+#define E_DONT_CALL            63 /* function should not be called */
+#define E_PIXIE_IO             64 /* pixie I/O error */
+#define E_PIXIE_START_RUN      65 /* error to start pixie new run */
+#define E_PIXIE_STOP_RUN       66 /* error to start pixie new run */
+#define E_PIXIE_CHECK_FIFO_STAT 67 /* error to check pixie fifo status */
+#define E_PIXIE_EXT_CLK        68 /* error to get externel ts from pixie data */
+#define E_XIA_SLOW_MODE        69 /* DAQ_XIA and USE_SLOW_MODE are both defined
+				     (they are not compatible with each other
+				     */
+#define E_PIXIE_INIT           70 /* error init pixie system */
+#define E_ComFPGAConfigFile    71 /* cannot open or invalid ComFPGAConfigFile */
+#define E_SPFPGAConfigFile     72 /* cannot open or invalid SPFPGAConfigFile */
+#define E_DSPCodeFile          73 /* cannot open or invalid DSPCodeFile      */
+#define E_DSPParFile           74 /* cannot open or invalid DSPParFile       */
+#define E_DSPVarFile           75 /* cannot open or invalid DSPVarFile       */
+#define E_PIXIE_GENERAL        76 /* general pixie error (check Pixie16msg.txt) */
+#define E_PIXIE_MOD_NUM        77 /* invalid pixie module number */
+#define E_BLT_BUFF_SZ          78 /* blt buffer size too small */
+#define E_INIT_PIXIE16_CTL     79 /* error in the pixie16 controller init */
 
 
 

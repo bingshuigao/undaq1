@@ -65,6 +65,9 @@ public:
 	 * @return 0 if succeed, nonzero error codes if error  */
 	int read_reg(uint32_t addr, int dw, void* out)
 	{
+#ifdef DAQ_XIA
+		return -E_DONT_CALL;
+#endif
 		ctl->set_am(am_reg);
 		ctl->set_dw(dw);
 		return ctl->read(addr + base_addr, out);
@@ -81,6 +84,9 @@ public:
 	 * uint16_t types.*/
 	virtual int write_reg(uint32_t addr, int dw, void* val)
 	{
+#ifdef DAQ_XIA
+		return -E_DONT_CALL;
+#endif
 		ctl->set_am(am_reg);
 		ctl->set_dw(dw);
 		return ctl->write(base_addr + addr, val);
@@ -98,12 +104,14 @@ public:
 	virtual int get_geo() = 0;
 
 	/* Read the event buffer using (c)(m)blt mode.
-	 * @param am vme address modifier
+	 * @param am vme address modifier (meaningless for pixie)
 	 * @param dst Pointer to the output buffer
 	 * @param sz_in requested number of bytes to read
 	 * @param sz_out actual number of bytes read out.
-	 * @param blt_addr blt address if use c(m)blt read out
-	 * @param chain if true, use c(m)blt, otherwise use (m)blt
+	 * @param blt_addr blt address if use c(m)blt read out (pixie16 module
+	 * number in case of pixie)
+	 * @param chain if true, use c(m)blt, otherwise use (m)blt (meaningless
+	 * for pixie)
 	 * @param return 0 if succeed, nonzero error codes if error.*/
 	int read_evt_blt(int am, void* dst, int sz_in, int* sz_out, 
 			uint32_t blt_addr, int chain)
@@ -113,6 +121,9 @@ public:
 		ctl->set_dw(32);
 		if (chain)
 			addr = blt_addr;
+#ifdef DAQ_XIA
+		addr = blt_addr;
+#endif
 		return ctl->blt_read(addr, dst, sz_in, sz_out);
 	}
 	int read_evt_mblt(int am, void* dst, int sz_in, int* sz_out, 
@@ -123,6 +134,9 @@ public:
 		ctl->set_dw(64);
 		if (chain)
 			addr = blt_addr;
+#ifdef DAQ_XIA
+		addr = blt_addr;
+#endif
 		return ctl->mblt_read(addr, dst, sz_in, sz_out);
 	}
 
@@ -169,6 +183,7 @@ public:
 	virtual int on_stop() {return 0;}
 	virtual int on_readout() {return 0;}
 
+
 protected:
 	/* base address of the module */
 	uint32_t base_addr;
@@ -203,6 +218,7 @@ protected:
 	 * v1751  --> mod_id = 11;
 	 * mqdc32 --> mod_id = 12;
 	 * v792   --> mod_id = 13;
+	 * pixie16   --> mod_id = 14;
 	 * */
 	uint32_t mod_id;
 	

@@ -123,10 +123,11 @@ private:
 	std::string get_ctl_name() 
 	{return get_1st_mod()->get_ctl()->get_name();}
 
-	/* similar as the update_read_list, but this function dues with the
-	 * case when v2718 is the vme controller, and this function is called
-	 * by the update_read_list() */
+	/* similar as the update_read_list, but these functions due with
+	 * specific cases, and these function is called by the
+	 * update_read_list() */
 	int update_read_list_v2718();
+	int update_read_list_pixie16();
 
 	/* Get the length of a cmblt chain starting from slot number n
 	 * @param n Slot number where the chain starts 

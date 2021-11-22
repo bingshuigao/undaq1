@@ -5,6 +5,8 @@
 #define VME_CTL_HHH
 
 #include "err_code.h"
+#include "imp_daq.h"
+#include <assert.h>
 #include <string>
 
 /* vme address modifers */
@@ -55,7 +57,19 @@ public:
 	int get_dw() {return dw;}
 
 	void set_crate(int n) {crate = n;}
-	int get_crate() {return crate;}
+	int get_crate() 
+	{
+#ifdef DAQ_XIA
+		/* the information of crate number of XIA controller should not
+		 * be used (remember that each pixie16 module is considered as
+		 * a crate and different pixie16 modules are asigned to
+		 * different crate numbers. Therefore, the crate number of
+		 * controller becomes inconsistent with those of pixie16
+		 * modules) */
+		assert(0);
+#endif
+		return crate;
+	}
 
 	/* Get the name of the controller */
 	std::string get_name() {return name;}

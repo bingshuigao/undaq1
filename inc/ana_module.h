@@ -6,6 +6,7 @@
 #define ANA_MODULE_HHH
 
 #include <stdint.h>
+#include "imp_daq.h"
 
 class ana_module
 {

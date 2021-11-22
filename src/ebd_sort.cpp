@@ -67,10 +67,18 @@ int ebd_sort::ebd_sort_init(my_thread* This, initzer* the_initzer)
 	ptr->max_evt_len = the_initzer->get_ebd_max_evt_len();
 	ptr->single_evt_buf = new uint32_t[ptr->max_evt_len+10];
 	ptr->ebd_type = the_initzer->get_ebd_merge_type();
+#ifdef DAQ_XIA
+	ptr->pixie_clk_src = the_initzer->get_ebd_pixie_clk_src();
+#endif
 
 	/* debug ...*/
 //	std::cout<<"ebd type: "<<ptr->ebd_type<<std::endl;
 
+#ifdef DAQ_XIA
+#ifdef USE_SLOW_MODE
+	return -E_XIA_SLOW_MODE;
+#endif
+#endif
 	return 0;
 }
 
@@ -713,6 +721,72 @@ err_data:
 }
 
 
+int ebd_sort::handle_single_evt_pixie16(uint32_t* evt, int& evt_len, int max_len)
+{
+	uint64_t ts_hi, ts_mono, ts, clk_freq, clk_off, evt_cnt;
+	int idx, evt_len_w, hd_len;
+	
+	/* get event length */
+	evt_len_w = (evt[0]>>17) & 0x3fff;
+	evt_len = evt_len_w * 4;
+	if (evt_len_w > max_len)
+		goto err_data;
+	if (evt_len_w > max_evt_len)
+		return -E_EBD_EVT_BUF_SZ;
+
+	/* get slot number if necessary (note that the slot number in the data
+	 * structure is in fact the channel number of the pixie16 module)  */
+	slot = evt[0] & 0xf;
+
+	/* get time stamp */
+	if (pixie_clk_src == PIXIE_CLK_INT) {
+		/* according to the pixie16 user manual, the ts is always
+		 * present and fixed in the 1th and 2th word (If I'm wrong and
+		 * this is not the case, we should constrain the register
+		 * settings of the pixie16 module to make it always true)*/
+		ts_hi = evt[2] & 0xffff;
+		ts = evt[1] + (ts_hi<<32);
+	}
+	else {
+		/* use externel clock source (the user should be responsible to
+		 * make sure that the externel clock ts exsists in the data
+		 * structure)  */
+		if (evt[hd_len-1]>>16) {
+			/* the last word is probably not the externel ts,
+			 * something wrong*/
+			return -E_PIXIE_EXT_CLK;
+		}
+		hd_len = (evt[0]>>12) & 0x1f;
+		ts_hi = evt[hd_len-1] & 0xffff;
+		ts = evt[hd_len-2] + (ts_hi<<32);
+	}
+	
+	if (ebd_type == EBD_TYPE_TS) {
+		/* calculate the monotonic time stamp */
+		clk_freq = clk_map[CLK_MAP_IDX(crate, slot)];
+		clk_off = clk_off_map[CLK_OFF_MAP_IDX(crate, slot)];
+		ts = get_mono_ts(ts, 48, clk_freq, clk_off);
+		if (ts == 0)
+			return -E_SYNC_CLOCK;
+		ts = static_cast<uint64_t>(ts * (1. * hz / clk_freq));
+	}
+	else {
+		/* the pixie16 modules can only build evt by ts (currently)*/
+		return -E_EBD_TYPE;
+	}
+
+	/* save the event into the ring buffer */
+	return save_evt(single_evt_buf, evt, evt_len_w, ts);
+
+err_data:
+	/* see comments in the handle_single_evt_madc32 */
+	evt_len = max_len*4;
+	send_text_mes("corrupted pixie16 data", MSG_LEV_WARN);
+	return 0;
+//	return -E_DATA_V1740;
+}
+
+
 
 int ebd_sort::handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len)
 {
@@ -925,10 +999,14 @@ int ebd_sort::save_evt(uint32_t* buf, uint32_t* evt, int evt_len_wd, uint64_t ts
 	memcpy(buf + 4, evt, evt_len_wd*4);
 	
 	/* increate the evt count */
+#ifdef DAQ_XIA
+	tot_evt_cnts[crate][slot]++;
+#else
 #ifdef USE_SLOW_MODE
 	tot_evt_cnts[crate][slot]++;
 #else
 	tot_evt_cnts[crate][slot] = ts+1;
+#endif
 #endif
 
 	/* copyt the event and save to the ring buffer */

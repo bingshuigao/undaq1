@@ -312,6 +312,9 @@ static int create_mod(std::string& name, module*& mod)
 	else if (name.find("V1740") != std::string::npos) {
 		mod = new v1740;
 	}
+	else if (name.find("PIXIE16_MOD") != std::string::npos) {
+		mod = new pixie16;
+	}
 	else if (name.find("V1751") != std::string::npos) {
 		mod = new v1751;
 	}
@@ -339,7 +342,8 @@ static int create_mod(std::string& name, module*& mod)
 	}
 	else {
 		if ((name.find("V2718") == std::string::npos) &&
-		    (name.find("TEST_CTL") == std::string::npos)) {
+		    (name.find("TEST_CTL") == std::string::npos) &&
+		    (name.find("PIXIE16_CTL") == std::string::npos)) {
 			/* unknown module found */
 //			std::cout<<"errorxxx"<<std::endl<<name<<std::endl;;
 			return -E_UNKOWN_MOD;
@@ -688,6 +692,22 @@ do_init_mqdc32(mqdc32* mod, std::vector<struct conf_vme_mod> &the_conf)
 }
 
 
+/* initialize pixie16 module, return 0 if succeed, otherwise return error code.
+ * One should note that in our DAQ framework, each channel of a pixie16 module
+ * is defined as a pixie16 module. */
+static int 
+do_init_pixie16(pixie16* mod, std::vector<struct conf_vme_mod> &the_conf)
+{
+	/* The 'the_conf' contains parameters for the present channel as well
+	 * as parameters for the pixie16 module. Since the module parameters
+	 * are the same for different channels, we have 16 copies of the module
+	 * parameter, which (I know) causes some redundancy. */
+	
+	/* to be implemented */
+	return -E_NOT_IMPLE;
+}
+
+
 /* initialize vme module, return 0 if succeed, otherwise return error code */
 static int 
 do_init_madc32(madc32* mod, std::vector<struct conf_vme_mod> &the_conf)
@@ -993,8 +1013,46 @@ static int do_init_mod(module* mod, std::vector<struct conf_vme_mod> &the_conf)
 		return do_init_v785(static_cast<v785*>(mod), the_conf);
 	if (name == "v792" || name == "v792n")
 		return do_init_v792(static_cast<v792*>(mod), the_conf);
+	if (name == "pixie16")
+		return do_init_pixie16(static_cast<pixie16*>(mod), the_conf);
 	return -E_UNKOWN_MOD;
 }
+
+
+int initzer::init_pixie16_ctl()
+{
+	/* first, find out how many pixie16 modules are included in the system
+	 * */
+	int n_pixie_mod = 0;
+	for (auto it = vme_conf.begin(); it != vme_conf.end(); it++) {
+		std::string name = get_mod_name(*it);
+		if (name.find("PIXIE16_MOD") != std::string::npos) {
+			n_pixie_mod++;
+		}
+	}
+
+	/* now we initialize the pixie16 controller */
+	for (auto it = vme_conf.begin(); it != vme_conf.end(); it++) {
+		std::string name = get_mod_name(*it);
+		if (name.find("PIXIE16_CTL") != std::string::npos) {
+			pixie16_ctl* x = do_init_pixie16_ctl(*it, n_pixie_mod);
+			if (!x) 
+				return -E_INIT_PIXIE16_CTL;
+			p_pixie16_ctl.push_back(x);
+			/* only one pixie16_ctl should exists */
+			break;
+		}
+	}
+	return 0;
+}
+
+pixie16_ctl* initzer::do_init_pixie16_ctl(std::vector<struct conf_vme_mod>
+		&the_conf, int mod_n)
+{
+	/* to be implemented */
+	return NULL;
+}
+
 
 int initzer::init_vme_mod()
 {
@@ -1010,9 +1068,13 @@ int initzer::init_vme_mod()
 	/* try v2718 */
 	ret = init_v2718();
 	RET_IF_NONZERO(ret);
-	/* try another supported vme controller here */
+	/* try virtual vme controller supported vme controller here */
 	ret = init_test_ctl();
 	RET_IF_NONZERO(ret);
+	/* try pixie16 controller */
+	ret = init_pixie16_ctl();
+	RET_IF_NONZERO(ret);
+	/* try another supported vme controller here */
 
 
 	/* Now we can initialize the vme modules */
@@ -1260,6 +1322,13 @@ int initzer::init_global_var(module* mod,
 		}
 	}
 
+	/* then try other supported controllers (pixie16_ctl)*/
+	for (auto it = p_pixie16_ctl.begin(); it != p_pixie16_ctl.end(); it++) {
+		mod->set_ctl(*it);
+		break;
+	}
+
+
 	/* make sure the module has a vme controller assigned */
 	if (!mod->get_ctl())
 		return -E_VME_CTRL;
@@ -1272,7 +1341,11 @@ int initzer::fill_slot_map(module* mod)
 {
 	int crate = mod->get_crate();
 	int slot = mod->get_slot();
+#ifndef DAQ_XIA
 	int geo = mod->get_geo();
+#else
+	int geo = slot;
+#endif
 	int mod_id = mod->get_mod_id();
 
 	if (crate >= MAX_CRATE)
@@ -1422,6 +1495,12 @@ int64_t initzer::get_mod_crate(std::vector<struct conf_vme_mod> &the_conf)
 
 
 #ifdef MAKE_EVENT_BUILDER
+int initzer::get_ebd_pixie_clk_src()
+{
+	/* to be implemented */
+	return -E_NOT_IMPLE;
+}
+
 uint32_t initzer::get_ebd_sort_clock_hz()
 {
 	bool found;

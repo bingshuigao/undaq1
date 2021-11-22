@@ -38,6 +38,10 @@ int modules::add_mod(module* mod)
 
 	/* get the am to be used in (c)mblt */
 	int am_mblt = get_am_mblt(mod->get_am());
+#ifdef DAQ_XIA
+	/* for pixie16, am code is meaningless */
+	am_mblt = 0;
+#endif
 	if (am_mblt < 0 )
 	return -E_AM;
 
@@ -131,8 +135,9 @@ int modules::update_read_list()
 	/* If the vme controller is v2718 */
 	if ((get_ctl_name() == "v2718") || (get_ctl_name() == "test_ctl")) 
 		return update_read_list_v2718();
+	else if (get_ctl_name() == "pixie16_ctl")
+		return update_read_list_pixie16();
 	else 
-		/* up to now no other vme controllers are supported */
 //		std::cout<<"errrrrrrrrrrr"<<std::endl;
 		return -E_NOT_SUPPORT;
 }
@@ -186,6 +191,55 @@ int modules::update_read_list_v2718()
 }
 
 
+int modules::update_read_list_pixie16()
+{
+	int i, ret;
+
+	for (i = 0; i < MAX_MODULE; i++) {
+		int is_first, len;
+		
+		if (!mods[i])
+			continue;
+		ret = mods[i]->get_cblt_conf(0, 0, &is_first, 0);
+		RET_IF_NONZERO(ret);
+		
+		/* Not the first module of a cmblt chain, then a normla mblt
+		 * readout should be performed */
+		if (!is_first) {
+			add_mblt(i);
+			continue;
+		}
+		
+		/* It is the first module of a cmblt chain, then try to find a
+		 * complete chain and get the length.*/
+		ret = get_chain_len(i, &len);
+		RET_IF_NONZERO(ret);
+		if (len > 0) {
+			/* a complete chain is found, a cmblt readout should be
+			 * performed. */
+			uint32_t addr;
+			uint16_t addr16;
+			ret = mods[i]->get_cblt_conf(&addr16, 0, 0, 0);
+			RET_IF_NONZERO(ret);
+			addr = addr16;
+#ifndef DAQ_XIA
+			addr <<= 24;
+#endif
+			add_cmblt(i, addr, len);
+			i += (len-1);
+		}
+		else {
+			/* a complete chain is not found, a
+			 * normal mblt should be performed for
+			 * the current module. */
+			add_mblt(i);
+		}
+	}
+	return 0;
+}
+
+
+
 /* Add elements to the vectors (am, dw ...) for a mblt readout.
  * @param n Slot number
  **/
@@ -234,7 +288,9 @@ int modules::get_chain_len(int n, int* len)
 	ret = mods[n]->get_cblt_conf(&reg, 0, 0, 0);
 	RET_IF_NONZERO(ret);
 	addr = reg;
+#ifndef DAQ_XIA
 	addr <<= 24;
+#endif
 	
 	*len = 1;
 	for (i = n+1; i < MAX_MODULE; i++) {
@@ -247,7 +303,9 @@ int modules::get_chain_len(int n, int* len)
 				&cblt_first, &cblt_last);
 		RET_IF_NONZERO(ret);
 		addrx = reg;
+#ifndef DAQ_XIA
 		addrx <<= 24;
+#endif
 		if (addrx != addr || !cblt_enable || cblt_first) 
 			goto bad_chain;
 		/* Check if the module is the last module (if yes, then we've

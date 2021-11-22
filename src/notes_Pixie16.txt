@@ -1,0 +1,22 @@
+The UNDAQ was initially designed for VME system, however, it is possible to
+accommodate the Pixie16 modules with minimum modifications. Since the Pixie16
+modules has 16 channels and each channel has its own trigger, register settings
+and data structures, so each channel basically acts pretty much like a normal
+VME module. Therefore, to accommodate Pixie16 modules in the UNDAQ framework, I
+will treat each channel as a VME module and Pixie16 module as a VME crate. So
+in the internal data structures, the channel number of a Pixie16 module is the
+slot number in the data structure; the slot number of a Pixie16 is the crate
+number in the data structure. The Pixie16 channels, which are treated as VME
+modules, will derive from the base class 'module'.  Since the Pixie16 channels
+are not really VME modules, some concept (methods) of the 'module' class may
+not apply to Pixie16 channels. Those methods will return an error if called
+(i.e. one should never call those methods since they are not applicable to
+ Pixie16 module).
+
+The DAQ type (VME or XIA) is controlled at compilation time by '#define
+DAQ_XIA' rather than a configuration parameter in the config.xml
+
+The max number of pixie16 modules is determined by '#define MAX_CRATE 10' The
+max number of channels of a pixie16 module is determined by '#define MAX_MODULE
+21' If the above numbers are too small, just increase them without worrying
+about anything.

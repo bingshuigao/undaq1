@@ -8,6 +8,7 @@
 #include <vector>
 #include <TObject.h>
 #include <string>
+#include "imp_daq.h"
 
 struct hist_pars
 {
