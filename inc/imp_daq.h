@@ -51,6 +51,7 @@
 #define DEF_BLT_BUF_FE (1024*1024*10)
 /* max data size of a single pixie16 evt (number of 32-bit words) */
 #define DEF_PIXIE16_EVT_MAX (10000)
+#define DEF_PIXIE_FIFO_THRESH (4)
 /********** logger buffers *************/
 /* trigger data sharing */
 #define DEF_RB_LOG_TRIG (1024*1024*10)

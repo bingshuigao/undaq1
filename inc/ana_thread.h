@@ -48,6 +48,7 @@
  * 11 --> v1751
  * 12 --> mqdc32
  * 13 --> v792
+ * 14 --> pixie16
  *
  *
  * For trigger events:

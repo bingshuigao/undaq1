@@ -694,17 +694,76 @@ do_init_mqdc32(mqdc32* mod, std::vector<struct conf_vme_mod> &the_conf)
 
 /* initialize pixie16 module, return 0 if succeed, otherwise return error code.
  * One should note that in our DAQ framework, each channel of a pixie16 module
- * is defined as a pixie16 module. */
+ * is defined as a pixie16 module.  */
 static int 
 do_init_pixie16(pixie16* mod, std::vector<struct conf_vme_mod> &the_conf)
 {
 	/* The 'the_conf' contains parameters for the present channel as well
 	 * as parameters for the pixie16 module. Since the module parameters
 	 * are the same for different channels, we have 16 copies of the module
-	 * parameter, which (I know) causes some redundancy. */
-	
-	/* to be implemented */
-	return -E_NOT_IMPLE;
+	 * parameter, which (I know) causes some redundancy. These module
+	 * parameters will be configured 16 times instead of once, which may
+	 * take slightly longer time in the initialization. */
+
+	/* make sure we set the module number correctly before doing other
+	 * register read/write operations. Because the module number is used in
+	 * many read/write operations. */
+	int auto_blcut;
+	uint32_t off;
+	uint64_t val;
+	int dw = 0;
+
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name != "") 
+			continue;
+		/* this is a register setting */
+		off = (*it).offset;
+		val = (*it).val.val_uint64;
+		if (off == 0) {
+			mod->set_mod_num(val);
+			break;
+		}
+	}
+
+	/* now configure the parameters */
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name != "") 
+			continue;
+		/* this is a register setting */
+		off = (*it).offset;
+		val = (*it).val.val_uint64;
+		if (mod->write_reg(off, dw, &val))
+			return -E_INIT_PIXIE16;
+		if (off == 87)
+			auto_blcut = val;
+	}
+	/* perform the auto bl cut again. Maybe its not necessary, but it won't
+	 * harm anyway. */
+	if (auto_blcut) {
+		off = 87;
+		val = 1;
+		if (mod->write_reg(off, dw, &val))
+			return -E_INIT_PIXIE16;
+	}
+
+	/* need to set slotID/CrateID (which is reported in the data structure)
+	 * */
+	if (mod->set_dsp_slot_id(mod->get_crate()))
+		return -E_INIT_PIXIE16;
+	if (mod->set_dsp_crate_id(0))
+		return -E_INIT_PIXIE16;
+
+
+	/* we set the first channel of the first pixie16 module as the trigger
+	 * module and set the threshold */
+	if ((mod->get_slot() == 0) && (mod->get_mod_num() == 0)) {
+		uint32_t thresh = 
+			((pixie16_ctl*)mod->get_ctl())->get_fifo_thresh();
+		mod->set_trig_mod(1);
+		mod->set_fifo_thresh(thresh);
+	}
+
+	return 0;
 }
 
 
@@ -1022,11 +1081,23 @@ static int do_init_mod(module* mod, std::vector<struct conf_vme_mod> &the_conf)
 int initzer::init_pixie16_ctl()
 {
 	/* first, find out how many pixie16 modules are included in the system
+	 * and their slot maps.
 	 * */
-	int n_pixie_mod = 0;
+	int n_pixie_mod;
+	unsigned short pxi_slot_map[16];
+	unsigned short pxi_slot_map1[16];
+	int i;
+	memset(pxi_slot_map, 0, sizeof(unsigned short)*16);
 	for (auto it = vme_conf.begin(); it != vme_conf.end(); it++) {
 		std::string name = get_mod_name(*it);
 		if (name.find("PIXIE16_MOD") != std::string::npos) {
+			pxi_slot_map[get_mod_crate(*it)] = 1;
+		}
+	}
+	n_pixie_mod = 0;
+	for (i = 0; i < 16; i++) {
+		if (pxi_slot_map[i]) {
+			pxi_slot_map1[n_pixie_mod] = i;
 			n_pixie_mod++;
 		}
 	}
@@ -1035,7 +1106,8 @@ int initzer::init_pixie16_ctl()
 	for (auto it = vme_conf.begin(); it != vme_conf.end(); it++) {
 		std::string name = get_mod_name(*it);
 		if (name.find("PIXIE16_CTL") != std::string::npos) {
-			pixie16_ctl* x = do_init_pixie16_ctl(*it, n_pixie_mod);
+			pixie16_ctl* x = do_init_pixie16_ctl(*it, n_pixie_mod,
+					pxi_slot_map1);
 			if (!x) 
 				return -E_INIT_PIXIE16_CTL;
 			p_pixie16_ctl.push_back(x);
@@ -1047,9 +1119,38 @@ int initzer::init_pixie16_ctl()
 }
 
 pixie16_ctl* initzer::do_init_pixie16_ctl(std::vector<struct conf_vme_mod>
-		&the_conf, int mod_n)
+		&the_conf, int mod_n, unsigned short* pxi_slot_map)
 {
-	/* to be implemented */
+	pixie16_ctl* tmp_pixie16_ctl = new pixie16_ctl;
+
+	/* Now let's try to open it. */
+	struct pixie16_ctl_open_par par;
+	par.ComFPGAConfigFile = "./ComFPGAConfigFile";
+	par.SPFPGAConfigFile  = "./SPFPGAConfigFile";
+	par.TrigFPGAConfigFile = "./TrigFPGAConfigFile";
+	par.DSPCodeFile = "./DSPCodeFile";
+	par.DSPParFile = "./DSPParFile";
+	par.DSPVarFile = "./DSPVarFile";
+	par.pxi_slot_map = pxi_slot_map;
+	if (tmp_pixie16_ctl->open(&par)) 
+		goto fail;
+		
+	/* Now it's open, let initialize the registers  based on the config
+	 * file */
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name == "") {
+			/* this is a register setting */
+			uint64_t off = (*it).offset;
+			uint64_t val = (*it).val.val_uint64;
+			if (tmp_pixie16_ctl->write_reg(off, &val))
+				goto fail;
+		}
+	}
+
+	return tmp_pixie16_ctl;
+
+fail:
+	delete tmp_pixie16_ctl;
 	return NULL;
 }
 
@@ -1497,8 +1598,15 @@ int64_t initzer::get_mod_crate(std::vector<struct conf_vme_mod> &the_conf)
 #ifdef MAKE_EVENT_BUILDER
 int initzer::get_ebd_pixie_clk_src()
 {
-	/* to be implemented */
-	return -E_NOT_IMPLE;
+	bool found;
+	std::string name("pixie_clk");
+	int port;
+
+	port = get_ebd_adv_var(name, found);
+	if (found)
+		return (port == 1) ? PIXIE_CLK_INT : PIXIE_CLK_EXT;
+	else
+		return PIXIE_CLK_INT;
 }
 
 uint32_t initzer::get_ebd_sort_clock_hz()

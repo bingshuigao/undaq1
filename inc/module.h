@@ -65,11 +65,12 @@ public:
 	 * @return 0 if succeed, nonzero error codes if error  */
 	int read_reg(uint32_t addr, int dw, void* out)
 	{
-#ifdef DAQ_XIA
-		return -E_DONT_CALL;
-#endif
 		ctl->set_am(am_reg);
 		ctl->set_dw(dw);
+#ifdef DAQ_XIA
+		ctl->set_dw(slot_n);
+		return ctl->read(base_addr, out);
+#endif
 		return ctl->read(addr + base_addr, out);
 	}
 	
@@ -84,11 +85,12 @@ public:
 	 * uint16_t types.*/
 	virtual int write_reg(uint32_t addr, int dw, void* val)
 	{
-#ifdef DAQ_XIA
-		return -E_DONT_CALL;
-#endif
 		ctl->set_am(am_reg);
 		ctl->set_dw(dw);
+#ifdef DAQ_XIA
+		ctl->set_dw(slot_n);
+		return ctl->write(addr, val);
+#endif
 		return ctl->write(base_addr + addr, val);
 	}
 
@@ -104,7 +106,7 @@ public:
 	virtual int get_geo() = 0;
 
 	/* Read the event buffer using (c)(m)blt mode.
-	 * @param am vme address modifier (meaningless for pixie)
+	 * @param am vme address modifier (module number for pixie)
 	 * @param dst Pointer to the output buffer
 	 * @param sz_in requested number of bytes to read
 	 * @param sz_out actual number of bytes read out.
@@ -121,9 +123,6 @@ public:
 		ctl->set_dw(32);
 		if (chain)
 			addr = blt_addr;
-#ifdef DAQ_XIA
-		addr = blt_addr;
-#endif
 		return ctl->blt_read(addr, dst, sz_in, sz_out);
 	}
 	int read_evt_mblt(int am, void* dst, int sz_in, int* sz_out, 
@@ -134,9 +133,6 @@ public:
 		ctl->set_dw(64);
 		if (chain)
 			addr = blt_addr;
-#ifdef DAQ_XIA
-		addr = blt_addr;
-#endif
 		return ctl->mblt_read(addr, dst, sz_in, sz_out);
 	}
 

@@ -9,8 +9,9 @@ pixie16::pixie16()
 	name = "pixie16";
 	mod_id = 14;
 	clk_freq = DEF_PIXIE_CLK;
-	tot_mod_num = 1000;
-	this_mod_num = 1000;
+	//tot_mod_num = 1000;
+	mod_num = 1000;
+	fifo_rd_thresh = 100000000;
 }
 
 int pixie16::read_single_evt(int am, uint32_t *evt, int* sz_out)
@@ -37,15 +38,31 @@ int pixie16::get_cblt_conf(uint16_t* addr, int* cblt_enable, int* cblt_first,
 	if (cblt_last) 
 		*cblt_last = (slot_n == 15) ? 1 : 0;
 	if (addr) 
-		*addr = this_mod_num;
+		*addr = mod_num;
 	return 0;
 }
 
 int pixie16::if_trig(bool& x)
 {
-	int ret, i;
+	int ret, i, off;
 	unsigned int n_word;
 
+	x = false;
+	off = 1002;
+	ret = read_reg(off, 0, &n_word);
+	RET_IF_NONZERO(ret);
+	if (n_word >= fifo_rd_thresh) {
+		x = true;
+		return 0;
+	}
+	return 0;
+
+
+	/* read total number of modules installed */
+	/*
+	off = 1000; 
+	read_reg(off, 0, &tot_mod_num);
+	
 	x = false;
 	for (i = 0; i < tot_mod_num; i++) {
 		ret = Pixie16CheckExternalFIFOStatus(&n_word, i);
@@ -58,23 +75,23 @@ int pixie16::if_trig(bool& x)
 		}
 	}
 	return 0;
+	*/
 }
 
 int pixie16::on_start()
 {
-	/* to start all the pixie modules simutaniously, we use the
-	 * Pixie16StartListModeRun function and the total number of installed
-	 * modules has to be known. Also this function should be called only
-	 * once, therefore, we call this function only for 'trigger module'. */
-	int ret;
+	int ret, dw;
+	unsigned int data, off;
 
+	/* The operations below need to be done only once, therefore, we call
+	 * this function only for 'trigger module'. */
+	dw = 0;
+	data = 0;
 	if (trig_mod) {
-		ret = Pixie16StartListModeRun(tot_mod_num, 0x100, NEW_RUN);
-		if (ret) {
-			return -E_PIXIE_START_RUN;
-		}
+		off = 1003;
+		ret = write_reg(off, dw, &data);
+		RET_IF_NONZERO(ret);
 	}
-
 	return 0;
 }
 
@@ -82,13 +99,16 @@ int pixie16::on_stop()
 {
 	/* similarly as the on_start(), only need to stop the run for the
 	 * 'trigger module' */
-	int ret;
-	if (trig_mod) {
-		ret = Pixie16EndRun(0);
-		if (ret) {
-			return -E_PIXIE_STOP_RUN;
-		}
-	}
+	int ret, dw;
+	unsigned int data, off;
 
+	dw = 0;
+	data = 0;
+	off = 1007;
+	if (trig_mod) {
+		ret = write_reg(off, dw, &data);
+		RET_IF_NONZERO(ret);
+	}
 	return 0;
 }
+

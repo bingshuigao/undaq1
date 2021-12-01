@@ -14,6 +14,9 @@ modules::modules()
 
 int get_am_mblt(int am)
 {
+#ifdef DAQ_XIA
+	return am;
+#endif
 	if (am == VME_A24_S_DATA)
 		return VME_A24_S_MBLT;
 	if (am == VME_A24_U_DATA)
@@ -38,10 +41,6 @@ int modules::add_mod(module* mod)
 
 	/* get the am to be used in (c)mblt */
 	int am_mblt = get_am_mblt(mod->get_am());
-#ifdef DAQ_XIA
-	/* for pixie16, am code is meaningless */
-	am_mblt = 0;
-#endif
 	if (am_mblt < 0 )
 	return -E_AM;
 

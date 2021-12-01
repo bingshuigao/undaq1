@@ -345,7 +345,7 @@ private:
 	 * (the_config). The mod_n is the total number of pixie16 modules
 	 * included in the system Return NULL in case of error. */
 	pixie16_ctl* do_init_pixie16_ctl(std::vector<struct conf_vme_mod>
-			&the_conf, int mod_n);
+			&the_conf, int mod_n, unsigned short* pxi_slot_map);
 
 	/* Init the vme module according to its configurations. The offset is
 	 * the offset between board numbers and crate numbers. Return the
@@ -466,6 +466,7 @@ private:
 	/* similar as slot map */
 	uint64_t clk_off_map[MAX_CLK_OFF_MAP];
 	bool clk_off_map_inited;
+
 };
 
 

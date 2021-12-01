@@ -68,6 +68,7 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 from adv_conf_mod import adv_conf_mod
+from adv_conf_pixie_ctl import adv_conf_pixie_ctl
 import copy
 
 
@@ -76,7 +77,10 @@ class vme_mod:
     def __init__(self, name, mod=None):
         pass
     def _base_init(self, name, mod=None):
-        self.adv_conf = adv_conf_mod()
+        if name.startswith('PIXIE16_CTL'):
+            self.adv_conf = adv_conf_pixie_ctl()
+        else:
+            self.adv_conf = adv_conf_mod()
         if mod:
             # init the common attributes. For the meanings of these attributes,
             # see module.h
@@ -272,6 +276,8 @@ class vme_mod:
     def get_geo(self):
         if self.name.find('V2718') >= 0:
             return int(self.name[5:])
+        elif self.name.find('PIXIE16_CTL') >= 0:
+            return int(self.name[11:])
         else:
             for reg in self.reg_map:
                 if reg['off'] == self.geo_addr:

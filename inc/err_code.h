@@ -89,6 +89,10 @@
 #define E_PIXIE_MOD_NUM        77 /* invalid pixie module number */
 #define E_BLT_BUFF_SZ          78 /* blt buffer size too small */
 #define E_INIT_PIXIE16_CTL     79 /* error in the pixie16 controller init */
+#define E_INIT_PIXIE16         80 /* error in the pixie16 module init */
+#define E_PIXIE_UNKNOW_REG     81 /* unknown pixei16 register */
+#define E_PIXIE_SYNC           82 /* synchronization problems with pixei16
+				     modules */
 
 
 

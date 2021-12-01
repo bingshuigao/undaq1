@@ -31,6 +31,51 @@ from tkinter import messagebox
 from tkinter import ttk
 from adv_conf_mod import adv_conf_mod
 import copy
+import math
+
+# the config_* parameters are for 100 MHz, 14bit, Rev F modules. For other
+# ones, one should check and modify those values accordingly
+config_adc_bits                           = 14
+config_adc_msps                           = 100
+config_adc_clk_div                        = 1
+config_fpga_clk_mhz                       = 100
+config_fifo_length                        = 16380
+
+hw_limit_CFDDELAY_MAX                     = 63
+hw_limit_CFDDELAY_MIN                     = 1
+hw_limit_CFDSCALE_MAX                     = 7
+hw_limit_CFDTHRESH_MAX                    = 65535
+hw_limit_CFDTHRESH_MIN                    = 1
+hw_limit_CHANTRIGSTRETCH_MAX              = 4095
+hw_limit_CHANTRIGSTRETCH_MIN              = 1
+hw_limit_DAC_VOLTAGE_RANGE                = 3
+hw_limit_DSP_CLOCK_MHZ                    = 100
+hw_limit_EXTDELAYLEN_MAX_REVBCD           = 255
+hw_limit_EXTDELAYLEN_MAX_REVF             = 511
+hw_limit_EXTDELAYLEN_MIN                  = 0
+hw_limit_EXTTRIGSTRETCH_MAX               = 4095
+hw_limit_EXTTRIGSTRETCH_MIN               = 1
+hw_limit_FASTFILTERRANGE_MAX              = 0
+hw_limit_FASTFILTERRANGE_MIN              = 0
+hw_limit_FASTFILTER_MAX_LEN               = 127
+hw_limit_FASTLENGTH_MIN_LEN               = 2
+hw_limit_FASTTRIGBACKLEN_MAX              = 4095
+hw_limit_FASTTRIGBACKDELAY_MIN            = 0
+hw_limit_FASTTRIGBACKLEN_MIN_100MHZFIPCLK = 1
+hw_limit_FASTTRIGBACKLEN_MIN_125MHZFIPCLK = 2
+hw_limit_FAST_THRESHOLD_MAX               = 65535
+hw_limit_QDCLEN_MAX                       = 32767
+hw_limit_QDCLEN_MIN                       = 1
+hw_limit_SLOWFILTERRANGE_MAX              = 6
+hw_limit_SLOWFILTERRANGE_MIN              = 1
+hw_limit_SLOWFILTER_MAX_LEN               = 127
+hw_limit_SLOWGAP_MIN_LEN                  = 3
+hw_limit_SLOWLENGTH_MIN_LEN               = 2
+hw_limit_TRACEDELAY_MAX                   = 1023
+hw_limit_VETOSTRETCH_MAX                  = 4095
+hw_limit_VETOSTRETCH_MIN                  = 1
+
+
 
 
 class pixie16:
@@ -87,6 +132,8 @@ class pixie16:
                             (off, name), 'error')
         # let's now sort the elements based on their offsets:
         self.reg_map.sort(key=lambda x : x['off'])
+        
+        self.cur_ch_num = 0
 
     
     # a list of set and get methods (note: most of those methds are copy-past
@@ -113,6 +160,9 @@ class pixie16:
         self.max_crate = n
     def set_name(self, name):
         self.name = name
+    def set_mod_num(self, n):
+        self.reg_map[0]['value'] = [n for i in range(16)]
+        self.set_base(n)
     def get_crate(self):
         return self.crate
     def get_slot(self):
@@ -162,7 +212,7 @@ class pixie16:
             if reg['value'] == 'default':
                 continue
             off = 'reg_0x%x' % reg['off']
-            value = '0x%x' % reg['value']
+            value = ['0x%x' % reg['value'][i] for i in range(16)]
             com = reg['name']
             if reg['comment']:
                 com = reg['comment']
@@ -197,9 +247,11 @@ class pixie16:
                 if name.startswith('glo'):
                     name = name[4:]
                     if name == 'crate_n':
-                        self.crate = int(val)
-                    elif name == 'slot_n':
+                        # crate number is slot number for pixie16
                         self.slot = int(val)
+                    elif name == 'slot_n':
+                        pass
+                        #self.slot = int(val)
                     elif name == 'base':
                         self.base = int(val, 16)
                     elif name == 'am_reg':
@@ -215,7 +267,7 @@ class pixie16:
                 elif name.startswith('reg'):
                     name = name[4:]
                     off = int(name, 16)
-                    val1 = int(val, 16)
+                    val1 = [int(val[i], 16) for i in range(16)]
                     self.set_reg(off, val1)
                 elif name.startswith('adv'):
                     name = name[4:]
@@ -228,7 +280,7 @@ class pixie16:
         return None
 
     def get_geo(self):
-        return self.slot_n
+        return self.slot
         if self.name.find('V2718') >= 0:
             return int(self.name[5:])
         else:
@@ -286,6 +338,18 @@ class pixie16:
         self.slot_wid.set(slots[val])
         self.slot_wid.place(x=155, y=10, width=35, height=25)
         self.slot_wid.bind("<<ComboboxSelected>>", self._slot_evt) 
+
+        # module revision
+        off = 88
+        txt = self.reg_map[off]['name']
+        val = self.reg_map[off]['value'][0]
+        tk.Label(win, text=txt, anchor=tk.W).place(x=200, y=10, width=130,
+                height=25)
+        t_filters = ['rev_B', 'rev_C', 'rev_D', 'rev_F', 'rev_H']
+        self.rev_wid = ttk.Combobox(win, state='readonly', values=t_filters)
+        self.rev_wid.set(t_filters[val])
+        self.rev_wid.place(x=260, y=10, width=80, height=25)
+        self.rev_wid.bind("<<ComboboxSelected>>", self._rev_evt)
 
         # module parameter sets
         tk.Label(win, bg='yellow', text='ModPar set').place(x=10, y=60,
@@ -370,11 +434,11 @@ class pixie16:
         #XDT (us)
         off = 7
         txt = self.reg_map[off]['name']
-        val = self.reg_map[off]['value'][0]
+        val = self.reg_map[off]['value'][self.cur_ch_num]
         tk.Label(win, text=txt).place(x=10, y=220, width=60, height=25)
         self.XDT_wid = tk.Entry(win)
         self.XDT_wid.place(x=70, y=220, width=80, height=25)
-        self.XDT_wid.insert(0, '%.3f'%val)
+        self.XDT_wid.insert(0, '%.3f'%(val/1000.))
         self.XDT_wid.bind('<Return>',self._XDT_evt)
 
         # channel parameter sets
@@ -387,7 +451,6 @@ class pixie16:
         win = self.ModParSet_ch
 
         # channel number 
-        self.cur_ch_num = 0
         off = 39
         txt = self.reg_map[off]['name']
         val = self.reg_map[off]['value'][self.cur_ch_num]
@@ -415,7 +478,7 @@ class pixie16:
         self.GoodCh_wid.place(x=180, y=5, width=40, height=25)
         self.GoodCh_wid.bind("<<ComboboxSelected>>", self._good_ch_evt)
 
-        # Good Ch pars to/from
+        # Copy Ch pars to/from
         tk.Label(win, text='Copy ChPars to').place(x=230, y=5, width=100,
                 height=25)
         cp_ch_val = ['ch'+str(i) for i in range(16)]
@@ -438,7 +501,7 @@ class pixie16:
         off = 9
         txt = self.reg_map[off]['name']
         val = self.reg_map[off]['value'][self.cur_ch_num]
-        pol_val = ['Pos', 'Neg']
+        pol_val = ['Neg', 'Pos']
         tk.Label(win, anchor=tk.W, text=txt).place(x=10, y=45, width=100,
                 height=25)
         #tk.Label(win, text='E_Risetime(us)').place(x=10, y=35, width=100, height=25)
@@ -481,7 +544,7 @@ class pixie16:
                 height=25)
         self.T_Risetime_wid = tk.Entry(win)
         self.T_Risetime_wid.place(x=110, y=135, width=100, height=25)
-        self.T_Risetime_wid.insert(0, '%.3f'%val)
+        self.T_Risetime_wid.insert(0, '%.3f'%(val/1000.))
         self.T_Risetime_wid.bind('<Return>',self._t_risetime_evt)
 
         # T_FlatTop(us)
@@ -492,7 +555,7 @@ class pixie16:
                 height=25)
         self.T_FlatTop_wid = tk.Entry(win)
         self.T_FlatTop_wid.place(x=110, y=165, width=100, height=25)
-        self.T_FlatTop_wid.insert(0, '%.3f'%val)
+        self.T_FlatTop_wid.insert(0, '%.3f'%(val/1000.))
         self.T_FlatTop_wid.bind('<Return>',self._t_flattop_evt)
 
         # T_Thresh
@@ -506,7 +569,7 @@ class pixie16:
         self.T_Thresh_wid.insert(0, str(val))
         self.T_Thresh_wid.bind('<Return>',self._t_thresh_evt)
 
-        # T_Risetime(us)
+        # E_Risetime(us)
         off = 15
         txt = self.reg_map[off]['name']
         val = self.reg_map[off]['value'][self.cur_ch_num]
@@ -514,7 +577,7 @@ class pixie16:
                 height=25)
         self.E_Risetime_wid = tk.Entry(win)
         self.E_Risetime_wid.place(x=110, y=225, width=100, height=25)
-        self.E_Risetime_wid.insert(0, '%.3f'%val)
+        self.E_Risetime_wid.insert(0, '%.3f'%(val/1000.))
         self.E_Risetime_wid.bind('<Return>',self._e_risetime_evt)
 
         # E_FlatTop(us)
@@ -525,7 +588,7 @@ class pixie16:
                 height=25)
         self.E_FlatTop_wid = tk.Entry(win)
         self.E_FlatTop_wid.place(x=110, y=255, width=100, height=25)
-        self.E_FlatTop_wid.insert(0, '%.3f'%val)
+        self.E_FlatTop_wid.insert(0, '%.3f'%(val/1000.))
         self.E_FlatTop_wid.bind('<Return>',self._e_flattop_evt)
 
         # Tau(us)
@@ -536,14 +599,14 @@ class pixie16:
                 height=25)
         self.Tau_wid = tk.Entry(win)
         self.Tau_wid.place(x=110, y=285, width=100, height=25)
-        self.Tau_wid.insert(0, '%.3f'%val)
+        self.Tau_wid.insert(0, '%.3f'%(val/1000.))
         self.Tau_wid.bind('<Return>',self._Tau_evt)
 
         # PileUp
         off = 18
         txt = self.reg_map[off]['name']
         val = self.reg_map[off]['value'][self.cur_ch_num]
-        pileup_val = ['AcceptAll', 'RejectPileUp', 'TracePileUp', 'OnlyPileUp']
+        pileup_val = ['AcceptAll', 'RejectPileUp', 'TracePileUp', 'RejectSingle']
         tk.Label(win, anchor=tk.W, text=txt).place(x=10, y=315, width=100,
                 height=25)
         self.PileUp_wid = ttk.Combobox(win, state='readonly',
@@ -630,7 +693,7 @@ class pixie16:
                 height=25)
         self.CFD_Dealy_wid = tk.Entry(win)
         self.CFD_Dealy_wid.place(x=330, y=195, width=60, height=25)
-        self.CFD_Dealy_wid.insert(0, '%.3f'%val)
+        self.CFD_Dealy_wid.insert(0, '%.3f'%(val/1000.))
         self.CFD_Dealy_wid.bind('<Return>',self._cfd_delay_evt)
 
         # CFD_Threshol
@@ -666,7 +729,7 @@ class pixie16:
                 height=25)
         self.Trace_PreTrig_wid = tk.Entry(win)
         self.Trace_PreTrig_wid.place(x=330, y=285, width=60, height=25)
-        self.Trace_PreTrig_wid.insert(0, '%.3f'%val)
+        self.Trace_PreTrig_wid.insert(0, '%.3f'%(val/1000.))
         self.Trace_PreTrig_wid.bind('<Return>',self._trace_pretrig_evt)
 
         # Trace_Length(us)
@@ -677,7 +740,7 @@ class pixie16:
                 height=25)
         self.Trace_Length_wid = tk.Entry(win)
         self.Trace_Length_wid.place(x=330, y=315, width=60, height=25)
-        self.Trace_Length_wid.insert(0, '%.3f'%val)
+        self.Trace_Length_wid.insert(0, '%.3f'%(val/1000.))
         self.Trace_Length_wid.bind('<Return>',self._trace_length_evt)
 
         # RecordQDC
@@ -702,7 +765,7 @@ class pixie16:
                 height=25)
         self.QDC_Len0_wid = tk.Entry(win)
         self.QDC_Len0_wid.place(x=500, y=75, width=60, height=25)
-        self.QDC_Len0_wid.insert(0, '%.3f'%val)
+        self.QDC_Len0_wid.insert(0, '%.3f'%(val/1000.))
         self.QDC_Len0_wid.bind('<Return>',self._qdclen0_length_evt)
 
         # QDC Len1(us)
@@ -713,7 +776,7 @@ class pixie16:
                 height=25)
         self.QDC_Len1_wid = tk.Entry(win)
         self.QDC_Len1_wid.place(x=500, y=105, width=60, height=25)
-        self.QDC_Len1_wid.insert(0, '%.3f'%val)
+        self.QDC_Len1_wid.insert(0, '%.3f'%(val/1000.))
         self.QDC_Len1_wid.bind('<Return>',self._qdclen1_length_evt)
 
         # QDC Len2(us)
@@ -724,7 +787,7 @@ class pixie16:
                 height=25)
         self.QDC_Len2_wid = tk.Entry(win)
         self.QDC_Len2_wid.place(x=500, y=135, width=60, height=25)
-        self.QDC_Len2_wid.insert(0, '%.3f'%val)
+        self.QDC_Len2_wid.insert(0, '%.3f'%(val/1000.))
         self.QDC_Len2_wid.bind('<Return>',self._qdclen2_length_evt)
 
         # QDC Len3(us)
@@ -735,7 +798,7 @@ class pixie16:
                 height=25)
         self.QDC_Len3_wid = tk.Entry(win)
         self.QDC_Len3_wid.place(x=500, y=165, width=60, height=25)
-        self.QDC_Len3_wid.insert(0, '%.3f'%val)
+        self.QDC_Len3_wid.insert(0, '%.3f'%(val/1000.))
         self.QDC_Len3_wid.bind('<Return>',self._qdclen3_length_evt)
 
         # QDC Len4(us)
@@ -746,7 +809,7 @@ class pixie16:
                 height=25)
         self.QDC_Len4_wid = tk.Entry(win)
         self.QDC_Len4_wid.place(x=500, y=195, width=60, height=25)
-        self.QDC_Len4_wid.insert(0, '%.3f'%val)
+        self.QDC_Len4_wid.insert(0, '%.3f'%(val/1000.))
         self.QDC_Len4_wid.bind('<Return>',self._qdclen4_length_evt)
 
         # QDC Len5(us)
@@ -757,7 +820,7 @@ class pixie16:
                 height=25)
         self.QDC_Len5_wid = tk.Entry(win)
         self.QDC_Len5_wid.place(x=500, y=225, width=60, height=25)
-        self.QDC_Len5_wid.insert(0, '%.3f'%val)
+        self.QDC_Len5_wid.insert(0, '%.3f'%(val/1000.))
         self.QDC_Len5_wid.bind('<Return>',self._qdclen5_length_evt)
 
         # QDC Len6(us)
@@ -768,7 +831,7 @@ class pixie16:
                 height=25)
         self.QDC_Len6_wid = tk.Entry(win)
         self.QDC_Len6_wid.place(x=500, y=255, width=60, height=25)
-        self.QDC_Len6_wid.insert(0, '%.3f'%val)
+        self.QDC_Len6_wid.insert(0, '%.3f'%(val/1000.))
         self.QDC_Len6_wid.bind('<Return>',self._qdclen6_length_evt)
 
         # QDC Len7(us)
@@ -779,7 +842,7 @@ class pixie16:
                 height=25)
         self.QDC_Len7_wid = tk.Entry(win)
         self.QDC_Len7_wid.place(x=500, y=285, width=60, height=25)
-        self.QDC_Len7_wid.insert(0, '%.3f'%val)
+        self.QDC_Len7_wid.insert(0, '%.3f'%(val/1000.))
         self.QDC_Len7_wid.bind('<Return>',self._qdclen7_length_evt)
 
         # BLCUT
@@ -793,14 +856,32 @@ class pixie16:
         self.BLCUT_wid.insert(0, str(val))
         self.BLCUT_wid.bind('<Return>',self._blcut_evt)
 
+        # AutoBLCUT 
+        off = 87
+        txt = self.reg_map[off]['name']
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.auto_blcut_var = tk.IntVar()
+        self.auto_blcut_var.set(val)
+        tk.Checkbutton(win, text=txt, variable=self.auto_blcut_var,
+                anchor=tk.W, command=self._auto_blcut_evt).place(x=400, y=315,
+                        width=100, height=25)
+
+    def _auto_blcut_evt(self):
+        off = 87
+        self.reg_map[off]['value'][self.cur_ch_num] = self.auto_blcut_var.get()
+        print('new %s selected: ' % self.reg_map[off]['name'])
+        print(self.reg_map[off]['value'])
+
+
+
 
     def _blcut_evt(self, e):
         off = 38
         val = self._get_rounded_val(self.reg_map[off]['name'],
-                float(self.BLCUT_wid.get()))
+                int(self.BLCUT_wid.get()))
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.BLCUT_wid.delete(0, tk.END)
-        self.BLCUT_wid.insert(0, '%.3f'%val)
+        self.BLCUT_wid.insert(0, str(val))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -810,9 +891,10 @@ class pixie16:
         off = 31
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.QDC_Len1_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.QDC_Len1_wid.delete(0, tk.END)
-        self.QDC_Len1_wid.insert(0, '%.3f'%val)
+        self.QDC_Len1_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -821,9 +903,10 @@ class pixie16:
         off = 32
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.QDC_Len2_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.QDC_Len2_wid.delete(0, tk.END)
-        self.QDC_Len2_wid.insert(0, '%.3f'%val)
+        self.QDC_Len2_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -832,9 +915,10 @@ class pixie16:
         off = 33
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.QDC_Len3_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.QDC_Len3_wid.delete(0, tk.END)
-        self.QDC_Len3_wid.insert(0, '%.3f'%val)
+        self.QDC_Len3_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -843,9 +927,10 @@ class pixie16:
         off = 34
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.QDC_Len4_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.QDC_Len4_wid.delete(0, tk.END)
-        self.QDC_Len4_wid.insert(0, '%.3f'%val)
+        self.QDC_Len4_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -854,9 +939,10 @@ class pixie16:
         off = 35
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.QDC_Len5_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.QDC_Len5_wid.delete(0, tk.END)
-        self.QDC_Len5_wid.insert(0, '%.3f'%val)
+        self.QDC_Len5_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -865,9 +951,10 @@ class pixie16:
         off = 36
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.QDC_Len6_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.QDC_Len6_wid.delete(0, tk.END)
-        self.QDC_Len6_wid.insert(0, '%.3f'%val)
+        self.QDC_Len6_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -876,9 +963,10 @@ class pixie16:
         off = 37
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.QDC_Len7_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.QDC_Len7_wid.delete(0, tk.END)
-        self.QDC_Len7_wid.insert(0, '%.3f'%val)
+        self.QDC_Len7_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -887,9 +975,10 @@ class pixie16:
         off = 30
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.QDC_Len0_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.QDC_Len0_wid.delete(0, tk.END)
-        self.QDC_Len0_wid.insert(0, '%.3f'%val)
+        self.QDC_Len0_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -915,9 +1004,10 @@ class pixie16:
         off = 28
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.Trace_Length_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.Trace_Length_wid.delete(0, tk.END)
-        self.Trace_Length_wid.insert(0, '%.3f'%val)
+        self.Trace_Length_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -929,9 +1019,10 @@ class pixie16:
         off = 27
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.Trace_PreTrig_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.Trace_PreTrig_wid.delete(0, tk.END)
-        self.Trace_PreTrig_wid.insert(0, '%.3f'%val)
+        self.Trace_PreTrig_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -965,9 +1056,10 @@ class pixie16:
         off = 24
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.CFD_Dealy_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.CFD_Dealy_wid.delete(0, tk.END)
-        self.CFD_Dealy_wid.insert(0, '%.3f'%val)
+        self.CFD_Dealy_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -1052,7 +1144,7 @@ class pixie16:
             val = 1
         elif self.PileUp_wid.get() == 'TracePileUp':
             val = 2
-        elif self.PileUp_wid.get() == 'OnlyPileUp':
+        elif self.PileUp_wid.get() == 'RejectSingle':
             val = 3
         self.reg_map[off]['value'][self.cur_ch_num] = val
         print('new %s selected: ' % self.reg_map[off]['name'])
@@ -1064,33 +1156,36 @@ class pixie16:
         off = 17
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.Tau_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.Tau_wid.delete(0, tk.END)
-        self.Tau_wid.insert(0, '%.3f'%val)
+        self.Tau_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
 
 
     def _e_flattop_evt(self, e):
-        off = 15
+        off = 16
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.E_FlatTop_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.E_FlatTop_wid.delete(0, tk.END)
-        self.E_FlatTop_wid.insert(0, '%.3f'%val)
+        self.E_FlatTop_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
 
 
     def _e_risetime_evt(self, e):
-        off = 16
+        off = 15
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.E_Risetime_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.E_Risetime_wid.delete(0, tk.END)
-        self.E_Risetime_wid.insert(0, '%.3f'%val)
+        self.E_Risetime_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -1110,9 +1205,10 @@ class pixie16:
         off = 13
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.T_FlatTop_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.T_FlatTop_wid.delete(0, tk.END)
-        self.T_FlatTop_wid.insert(0, '%.3f'%val)
+        self.T_FlatTop_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -1122,9 +1218,10 @@ class pixie16:
         off = 12
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.T_Risetime_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.T_Risetime_wid.delete(0, tk.END)
-        self.T_Risetime_wid.insert(0, '%.3f'%val)
+        self.T_Risetime_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -1155,9 +1252,9 @@ class pixie16:
     def _pol_evt(self, e):
         off = 9
         if self.pol_wid.get() == 'Pos':
-            val = 0
-        else:
             val = 1
+        else:
+            val = 0
         self.reg_map[off]['value'][self.cur_ch_num] = val
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
@@ -1166,7 +1263,9 @@ class pixie16:
     def _cp_par_from_evt(self, e):
         from_ch = int(self.cp_par_from_wid.get()[2:])
         for off in [8 , 9 , 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
-                23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38]:
+                23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 
+                42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57,
+                58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71]:
             val = self.reg_map[off]['value'][from_ch]
             self.reg_map[off]['value'][self.cur_ch_num] = val
         self._update_ch_pars()
@@ -1177,7 +1276,9 @@ class pixie16:
             to_ch = int(to_ch[2:])
         #print(to_ch)
         for off in [8 , 9 , 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
-                23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38]:
+                23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 
+                42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57,
+                58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71]:
             val = self.reg_map[off]['value'][self.cur_ch_num]
             if to_ch == 'all ch':
                 self.reg_map[off]['value'] = [val for i in range(16)]
@@ -1216,6 +1317,11 @@ class pixie16:
         self.ChNum_wid.insert(0, str(self.cur_ch_num))
         self.ChNum_wid.config(state=tk.DISABLED)
         
+        off = 7
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.XDT_wid.delete(0, tk.END)
+        self.XDT_wid.insert(0, '%.3f'%(val/1000.))
+
         off = 8
         val = self.reg_map[off]['value'][self.cur_ch_num]
         good_ch_val = ['no', 'yes']
@@ -1223,7 +1329,7 @@ class pixie16:
 
         off = 9
         val = self.reg_map[off]['value'][self.cur_ch_num]
-        pol_val = ['Pos', 'Neg']
+        pol_val = ['Neg', 'Pos']
         self.pol_wid.set(pol_val[val])
 
         off = 10
@@ -1239,12 +1345,12 @@ class pixie16:
         off = 12
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.T_Risetime_wid.delete(0, tk.END)
-        self.T_Risetime_wid.insert(0, '%.3f'%val)
+        self.T_Risetime_wid.insert(0, '%.3f'%(val/1000.))
 
         off = 13
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.T_FlatTop_wid.delete(0, tk.END)
-        self.T_FlatTop_wid.insert(0, '%.3f'%val)
+        self.T_FlatTop_wid.insert(0, '%.3f'%(val/1000.))
 
         off = 14
         val = self.reg_map[off]['value'][self.cur_ch_num]
@@ -1254,21 +1360,21 @@ class pixie16:
         off = 15
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.E_Risetime_wid.delete(0, tk.END)
-        self.E_Risetime_wid.insert(0, '%.3f'%val)
+        self.E_Risetime_wid.insert(0, '%.3f'%(val/1000.))
 
         off = 16
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.E_FlatTop_wid.delete(0, tk.END)
-        self.E_FlatTop_wid.insert(0, '%.3f'%val)
+        self.E_FlatTop_wid.insert(0, '%.3f'%(val/1000.))
 
         off = 17
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.Tau_wid.delete(0, tk.END)
-        self.Tau_wid.insert(0, '%.3f'%val)
+        self.Tau_wid.insert(0, '%.3f'%(val/1000.))
 
         off = 18
         val = self.reg_map[off]['value'][self.cur_ch_num]
-        pileup_val = ['AcceptAll', 'RejectPileUp', 'TracePileUp', 'OnlyPileUp']
+        pileup_val = ['AcceptAll', 'RejectPileUp', 'TracePileUp', 'RejectSingle']
         self.PileUp_wid.set(pileup_val[val])
 
         off = 19
@@ -1299,7 +1405,7 @@ class pixie16:
         off = 24
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.CFD_Dealy_wid.delete(0, tk.END)
-        self.CFD_Dealy_wid.insert(0, '%.3f'%val)
+        self.CFD_Dealy_wid.insert(0, '%.3f'%(val/1000.))
 
         off = 25
         val = self.reg_map[off]['value'][self.cur_ch_num]
@@ -1314,12 +1420,12 @@ class pixie16:
         off = 27
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.Trace_PreTrig_wid.delete(0, tk.END)
-        self.Trace_PreTrig_wid.insert(0, '%.3f'%val)
+        self.Trace_PreTrig_wid.insert(0, '%.3f'%(val/1000.))
 
         off = 28
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.Trace_Length_wid.delete(0, tk.END)
-        self.Trace_Length_wid.insert(0, '%.3f'%val)
+        self.Trace_Length_wid.insert(0, '%.3f'%(val/1000.))
 
         off = 29
         val = self.reg_map[off]['value'][self.cur_ch_num]
@@ -1329,56 +1435,214 @@ class pixie16:
         off = 30
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.QDC_Len0_wid.delete(0, tk.END)
-        self.QDC_Len0_wid.insert(0, '%.3f'%val)
+        self.QDC_Len0_wid.insert(0, '%.3f'%(val/1000.))
 
         off = 31
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.QDC_Len1_wid.delete(0, tk.END)
-        self.QDC_Len1_wid.insert(0, '%.3f'%val)
+        self.QDC_Len1_wid.insert(0, '%.3f'%(val/1000.))
 
         off = 32
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.QDC_Len2_wid.delete(0, tk.END)
-        self.QDC_Len2_wid.insert(0, '%.3f'%val)
+        self.QDC_Len2_wid.insert(0, '%.3f'%(val/1000.))
 
         off = 33
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.QDC_Len3_wid.delete(0, tk.END)
-        self.QDC_Len3_wid.insert(0, '%.3f'%val)
+        self.QDC_Len3_wid.insert(0, '%.3f'%(val/1000.))
 
         off = 34
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.QDC_Len4_wid.delete(0, tk.END)
-        self.QDC_Len4_wid.insert(0, '%.3f'%val)
+        self.QDC_Len4_wid.insert(0, '%.3f'%(val/1000.))
 
         off = 35
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.QDC_Len5_wid.delete(0, tk.END)
-        self.QDC_Len5_wid.insert(0, '%.3f'%val)
+        self.QDC_Len5_wid.insert(0, '%.3f'%(val/1000.))
 
         off = 36
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.QDC_Len6_wid.delete(0, tk.END)
-        self.QDC_Len6_wid.insert(0, '%.3f'%val)
+        self.QDC_Len6_wid.insert(0, '%.3f'%(val/1000.))
 
         off = 37
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.QDC_Len7_wid.delete(0, tk.END)
-        self.QDC_Len7_wid.insert(0, '%.3f'%val)
+        self.QDC_Len7_wid.insert(0, '%.3f'%(val/1000.))
 
         off = 38
         val = self.reg_map[off]['value'][self.cur_ch_num]
         self.BLCUT_wid.delete(0, tk.END)
         self.BLCUT_wid.insert(0, str(val))
 
+        off = 42
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        gain_val = ['Local FT', 'Mod FT', 'Ch VT']
+        self.ChFT_wid.set(gain_val[val])
+
+        off = 43
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.ChVT_var.set(val)
+
+        off = 44
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        gain_val = ['ChanTrig', 'ChInFP']
+        self.ChVT_sel_wid.set(gain_val[val])
+
+        off = 45
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.ModVT_var.set(val)
+
+        off = 46
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        gain_val = ['Mod_VT', 'ModInFP']
+        self.ModVT_sel_wid.set(gain_val[val])
+
+        off = 47
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.Veto_var.set(val)
+
+        off = 48
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        gain_val = ['ChInFP', 'Ch_VT']
+        self.ChVeto_sel_wid.set(gain_val[val])
+
+        off = 49
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        gain_val = ['ModIn_FP', 'Mod_VT']
+        self.ModVeto_wid.set(gain_val[val])
+
+        off = 50
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.ChanTrig_ChVT_val.set(val)
+
+        off = 51
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.MaskL_wid.delete(0, tk.END)
+        self.MaskL_wid.insert(0, '%04x'%val)
+
+        off = 52
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.MaskM_wid.delete(0, tk.END)
+        self.MaskM_wid.insert(0, '%04x'%val)
+
+        off = 53
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.MaskR_wid.delete(0, tk.END)
+        self.MaskR_wid.insert(0, '%04x'%val)
+
+        off = 54
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.MulTh_wid.delete(0, tk.END)
+        self.MulTh_wid.insert(0, str(val))
+
+        off = 55
+        txt = self.reg_map[off]['name']
+        self.CoinThL_wid.delete(0, tk.END)
+        self.CoinThL_wid.insert(0, str(val))
+
+        off = 56
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.CoinThM_wid.delete(0, tk.END)
+        self.CoinThM_wid.insert(0, str(val))
+
+        off = 57
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.CoinThR_wid.delete(0, tk.END)
+        self.CoinThR_wid.insert(0, str(val))
+
+        off = 58
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        gain_val = ['ChM', 'ChR', 'ChL']
+        self.Group0_wid.set(gain_val[val])
+
+        off = 59
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        gain_val = ['ChM', 'ChR', 'ChL']
+        self.Group1_wid.set(gain_val[val])
+        
+        off = 60
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        gain_val = ['ChM', 'ChR', 'ChL']
+        self.Group2_wid.set(gain_val[val])
+
+        off = 61
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        gain_val = ['ChM', 'ChR', 'ChL']
+        self.Group3_wid.set(gain_val[val])
+
+        off = 62
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.Group0ch_wid.delete(0, tk.END)
+        self.Group0ch_wid.insert(0, str(val))
+
+        off = 63
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.Group1ch_wid.delete(0, tk.END)
+        self.Group1ch_wid.insert(0, str(val))
+
+        off = 64
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.Group2ch_wid.delete(0, tk.END)
+        self.Group2ch_wid.insert(0, str(val))
+
+        off = 65
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.Group3ch_wid.delete(0, tk.END)
+        self.Group3ch_wid.insert(0, str(val))
+
+        off = 66
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.LCFT_Delay_wid.delete(0, tk.END)
+        self.LCFT_Delay_wid.insert(0, '%.3f'%(val/1000.))
+
+        off = 67
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.LCFT_Width_wid.delete(0, tk.END)
+        self.LCFT_Width_wid.insert(0, '%.3f'%(val/1000.))
+
+        off = 68
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.FIFO_Delay_wid.delete(0, tk.END)
+        self.FIFO_Delay_wid.insert(0, '%.3f'%(val/1000.))
+
+        off = 69
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.ChVT_Width_wid.delete(0, tk.END)
+        self.ChVT_Width_wid.insert(0, '%.3f'%(val/1000.))
+
+        off = 70
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.ModVT_Width_wid.delete(0, tk.END)
+        self.ModVT_Width_wid.insert(0, '%.3f'%(val/1000.))
+
+        off = 71
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.Veto_Width_wid.delete(0, tk.END)
+        self.Veto_Width_wid.insert(0, '%.3f'%(val/1000.))
+        
+        self.ChNum_wid1.config(state=tk.NORMAL)
+        self.ChNum_wid1.delete(0, tk.END)
+        self.ChNum_wid1.insert(0, str(self.cur_ch_num))
+        self.ChNum_wid1.config(state=tk.DISABLED)
+        
+        # AutoBLCUT
+        off = 87
+        val = self.reg_map[off]['value'][self.cur_ch_num]
+        self.auto_blcut_var.set(val)
+
+
 
     def _XDT_evt(self, e):
         off = 7
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 float(self.XDT_wid.get()))
-        self.reg_map[off]['value'] = [val for i in range(16)]
+        val = int(val*1000)
+        self.reg_map[off]['value'][self.cur_ch_num] = val
         self.XDT_wid.delete(0, tk.END)
-        self.XDT_wid.insert(0, '%.3f'%val)
+        self.XDT_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -1409,6 +1673,24 @@ class pixie16:
     def _CPLD_evt(self):
         off = 3
         self.reg_map[off]['value'] = [self.CPLD_var.get() for i in range(16)]
+        print('new %s selected: ' % self.reg_map[off]['name'])
+        print(self.reg_map[off]['value'])
+
+
+    def _rev_evt(self, e):
+        off = 88
+        rev = self.rev_wid.get()
+        if rev == 'rev_B':
+            val = 0
+        elif rev == 'rev_C':
+            val = 1
+        elif rev == 'rev_D':
+            val = 2
+        elif rev == 'rev_F':
+            val = 3
+        elif rev == 'rev_H':
+            val = 4
+        self.reg_map[off]['value'] = [val for i in range(16)]
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -1533,7 +1815,7 @@ class pixie16:
         off = 44
         txt = self.reg_map[off]['name']
         val = self.reg_map[off]['value'][self.cur_ch_num]
-        gain_val = ['ChanTrig', 'ChanGate']
+        gain_val = ['ChanTrig', 'ChInFP']
         #tk.Label(win, anchor=tk.W, text=txt).place(x=10, y=35, width=60,
                 #height=25)
         self.ChVT_sel_wid = ttk.Combobox(win, state='readonly',
@@ -1557,7 +1839,7 @@ class pixie16:
         off = 46
         txt = self.reg_map[off]['name']
         val = self.reg_map[off]['value'][self.cur_ch_num]
-        gain_val = ['Mod_VT', 'ModGate']
+        gain_val = ['Mod_VT', 'ModInFP']
         #tk.Label(win, anchor=tk.W, text=txt).place(x=10, y=35, width=60,
                 #height=25)
         self.ModVT_sel_wid = ttk.Combobox(win, state='readonly',
@@ -1581,7 +1863,7 @@ class pixie16:
         off = 48
         txt = self.reg_map[off]['name']
         val = self.reg_map[off]['value'][self.cur_ch_num]
-        gain_val = ['ChanTrig', 'ChInFP']
+        gain_val = ['ChInFP', 'Ch_VT']
         tk.Label(win, anchor=tk.W, text=txt).place(x=490, y=35, width=60,
                 height=25)
         self.ChVeto_sel_wid = ttk.Combobox(win, state='readonly',
@@ -1594,7 +1876,7 @@ class pixie16:
         off = 49
         txt = self.reg_map[off]['name']
         val = self.reg_map[off]['value'][self.cur_ch_num]
-        gain_val = ['Mod_VT', 'ModIn_FP']
+        gain_val = ['ModIn_FP', 'Mod_VT']
         tk.Label(win, anchor=tk.W, text=txt).place(x=630, y=35, width=70,
                 height=25)
         self.ModVeto_wid = ttk.Combobox(win, state='readonly',
@@ -1604,7 +1886,7 @@ class pixie16:
         self.ModVeto_wid.bind("<<ComboboxSelected>>", self._modveto_sel_evt)
 
         # ChanTrig(Ch VT)
-        tk.Label(win, bg='yellow', text='ChanTrig(Ch VT)').place(x=10, y=68,
+        tk.Label(win, bg='orange', text='ChanTrig(Ch VT)').place(x=10, y=68,
                 width=100, height=20)
         self.ChanTrig_frm = tk.Frame(win, height=190, width=125, relief =
                 tk.GROOVE, borderwidth = 2)
@@ -1635,7 +1917,7 @@ class pixie16:
 
         # Mul/Coin Trig Set
         win = self.Ch_Trig_set
-        tk.Label(win, bg='yellow', text='Mul/Coin Trig Set').place(x=140, y=68,
+        tk.Label(win, bg='orange', text='Mul/Coin Trig Set').place(x=140, y=68,
                 width=110, height=20)
         self.Mul_Coin_Trig_frm = tk.Frame(win, height=190, width=240, relief =
                 tk.GROOVE, borderwidth = 2)
@@ -1721,7 +2003,7 @@ class pixie16:
 
         # Group Trig Sel, From Ch#
         win = self.Ch_Trig_set
-        tk.Label(win, bg='yellow', text='Group Trig Sel, From Ch#').place(x=385,
+        tk.Label(win, bg='orange', text='Group Trig Sel, From Ch#').place(x=385,
                 y=68, width=160, height=20)
         self.Group_Trig_Sel = tk.Frame(win, height=190, width=180, relief =
                 tk.GROOVE, borderwidth = 2)
@@ -1732,7 +2014,7 @@ class pixie16:
         off = 58
         txt = self.reg_map[off]['name']
         val = self.reg_map[off]['value'][self.cur_ch_num]
-        gain_val = ['ChL', 'ChM', 'ChR']
+        gain_val = ['ChM', 'ChR', 'ChL']
         tk.Label(win, anchor=tk.W, text=txt).place(x=5, y=5, width=60,
                 height=25)
         self.Group0_wid = ttk.Combobox(win, state='readonly', values=gain_val)
@@ -1744,7 +2026,7 @@ class pixie16:
         off = 59
         txt = self.reg_map[off]['name']
         val = self.reg_map[off]['value'][self.cur_ch_num]
-        gain_val = ['ChL', 'ChM', 'ChR']
+        gain_val = ['ChM', 'ChR', 'ChL']
         tk.Label(win, anchor=tk.W, text=txt).place(x=5, y=35, width=60,
                 height=25)
         self.Group1_wid = ttk.Combobox(win, state='readonly', values=gain_val)
@@ -1757,7 +2039,7 @@ class pixie16:
         off = 60
         txt = self.reg_map[off]['name']
         val = self.reg_map[off]['value'][self.cur_ch_num]
-        gain_val = ['ChL', 'ChM', 'ChR']
+        gain_val = ['ChM', 'ChR', 'ChL']
         tk.Label(win, anchor=tk.W, text=txt).place(x=5, y=65, width=60,
                 height=25)
         self.Group2_wid = ttk.Combobox(win, state='readonly', values=gain_val)
@@ -1770,7 +2052,7 @@ class pixie16:
         off = 61
         txt = self.reg_map[off]['name']
         val = self.reg_map[off]['value'][self.cur_ch_num]
-        gain_val = ['ChL', 'ChM', 'ChR']
+        gain_val = ['ChM', 'ChR', 'ChL']
         tk.Label(win, anchor=tk.W, text=txt).place(x=5, y=95, width=60,
                 height=25)
         self.Group3_wid = ttk.Combobox(win, state='readonly', values=gain_val)
@@ -1824,7 +2106,7 @@ class pixie16:
 
         # delay and stretch (in us unit)
         win = self.Ch_Trig_set
-        tk.Label(win, bg='yellow', 
+        tk.Label(win, bg='orange', 
                 text='delay and stretch (in us unit)').place(
                         x=570, y=68, width=180, height=20)
         self.delay_stretch = tk.Frame(win, height=190, width=190, relief =
@@ -1840,7 +2122,7 @@ class pixie16:
                 height=25)
         self.LCFT_Delay_wid = tk.Entry(win)
         self.LCFT_Delay_wid.place(x=90, y=5, width=60, height=25)
-        self.LCFT_Delay_wid.insert(0, '%.3f'%val)
+        self.LCFT_Delay_wid.insert(0, '%.3f'%(val/1000.))
         self.LCFT_Delay_wid.bind('<Return>',self._lcft_delay_evt)
 
 
@@ -1852,7 +2134,7 @@ class pixie16:
                 height=25)
         self.LCFT_Width_wid = tk.Entry(win)
         self.LCFT_Width_wid.place(x=90, y=35, width=60, height=25)
-        self.LCFT_Width_wid.insert(0, '%.3f'%val)
+        self.LCFT_Width_wid.insert(0, '%.3f'%(val/1000.))
         self.LCFT_Width_wid.bind('<Return>',self._lcft_width_evt)
 
 
@@ -1864,7 +2146,7 @@ class pixie16:
                 height=25)
         self.FIFO_Delay_wid = tk.Entry(win)
         self.FIFO_Delay_wid.place(x=90, y=65, width=60, height=25)
-        self.FIFO_Delay_wid.insert(0, '%.3f'%val)
+        self.FIFO_Delay_wid.insert(0, '%.3f'%(val/1000.))
         self.FIFO_Delay_wid.bind('<Return>',self._fifi_delay_evt)
 
         # ChVT Width
@@ -1875,7 +2157,7 @@ class pixie16:
                 height=25)
         self.ChVT_Width_wid = tk.Entry(win)
         self.ChVT_Width_wid.place(x=90, y=95, width=60, height=25)
-        self.ChVT_Width_wid.insert(0, '%.3f'%val)
+        self.ChVT_Width_wid.insert(0, '%.3f'%(val/1000.))
         self.ChVT_Width_wid.bind('<Return>',self._chvt_width_evt)
 
         # ModVT Width
@@ -1886,7 +2168,7 @@ class pixie16:
                 height=25)
         self.ModVT_Width_wid = tk.Entry(win)
         self.ModVT_Width_wid.place(x=90, y=125, width=60, height=25)
-        self.ModVT_Width_wid.insert(0, '%.3f'%val)
+        self.ModVT_Width_wid.insert(0, '%.3f'%(val/1000.))
         self.ModVT_Width_wid.bind('<Return>',self._modvt_width_evt)
 
         # Veto Width
@@ -1897,7 +2179,7 @@ class pixie16:
                 height=25)
         self.Veto_Width_wid = tk.Entry(win)
         self.Veto_Width_wid.place(x=90, y=155, width=60, height=25)
-        self.Veto_Width_wid.insert(0, '%.3f'%val)
+        self.Veto_Width_wid.insert(0, '%.3f'%(val/1000.))
         self.Veto_Width_wid.bind('<Return>',self._veto_width_evt)
 
         # Ext_ValTrig_In
@@ -2019,7 +2301,7 @@ class pixie16:
         off = 77
         txt = self.reg_map[off]['name']
         val = self.reg_map[off]['value'][self.cur_ch_num]
-        gain_val = ['EXT_VT_FP', 'EXT_FT_FP']
+        gain_val = ['EXT_FT_FP', 'EXT_VT_FP']
         #tk.Label(win, anchor=tk.W, text=txt).place(x=10, y=35, width=60,
                 #height=25)
         self.Ext_FT_Sel_wid = ttk.Combobox(win, state='readonly',
@@ -2180,6 +2462,7 @@ class pixie16:
         self.Fo7_sel_wid.set(gain_val[val])
         self.Fo7_sel_wid.place(x=80, y=95, width=95, height=25)
         self.Fo7_sel_wid.bind("<<ComboboxSelected>>", self._Fo7_Sel_evt)
+        
 
 
     def _Fo7_Sel_evt(self, e):
@@ -2304,9 +2587,9 @@ class pixie16:
     def _ext_ft_sel_evt(self, e):
         off = 77
         if self.Ext_FT_Sel_wid.get() == 'EXT_VT_FP':
-            val = 0
-        elif self.Ext_FT_Sel_wid.get() == 'EXT_FT_FP':
             val = 1
+        elif self.Ext_FT_Sel_wid.get() == 'EXT_FT_FP':
+            val = 0
         self.reg_map[off]['value'] = [val for i in range(16)]
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
@@ -2373,10 +2656,11 @@ class pixie16:
     def _veto_width_evt(self, e):
         off = 71
         val = self._get_rounded_val(self.reg_map[off]['name'],
-                int(self.Veto_Width_wid.get()))
+                float(self.Veto_Width_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.Veto_Width_wid.delete(0, tk.END)
-        self.Veto_Width_wid.insert(0, '%.3f'%val)
+        self.Veto_Width_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -2386,10 +2670,11 @@ class pixie16:
     def _modvt_width_evt(self, e):
         off = 70
         val = self._get_rounded_val(self.reg_map[off]['name'],
-                int(self.ModVT_Width_wid.get()))
+                float(self.ModVT_Width_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.ModVT_Width_wid.delete(0, tk.END)
-        self.ModVT_Width_wid.insert(0, '%.3f'%val)
+        self.ModVT_Width_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -2400,10 +2685,11 @@ class pixie16:
     def _chvt_width_evt(self, e):
         off = 69
         val = self._get_rounded_val(self.reg_map[off]['name'],
-                int(self.ChVT_Width_wid.get()))
+                float(self.ChVT_Width_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.ChVT_Width_wid.delete(0, tk.END)
-        self.ChVT_Width_wid.insert(0, '%.3f'%val)
+        self.ChVT_Width_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -2412,10 +2698,11 @@ class pixie16:
     def _fifi_delay_evt(self, e):
         off = 68
         val = self._get_rounded_val(self.reg_map[off]['name'],
-                int(self.FIFO_Delay_wid.get()))
+                float(self.FIFO_Delay_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.FIFO_Delay_wid.delete(0, tk.END)
-        self.FIFO_Delay_wid.insert(0, '%.3f'%val)
+        self.FIFO_Delay_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -2424,10 +2711,11 @@ class pixie16:
     def _lcft_width_evt(self, e):
         off = 67
         val = self._get_rounded_val(self.reg_map[off]['name'],
-                int(self.LCFT_Width_wid.get()))
+                float(self.LCFT_Width_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.LCFT_Width_wid.delete(0, tk.END)
-        self.LCFT_Width_wid.insert(0, '%.3f'%val)
+        self.LCFT_Width_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -2436,10 +2724,11 @@ class pixie16:
     def _lcft_delay_evt(self, e):
         off = 66
         val = self._get_rounded_val(self.reg_map[off]['name'],
-                int(self.LCFT_Delay_wid.get()))
+                float(self.LCFT_Delay_wid.get()))
+        val = int(val*1000)
         self.reg_map[off]['value'][self.cur_ch_num] = val
         self.LCFT_Delay_wid.delete(0, tk.END)
-        self.LCFT_Delay_wid.insert(0, '%.3f'%val)
+        self.LCFT_Delay_wid.insert(0, '%.3f'%(val/1000.))
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -2448,7 +2737,7 @@ class pixie16:
         off = 65
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 int(self.Group3ch_wid.get()))
-        self.reg_map[off]['value'][self.cur_ch_num] = val
+        self.reg_map[off]['value'] = [val for i in range(16)]
         self.Group3ch_wid.delete(0, tk.END)
         self.Group3ch_wid.insert(0, str(val))
         print('new %s selected: ' % self.reg_map[off]['name'])
@@ -2460,7 +2749,7 @@ class pixie16:
         off = 64
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 int(self.Group2ch_wid.get()))
-        self.reg_map[off]['value'][self.cur_ch_num] = val
+        self.reg_map[off]['value'] = [val for i in range(16)]
         self.Group2ch_wid.delete(0, tk.END)
         self.Group2ch_wid.insert(0, str(val))
         print('new %s selected: ' % self.reg_map[off]['name'])
@@ -2473,7 +2762,7 @@ class pixie16:
         off = 63
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 int(self.Group1ch_wid.get()))
-        self.reg_map[off]['value'][self.cur_ch_num] = val
+        self.reg_map[off]['value'] = [val for i in range(16)]
         self.Group1ch_wid.delete(0, tk.END)
         self.Group1ch_wid.insert(0, str(val))
         print('new %s selected: ' % self.reg_map[off]['name'])
@@ -2486,7 +2775,7 @@ class pixie16:
         off = 62
         val = self._get_rounded_val(self.reg_map[off]['name'],
                 int(self.Group0ch_wid.get()))
-        self.reg_map[off]['value'][self.cur_ch_num] = val
+        self.reg_map[off]['value'] = [val for i in range(16)]
         self.Group0ch_wid.delete(0, tk.END)
         self.Group0ch_wid.insert(0, str(val))
         print('new %s selected: ' % self.reg_map[off]['name'])
@@ -2500,12 +2789,12 @@ class pixie16:
     def _group3_evt(self, e):
         off = 61
         if self.Group3_wid.get() == 'ChL':
-            val = 0
-        elif self.Group3_wid.get() == 'ChM':
-            val = 1
-        elif self.Group3_wid.get() == 'ChR':
             val = 2
-        self.reg_map[off]['value'][self.cur_ch_num] = val
+        elif self.Group3_wid.get() == 'ChM':
+            val = 0
+        elif self.Group3_wid.get() == 'ChR':
+            val = 1
+        self.reg_map[off]['value'] = [val for i in range(16)]
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -2514,12 +2803,12 @@ class pixie16:
     def _group2_evt(self, e):
         off = 60
         if self.Group2_wid.get() == 'ChL':
-            val = 0
-        elif self.Group2_wid.get() == 'ChM':
-            val = 1
-        elif self.Group2_wid.get() == 'ChR':
             val = 2
-        self.reg_map[off]['value'][self.cur_ch_num] = val
+        elif self.Group2_wid.get() == 'ChM':
+            val = 0
+        elif self.Group2_wid.get() == 'ChR':
+            val = 1
+        self.reg_map[off]['value'] = [val for i in range(16)]
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -2528,12 +2817,12 @@ class pixie16:
     def _group1_evt(self, e):
         off = 59
         if self.Group1_wid.get() == 'ChL':
-            val = 0
-        elif self.Group1_wid.get() == 'ChM':
-            val = 1
-        elif self.Group1_wid.get() == 'ChR':
             val = 2
-        self.reg_map[off]['value'][self.cur_ch_num] = val
+        elif self.Group1_wid.get() == 'ChM':
+            val = 0
+        elif self.Group1_wid.get() == 'ChR':
+            val = 1
+        self.reg_map[off]['value'] = [val for i in range(16)]
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -2545,12 +2834,12 @@ class pixie16:
     def _group0_evt(self, e):
         off = 58
         if self.Group0_wid.get() == 'ChL':
-            val = 0
-        elif self.Group0_wid.get() == 'ChM':
-            val = 1
-        elif self.Group0_wid.get() == 'ChR':
             val = 2
-        self.reg_map[off]['value'][self.cur_ch_num] = val
+        elif self.Group0_wid.get() == 'ChM':
+            val = 0
+        elif self.Group0_wid.get() == 'ChR':
+            val = 1
+        self.reg_map[off]['value'] = [val for i in range(16)]
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
 
@@ -2662,9 +2951,9 @@ class pixie16:
     def _modveto_sel_evt(self, e):
         off = 49
         if self.ModVeto_wid.get() == 'Mod_VT':
-            val = 0
-        elif self.ModVeto_wid.get() == 'ModIn_FP':
             val = 1
+        elif self.ModVeto_wid.get() == 'ModIn_FP':
+            val = 0
         self.reg_map[off]['value'][self.cur_ch_num] = val
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
@@ -2674,10 +2963,10 @@ class pixie16:
 
     def _chveto_sel_evt(self, e):
         off = 48
-        if self.ChVeto_sel_wid.get() == 'ChanTrig':
-            val = 0
-        elif self.ChVeto_sel_wid.get() == 'ChInFP':
+        if self.ChVeto_sel_wid.get() == 'Ch_VT':
             val = 1
+        elif self.ChVeto_sel_wid.get() == 'ChInFP':
+            val = 0
         self.reg_map[off]['value'][self.cur_ch_num] = val
         print('new %s selected: ' % self.reg_map[off]['name'])
         print(self.reg_map[off]['value'])
@@ -2699,7 +2988,7 @@ class pixie16:
         off = 46
         if self.ModVT_sel_wid.get() == 'Mod_VT':
             val = 0
-        elif self.ModVT_sel_wid.get() == 'ModGate':
+        elif self.ModVT_sel_wid.get() == 'ModInFP':
             val = 1
         self.reg_map[off]['value'][self.cur_ch_num] = val
         print('new %s selected: ' % self.reg_map[off]['name'])
@@ -2724,7 +3013,7 @@ class pixie16:
         off = 44
         if self.ChVT_sel_wid.get() == 'ChanTrig':
             val = 0
-        elif self.ChVT_sel_wid.get() == 'ChanGate':
+        elif self.ChVT_sel_wid.get() == 'ChInFP':
             val = 1
         self.reg_map[off]['value'][self.cur_ch_num] = val
         print('new %s selected: ' % self.reg_map[off]['name'])
@@ -3190,6 +3479,12 @@ class pixie16:
         return 'OK' 
 
     def _init_reg_map(self):
+        # some of the register values are of float type. The initial design of
+        # the register map requires that all the register values representable
+        # by 64-bit integers. In the GUI, the allowed accuracy for the
+        # float-type numbers are 0.001, therefore, we convert them to integers
+        # by expressions like 'int(float_val*1000)' or backwords:
+        # 'float(int_val)/1000'
         self.reg_map = []
         self.reg_map.append({
                  'off'    : 0,
@@ -3199,7 +3494,7 @@ class pixie16:
                  })
         self.reg_map.append({
                  'off'    : 1,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [2 for i in range(16)],
                  'name'   : 'E_Filter_Range',
                  'comment': 'Energy filter range'
                  })
@@ -3235,9 +3530,11 @@ class pixie16:
                  })
         self.reg_map.append({
                  'off'    : 7,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [60 for i in range(16)],
                  'name'   : 'XDT (us)',
-                 'comment': 'XDT (us)'
+                 'comment': 'XDT (us)',
+                 # need an initial xwait value (1000 == 10.0 us)
+                 'xwait'  : [6 for i in range(16)]
                  })
         self.reg_map.append({
                  'off'    : 8,
@@ -3247,55 +3544,59 @@ class pixie16:
                  })
         self.reg_map.append({
                  'off'    : 9,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [1 for i in range(16)],
                  'name'   : 'POL',
                  'comment': 'POL'
                  })
         self.reg_map.append({
                  'off'    : 10,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [1 for i in range(16)],
                  'name'   : 'Gain',
                  'comment': 'Gain'
                  })
         self.reg_map.append({
                  'off'    : 11,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [10 for i in range(16)],
                  'name'   : 'Offset(%)',
                  'comment': 'Offset(%)'
                  })
         self.reg_map.append({
                  'off'    : 12,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [0.1*1000 for i in range(16)],
                  'name'   : 'T_Risetime(us)',
                  'comment': 'T_Risetime(us)'
                  })
         self.reg_map.append({
                  'off'    : 13,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [0.1*1000 for i in range(16)],
                  'name'   : 'T_FlatTop(us)',
                  'comment': 'T_FlatTop(us)'
                  })
         self.reg_map.append({
                  'off'    : 14,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [30 for i in range(16)],
                  'name'   : 'T_Thresh',
                  'comment': 'T_Thresh'
                  })
         self.reg_map.append({
                  'off'    : 15,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [5.04*1000 for i in range(16)],
                  'name'   : 'E_Risetime(us)',
-                 'comment': 'E_Risetime(us)'
+                 'comment': 'E_Risetime(us)',
+                 'paf_len': [1656 for i in range(16)],
+                 'trig_dl': [656 for i in range(16)],
+                 'peak_sample': [81 for i in range(16)],
+                 'peak_sep'   : [83 for i in range(16)],
                  })
         self.reg_map.append({
                  'off'    : 16,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [1.6*1000 for i in range(16)],
                  'name'   : 'E_FlatTop(us)',
                  'comment': 'E_FlatTop(us)'
                  })
         self.reg_map.append({
                  'off'    : 17,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [46.25*1000 for i in range(16)],
                  'name'   : 'Tau(us)',
                  'comment': 'Tau(us)'
                  })
@@ -3319,13 +3620,13 @@ class pixie16:
                  })
         self.reg_map.append({
                  'off'    : 21,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [1 for i in range(16)],
                  'name'   : 'ESumEna',
                  'comment': 'ESumEna'
                  })
         self.reg_map.append({
                  'off'    : 22,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [1 for i in range(16)],
                  'name'   : 'CFDEna',
                  'comment': 'CFDEna'
                  })
@@ -3337,91 +3638,91 @@ class pixie16:
                  })
         self.reg_map.append({
                  'off'    : 24,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [0.08*1000 for i in range(16)],
                  'name'   : 'CFD_Dealy(us)',
                  'comment': 'CFD_Dealy(us)'
                  })
         self.reg_map.append({
                  'off'    : 25,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [120 for i in range(16)],
                  'name'   : 'CFD_Threshol',
                  'comment': 'CFD_Threshol'
                  })
         self.reg_map.append({
                  'off'    : 26,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [1 for i in range(16)],
                  'name'   : 'RecordTrace',
                  'comment': 'RecordTrace'
                  })
         self.reg_map.append({
                  'off'    : 27,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [10*1000 for i in range(16)],
                  'name'   : 'Trace_PreTrig(us)',
                  'comment': 'Trace_PreTrig(us)'
                  })
         self.reg_map.append({
                  'off'    : 28,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [50*1000 for i in range(16)],
                  'name'   : 'Trace_Length(us)',
                  'comment': 'Trace_Length(us)'
                  })
         self.reg_map.append({
                  'off'    : 29,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [1 for i in range(16)],
                  'name'   : 'RecordQDC',
                  'comment': 'RecordQDC'
                  })
         self.reg_map.append({
                  'off'    : 30,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [0.3*1000 for i in range(16)],
                  'name'   : 'QDC Len0(us)',
                  'comment': 'QDC Len0(us)'
                  })
         self.reg_map.append({
                  'off'    : 31,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [0.63*1000 for i in range(16)],
                  'name'   : 'QDC Len1(us)',
                  'comment': 'QDC Len1(us)'
                  })
         self.reg_map.append({
                  'off'    : 32,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [0.88*1000 for i in range(16)],
                  'name'   : 'QDC Len2(us)',
                  'comment': 'QDC Len2(us)'
                  })
         self.reg_map.append({
                  'off'    : 33,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [1.13*1000 for i in range(16)],
                  'name'   : 'QDC Len3(us)',
                  'comment': 'QDC Len3(us)'
                  })
         self.reg_map.append({
                  'off'    : 34,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [1.38*1000 for i in range(16)],
                  'name'   : 'QDC Len4(us)',
                  'comment': 'QDC Len4(us)'
                  })
         self.reg_map.append({
                  'off'    : 35,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [1.63*1000 for i in range(16)],
                  'name'   : 'QDC Len5(us)',
                  'comment': 'QDC Len5(us)'
                  })
         self.reg_map.append({
                  'off'    : 36,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [1.88*1000 for i in range(16)],
                  'name'   : 'QDC Len6(us)',
                  'comment': 'QDC Len6(us)'
                  })
         self.reg_map.append({
                  'off'    : 37,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [2.13*1000 for i in range(16)],
                  'name'   : 'QDC Len7(us)',
                  'comment': 'QDC Len7(us)'
                  })
         self.reg_map.append({
                  'off'    : 38,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [5 for i in range(16)],
                  'name'   : 'BLCUT',
                  'comment': 'BLCUT'
                  })
@@ -3493,7 +3794,7 @@ class pixie16:
                  })
         self.reg_map.append({
                  'off'    : 50,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [1 for i in range(16)],
                  'name'   : 'ChanTrig_ChVT',
                  'comment': 'ChanTrig_ChVT'
                  })
@@ -3595,13 +3896,13 @@ class pixie16:
                  })
         self.reg_map.append({
                  'off'    : 67,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [0.1*1000 for i in range(16)],
                  'name'   : 'LCFT Width',
                  'comment': 'LCFT Width'
                  })
         self.reg_map.append({
                  'off'    : 68,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [0.2*1000 for i in range(16)],
                  'name'   : 'FIFO Delay',
                  'comment': 'FIFO Delay'
                  })
@@ -3613,13 +3914,13 @@ class pixie16:
                  })
         self.reg_map.append({
                  'off'    : 70,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [1.5*1000 for i in range(16)],
                  'name'   : 'ModVT Width',
                  'comment': 'ModVT Width'
                  })
         self.reg_map.append({
                  'off'    : 71,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [0.3*1000 for i in range(16)],
                  'name'   : 'Veto Width',
                  'comment': 'Veto Width'
                  })
@@ -3713,16 +4014,456 @@ class pixie16:
                  'name'   : 'Fo7_sel',
                  'comment': 'Fo7_sel'
                  })
+        self.reg_map.append({
+                 'off'    : 87,
+                 'value'  : [1 for i in range(16)],
+                 'name'   : 'AutoBLCUT',
+                 'comment': 'AutoBLCUT'
+                 })
+        self.reg_map.append({
+                 'off'    : 88,
+                 'value'  : [3 for i in range(16)],
+                 'name'   : 'revision',
+                 'comment': 'revision'
+                 })
+        
+        # below are other registers not exposed to the user.
+        # off = 1002: read only, fifo status of all modules (sum of total
+        #             number of words of all modules to be read out)
+        # off = 1003: write only, a dumy write to this register will start
+        #             NEW_RUN Syncronisely. This includes the following
+        #             actions: 
+        #                 1, Pixie16WriteSglModPar("SYNCH_WAIT")
+        #                 2, Pixie16WriteSglModPar("IN_SYNCH")
+        #                 3, Pixie16StartListModeRun(Number_Of_Modules)
+        #                 4, Pixie16CheckRunStatus(Number_Of_Modules)
+        #                 5, Pixie16ReadSglModPar("IN_SYNCH")
+        # off = 1007: write only, a dumy write to this register stops list mode
+        #             run. Before returning, run status will be checked for
+        #             every module to make sure all modules are stopped.
+        # off = 1008: read/write, dsp slot number
+        # off = 1009: read/write, dsp crate number
 
 
 
 
     def _get_rounded_val(self, name, val):
+
+
+        # the code below are translated from the pixie16 api library
+        # (channel.cpp)
+        new_val = val
         if name == 'XDT (us)':
-            pass
+            # convert to int
+            off = 7
+            value = float(val)
+            current_xwait = self._get_reg_int_val(off)
+            xwait = round(value * hw_limit_DSP_CLOCK_MHZ)
+            if config_adc_msps == 100 or config_adc_msps == 500:
+                multiple = 6
+            else:
+                multiple = 8
+            if xwait < multiple:
+                xwait = multiple
+            if xwait > current_xwait:
+                xwait = int(math.ceil(float(xwait) / multiple) * multiple)
+            else:
+                xwait = int(math.floor(float(xwait) / multiple) * multiple)
+            self.reg_map[off]['xwait'][self.cur_ch_num] = xwait
+            
+            # convert back to float
+            value = xwait
+            new_val = float(value) / hw_limit_DSP_CLOCK_MHZ
         elif name == 'Offset(%)':
+            if val < 1:
+                val = 1
+            if val > 99:
+                val = 99
+            new_val = val
+        elif name == 'T_Risetime(us)':
+            # convert to int
+            value = float(val)
+            off = 2
+            ffr_mask = 1<<self.reg_map[off]['value'][self.cur_ch_num]
+            off = 13
+            fast_gap = self._get_reg_int_val(off)
+            fast_length = int(round((value * config_fpga_clk_mhz) /
+                ffr_mask))
+            if (fast_length + fast_gap) > hw_limit_FASTFILTER_MAX_LEN:
+                fast_length = hw_limit_FASTFILTER_MAX_LEN - fast_gap
+            if fast_length < hw_limit_FASTLENGTH_MIN_LEN:
+                fast_length = hw_limit_FASTLENGTH_MIN_LEN
+                if (fast_length + fast_gap) > hw_limit_FASTFILTER_MAX_LEN:
+                    fast_gap = hw_limit_FASTFILTER_MAX_LEN - hw_limit_FASTLENGTH_MIN_LEN
+
+            # convert back to float
+            fast_length = float(fast_length)
+            new_val = (fast_length * ffr_mask) / config_fpga_clk_mhz
+
+            # also need to change T_FlatTop value
+            fast_gap = float(fast_gap)
+            fast_gap = (fast_gap * ffr_mask) / config_fpga_clk_mhz
+            fast_gap *= 1000
+            off = 13
+            self.reg_map[off]['value'][self.cur_ch_num] = fast_gap
+            self.T_FlatTop_wid.delete(0, tk.END)
+            self.T_FlatTop_wid.insert(0, '%.3f'%(fast_gap/1000.))
+        elif name == 'T_FlatTop(us)':
+            # convert to int
+            value = float(val)
+            off = 2
+            ffr_mask = 1<<self.reg_map[off]['value'][self.cur_ch_num]
+            off = 12
+            fast_length = self._get_reg_int_val(off)
+            fast_gap = int(round((value * config_fpga_clk_mhz) / ffr_mask))
+            if (fast_length + fast_gap) > hw_limit_FASTFILTER_MAX_LEN:
+                fast_gap = hw_limit_FASTFILTER_MAX_LEN - fast_length
+            
+            # convert back to float
+            fast_gap = float(fast_gap)
+            new_val = (fast_gap * ffr_mask) / config_fpga_clk_mhz
+        elif name == 'T_Thresh':
+            # convert to int
+            value = float(val)
+            off = 12
+            fast_length = self._get_reg_int_val(off)
+            print('fast_length: (should be 63): ' + str(fast_length))
+            fast_thresh = int(value * fast_length * config_adc_clk_div)
+            if fast_thresh >= hw_limit_FAST_THRESHOLD_MAX:
+                dbl_fast_thresh = float(fast_thresh)
+                value = (float(hw_limit_FAST_THRESHOLD_MAX) / (dbl_fast_thresh - 0.5)) * dbl_fast_thresh
+                fast_thresh = int(value)
+
+            # convert back to float
+            fast_thresh = float(fast_thresh)
+            new_val = fast_thresh / (fast_length * float(config_adc_clk_div))
+            new_val = int(new_val)
+        elif name == 'E_Risetime(us)':
+            # convert to int
+            off = 1
+            sfr = self.reg_map[off]['value'][self.cur_ch_num] + 1
+            sfr_mask = 1 << sfr
+            value = float(val)
+            slow_length = int(round((value * config_fpga_clk_mhz) / sfr_mask))
+            off = 16
+            slow_gap = self._get_reg_int_val(off)
+            if (slow_length + slow_gap) > hw_limit_SLOWFILTER_MAX_LEN:
+                slow_length = hw_limit_SLOWFILTER_MAX_LEN - slow_gap
+            if slow_length < hw_limit_SLOWLENGTH_MIN_LEN:
+                slow_length = hw_limit_SLOWLENGTH_MIN_LEN
+                if (slow_length + slow_gap) > hw_limit_SLOWFILTER_MAX_LEN:
+                    slow_gap = hw_limit_SLOWFILTER_MAX_LEN - hw_limit_SLOWLENGTH_MIN_LEN
+
+            # convert back to float
+            slow_length = float(slow_length)
+            new_val = (slow_length * sfr_mask) / config_fpga_clk_mhz
+
+            # also need to change E_FlatTop value
+            slow_gap = float(slow_gap)
+            slow_gap = (slow_gap * sfr_mask) / config_fpga_clk_mhz
+            slow_gap *= 1000
+            off = 16
+            self.reg_map[off]['value'][self.cur_ch_num] = slow_gap
+            self.E_FlatTop_wid.delete(0, tk.END)
+            self.E_FlatTop_wid.insert(0, '%.3f'%(slow_gap/1000.))
+            
+            # update fifo (paf_len & trig_delay)
+            off = 2
+            ffr_mask = 1<<self.reg_map[off]['value'][self.cur_ch_num]
+            off = 15
+            paf_length = self.reg_map[off]['paf_len'][self.cur_ch_num]
+            trigger_delay = self.reg_map[off]['trig_dl'][self.cur_ch_num]
+            trace_delay = paf_length - (trigger_delay // ffr_mask)
+            peak_sep = slow_length + slow_gap
+            if sfr == 1:
+                peak_sample = peak_sep - 3
+            elif sfr == 5:
+                peak_sample = peak_sep
+            elif sfr == 4 or sfr == 6:
+                peak_sample = peak_sep - 1
+            else:
+                peak_sample = peak_sep - 2
+            self.reg_map[off]['peak_sample'][self.cur_ch_num] = peak_sample
+            self.reg_map[off]['peak_sep'][self.cur_ch_num] = peak_sep
+            self._update_fifo(trace_delay)
+        elif name == 'E_FlatTop(us)':
+            # convert to int
+            off = 1
+            sfr = self.reg_map[off]['value'][self.cur_ch_num] + 1
+            sfr_mask = 1 << sfr
+            value = float(val)
+            slow_gap = int(round((value * config_fpga_clk_mhz) / sfr_mask))
+            off = 15
+            slow_length = self._get_reg_int_val(off)
+            if (slow_length + slow_gap) > hw_limit_SLOWFILTER_MAX_LEN:
+                slow_gap = hw_limit_SLOWFILTER_MAX_LEN - slow_length
+            if slow_gap < hw_limit_SLOWGAP_MIN_LEN:
+                slow_gap = hw_limit_SLOWGAP_MIN_LEN
+                if (slow_length + slow_gap) > hw_limit_SLOWFILTER_MAX_LEN:
+                    slow_length = hw_limit_SLOWFILTER_MAX_LEN - hw_limit_SLOWGAP_MIN_LEN
+
+            # convert back to float
+            slow_gap = float(slow_gap)
+            new_val = (slow_gap * sfr_mask) / config_fpga_clk_mhz
+
+            # also need to change E_Risetime value
+            slow_length = float(slow_length)
+            slow_length = (slow_length * sfr_mask) / config_fpga_clk_mhz
+            slow_length *= 1000
+            off = 15
+            self.reg_map[off]['value'][self.cur_ch_num] = slow_length
+            self.E_Risetime_wid.delete(0, tk.END)
+            self.E_Risetime_wid.insert(0, '%.3f'%(slow_length/1000.))
+
+            # update fifo (paf_len & trig_delay)
+            off = 2
+            ffr_mask = 1<<self.reg_map[off]['value'][self.cur_ch_num]
+            off = 15
+            paf_length = self.reg_map[off]['paf_len'][self.cur_ch_num]
+            trigger_delay = self.reg_map[off]['trig_dl'][self.cur_ch_num]
+            trace_delay = paf_length - (trigger_delay // ffr_mask)
+            peak_sep = slow_length + slow_gap
+            if sfr == 1:
+                peak_sample = peak_sep - 3
+            elif sfr == 5:
+                peak_sample = peak_sep
+            elif sfr == 4 or sfr == 6:
+                peak_sample = peak_sep - 1
+            else:
+                peak_sample = peak_sep - 2
+            self.reg_map[off]['peak_sample'][self.cur_ch_num] = peak_sample
+            self.reg_map[off]['peak_sep'][self.cur_ch_num] = peak_sep
+            self._update_fifo(trace_delay)
+        elif name == 'Tau(us)':
             pass
-        return val
+        elif name == 'CFD_Dealy(us)':
+            # convert to int
+            value = float(val)
+            cfddelay = int(round(value * config_fpga_clk_mhz))
+            if cfddelay < hw_limit_CFDDELAY_MIN:
+                cfddelay = hw_limit_CFDDELAY_MIN
+            if cfddelay > hw_limit_CFDDELAY_MAX:
+                cfddelay = hw_limit_CFDDELAY_MAX
+
+            # convert back to float
+            value = float(cfddelay)
+            new_val = value / config_fpga_clk_mhz
+        elif name == 'CFD_Threshol':
+            cfdthresh = int(val)
+            if cfdthresh < hw_limit_CFDTHRESH_MIN:
+                cfdthresh = hw_limit_CFDTHRESH_MIN
+            if cfdthresh > hw_limit_CFDTHRESH_MAX:
+                cfdthresh = hw_limit_CFDTHRESH_MAX
+            new_val = float(cfdthresh)
+            new_val = int(new_val)
+        elif name == 'Trace_PreTrig(us)':
+            # convert to int 
+            value = float(val)
+            off = 2
+            ffr_mask = 1<<self.reg_map[off]['value'][self.cur_ch_num]
+            off = 28
+            trace_length = self._get_reg_int_val(off)
+            trace_delay = int(value * config_fpga_clk_mhz / ffr_mask)
+            if trace_delay > trace_length:
+                trace_delay = trace_length // 2
+            if trace_delay > hw_limit_TRACEDELAY_MAX:
+                trace_delay = hw_limit_TRACEDELAY_MAX
+            self._update_fifo(trace_delay)
+
+            # convert back to float
+            off = 15
+            paf_length = float(self.reg_map[off]['paf_len'][self.cur_ch_num])
+            trigger_delay = float(self.reg_map[off]['trig_dl'][self.cur_ch_num])
+            new_val = (paf_length - (trigger_delay / ffr_mask)) / config_fpga_clk_mhz * ffr_mask
+        elif name == 'Trace_Length(us)':
+            # convert to int
+            off = 2
+            ffr_mask = 1<<self.reg_map[off]['value'][self.cur_ch_num]
+            fifo_length = config_fifo_length
+            value = float(val)
+            trace_length = int(value * config_adc_msps / ffr_mask)
+            if config_adc_msps == 500:
+                trace_length = (trace_length // 10) * 10
+            elif config_adc_msps == 250 or config_adc_msps == 100:
+                trace_length = (trace_length // 2) * 2
+            if trace_length > fifo_length:
+                trace_length = fifo_length
+
+            # convert back to float
+            trace_len = float(trace_length)
+            new_val = trace_len / (float(config_adc_msps) * ffr_mask)
+        elif name[:7] == 'QDC Len' and name[8:] == '(us)':
+            # QDC Len0-7
+            # convert to int
+            value = float(val)
+            multiplier = config_adc_msps
+            if config_adc_msps == 500:
+                multiplier = multiplier // 5
+            qdclen = int(round(value * multiplier))
+            if qdclen < hw_limit_QDCLEN_MIN:
+                qdclen = hw_limit_QDCLEN_MIN
+            if qdclen > hw_limit_QDCLEN_MAX:
+                qdclen = hw_limit_QDCLEN_MAX
+
+            # convert back to float
+            divider = config_adc_msps
+            if config_adc_msps == 500:
+                divider = divider // 5
+            value = qdclen
+            new_val = float(value) / divider
+        elif name == 'LCFT Width':
+            # convert to int
+            value = float(val)
+            fast_trig_blen = int(round(value * config_fpga_clk_mhz))
+            if config_adc_msps == 100 or config_adc_msps == 500:
+                fast_trig_blen_min = hw_limit_FASTTRIGBACKLEN_MIN_100MHZFIPCL
+            else:
+                fast_trig_blen_min = hw_limit_FASTTRIGBACKLEN_MIN_125MHZFIPCLK
+            if fast_trig_blen < fast_trig_blen_min:
+                fast_trig_blen = fast_trig_blen_min
+            elif fast_trig_blen > hw_limit_FASTTRIGBACKLEN_MAX:
+                fast_trig_blen = hw_limit_FASTTRIGBACKLEN_MAX
+
+            # convert back to float
+            value = fast_trig_blen
+            new_val = float(value) / config_fpga_clk_mhz
+        elif name == 'LCFT Delay':
+            # convert to int
+            value = float(val)
+            ftrigoutdelay = int(round(value * config_fpga_clk_mhz))
+            off = 88
+            ver = self.reg_map[off]['value'][self.cur_ch_num]
+            if ver <= 2:
+                ftrigoutdelay_max = hw_limit_EXTDELAYLEN_MAX_REVBCD
+            else:
+                ftrigoutdelay_max = hw_limit_EXTDELAYLEN_MAX_REVF
+            if ftrigoutdelay > ftrigoutdelay_max:
+                ftrigoutdelay = ftrigoutdelay_max
+
+            # convert back to float
+            value = ftrigoutdelay
+            new_val = float(value) / config_fpga_clk_mhz
+        elif name == 'FIFO Delay':
+            # convert to int
+            value = float(val)
+            externdelaylen = int(round(value * config_fpga_clk_mhz))
+            off = 88
+            ver = self.reg_map[off]['value'][self.cur_ch_num]
+            if ver <= 2:
+                externdelaylen_max = hw_limit_EXTDELAYLEN_MAX_REVBCD
+            else:
+                externdelaylen_max = hw_limit_EXTDELAYLEN_MAX_REVF
+            if externdelaylen < hw_limit_EXTDELAYLEN_MIN:
+                externdelaylen + hw_limit_EXTDELAYLEN_MIN
+            if externdelaylen > externdelaylen_max:
+                externdelaylen = externdelaylen_max
+
+            # convert back to float
+            value = externdelaylen
+            new_val = float(value) / config_fpga_clk_mhz
+        elif name == 'ChVT Width':
+            # convert to int
+            value = float(val)
+            chantrigstretch = int(round(value * config_fpga_clk_mhz))
+            if chantrigstretch < hw_limit_CHANTRIGSTRETCH_MIN:
+                chantrigstretch = hw_limit_CHANTRIGSTRETCH_MIN
+            if chantrigstretch > hw_limit_CHANTRIGSTRETCH_MAX:
+                chantrigstretch = hw_limit_CHANTRIGSTRETCH_MAX
+
+            # convert back to float
+            value = chantrigstretch
+            new_val = float(value) / config_fpga_clk_mhz
+        elif name == 'ModVT Width':
+            # convert to int
+            value = float(val)
+            exttrigstretch = int(round(value * config_fpga_clk_mhz))
+            if exttrigstretch < hw_limit_EXTTRIGSTRETCH_MIN:
+                exttrigstretch = hw_limit_EXTTRIGSTRETCH_MIN
+            if exttrigstretch > hw_limit_EXTTRIGSTRETCH_MAX:
+                exttrigstretch = hw_limit_EXTTRIGSTRETCH_MAX
+
+            # convert back to float
+            value = exttrigstretch
+            new_val = float(value) / config_fpga_clk_mhz
+        elif name == 'Veto Width':
+            # convert to int
+            value = float(val)
+            vetostretch = int(round(value * config_fpga_clk_mhz))
+            if vetostretch < hw_limit_VETOSTRETCH_MIN:
+                vetostretch = hw_limit_VETOSTRETCH_MIN
+            if vetostretch > hw_limit_VETOSTRETCH_MAX:
+                vetostretch = hw_limit_VETOSTRETCH_MAX
+
+            # convert back to float
+            value = vetostretch
+            new_val = float(value) / config_fpga_clk_mhz
+
+        return new_val
+
+    def _update_fifo(self, trace_delay):
+            off = 1
+            sfr = self.reg_map[off]['value'][self.cur_ch_num] + 1
+            sfr_mask = 1 << sfr
+            off = 2
+            ffr_mask = 1<<self.reg_map[off]['value'][self.cur_ch_num]
+            fifo_length = config_fifo_length
+            off = 15
+            peak_sep = self.reg_map[off]['peak_sep'][self.cur_ch_num] 
+            trigger_delay = (peak_sep - 1) * sfr_mask
+            paf_length = (trigger_delay // ffr_mask) + trace_delay
+            if paf_length > fifo_length:
+                paf_length = fifo_length - 1
+                trigger_delay = (paf_length - trace_delay) * ffr_mask
+            self.reg_map[off]['trig_dl'][self.cur_ch_num] = trigger_delay
+            self.reg_map[off]['paf_len'][self.cur_ch_num] = paf_length
+
+
+    def _get_reg_int_val(self, off):
+        value = float(self.reg_map[off]['value'][self.cur_ch_num])/1000
+        if off == 7:
+            # XDT
+            return self.reg_map[off]['xwait'][self.cur_ch_num]
+        if off == 13:
+            # T_FlatTop
+            off = 2
+            ffr_mask = 1<<self.reg_map[off]['value'][self.cur_ch_num]
+            fast_gap = int(round((value * config_fpga_clk_mhz) / ffr_mask))
+            return fast_gap
+        if off == 12:
+            # T_Risetime
+            off = 2
+            ffr_mask = 1<<self.reg_map[off]['value'][self.cur_ch_num]
+            fast_length = int(round((value * config_fpga_clk_mhz) / ffr_mask))
+            return fast_length
+        if off == 16:
+            # E_FlatTop
+            off = 1
+            sfr = self.reg_map[off]['value'][self.cur_ch_num] + 1
+            sfr_mask = 1 << sfr
+            slow_gap = int(round((value * config_fpga_clk_mhz) / sfr_mask))
+            return slow_gap
+        if off == 15:
+            # E_Risetime
+            off = 1
+            sfr = self.reg_map[off]['value'][self.cur_ch_num] + 1
+            sfr_mask = 1 << sfr
+            slow_length = int(round((value * config_fpga_clk_mhz) / sfr_mask))
+            return slow_length
+        if off == 28:
+            # Trace_Length
+            off = 2
+            ffr_mask = 1<<self.reg_map[off]['value'][self.cur_ch_num]
+            trace_length = int(value * config_adc_msps / ffr_mask)
+            return trace_length
+
+
+
+
+
+
+
+                    
+
 
 
 

@@ -109,6 +109,59 @@ class config:
         tab_ctrl.add(self.ctl.get_frm(), text='GUI controler')
 
     
+    def _save_vme_mod(self, mod, ele_frontend):
+        ele_mod = et.SubElement(ele_frontend, 'vme_module')
+        for name,val,com in mod.get_conf():
+            if name.startswith('reg'):
+                # this element is a register
+                register = et.SubElement(ele_mod, 'register')
+                et.SubElement(register, 'offset').text = name[4:]
+                et.SubElement(register, 'value').text = val
+                et.SubElement(register, 'comment').text = com
+            elif name.startswith('glo'):
+                # this is a global variable
+                global_var= et.SubElement(ele_mod, 'global_var')
+                et.SubElement(global_var, 'name').text = name[4:]
+                et.SubElement(global_var, 'value').text = val
+                et.SubElement(global_var, 'comment').text = com
+            elif name.startswith('adv'):
+                # this is an advanced variable
+                advance_var= et.SubElement(ele_mod, 'advance_var')
+                et.SubElement(advance_var, 'name').text = name[4:]
+                et.SubElement(advance_var, 'value').text = val
+                et.SubElement(advance_var, 'comment').text = com
+
+
+    def _save_pixie_mod(self, mod, ele_frontend):
+        for ch in range(16):
+            ele_mod = et.SubElement(ele_frontend, 'vme_module')
+            for name,val,com in mod.get_conf():
+                if name.startswith('reg'):
+                    # this element is a register
+                    register = et.SubElement(ele_mod, 'register')
+                    et.SubElement(register, 'offset').text = name[4:]
+                    et.SubElement(register, 'value').text = val[ch]
+                    et.SubElement(register, 'comment').text = com
+                elif name.startswith('glo'):
+                    # this is a global variable
+                    global_var= et.SubElement(ele_mod, 'global_var')
+                    et.SubElement(global_var, 'name').text = name[4:]
+                    if name == 'glo_crate_n':
+                        # slot number is crate number for pixie16 
+                        val = str(mod.get_slot())
+                    elif name == 'glo_slot_n':
+                        # channel number is slot number for pixie16
+                        val = str(ch)
+                    et.SubElement(global_var, 'value').text = val
+                    et.SubElement(global_var, 'comment').text = com
+                elif name.startswith('adv'):
+                    # this is an advanced variable
+                    advance_var= et.SubElement(ele_mod, 'advance_var')
+                    et.SubElement(advance_var, 'name').text = name[4:]
+                    et.SubElement(advance_var, 'value').text = val
+                    et.SubElement(advance_var, 'comment').text = com
+
+
     # save the config file
     def _do_save(self):
         # The element tree representing an empty configuration file. We always
@@ -119,26 +172,12 @@ class config:
         # first, we create the elements of the frontend
         ele_frontend = et.SubElement(root, 'frontend')
         for mod in self.frontend.get_sel_mod():
-            ele_mod = et.SubElement(ele_frontend, 'vme_module')
-            for name,val,com in mod.get_conf():
-                if name.startswith('reg'):
-                    # this element is a register
-                    register = et.SubElement(ele_mod, 'register')
-                    et.SubElement(register, 'offset').text = name[4:]
-                    et.SubElement(register, 'value').text = val
-                    et.SubElement(register, 'comment').text = com
-                elif name.startswith('glo'):
-                    # this is a global variable
-                    global_var= et.SubElement(ele_mod, 'global_var')
-                    et.SubElement(global_var, 'name').text = name[4:]
-                    et.SubElement(global_var, 'value').text = val
-                    et.SubElement(global_var, 'comment').text = com
-                elif name.startswith('adv'):
-                    # this is an advanced variable
-                    advance_var= et.SubElement(ele_mod, 'advance_var')
-                    et.SubElement(advance_var, 'name').text = name[4:]
-                    et.SubElement(advance_var, 'value').text = val
-                    et.SubElement(advance_var, 'comment').text = com
+            if mod.get_name().startswith('PIXIE16_MOD'):
+                # need to treat pixie module differently, because each pixie16
+                # module has to be split into 16 'vme module'
+                self._save_pixie_mod(mod, ele_frontend)
+            else:
+                self._save_vme_mod(mod, ele_frontend)
         # the advanced settings for frontend
         for name,val,com in self.frontend.get_adv_conf().get_conf():
             ele_adv = et.SubElement(ele_frontend, 'advanced_fe')
@@ -354,20 +393,29 @@ class config:
         self.log.get_adv_conf().set_conf(conf)
     # parse the frontend part of the cofnig file
     def _parse_fe(self, fe):
-        # the module settings
+        # the module settings 
+        pixie16_names = []
         for mod in fe.findall('vme_module'):
             glo = mod.findall('global_var')
             reg = mod.findall('register')
             adv = mod.findall('advance_var')
             name = self._find_name(glo)
             crate_n = int(self._find_crate_n(glo)) + 1
+            if name.startswith('PIXIE16_MOD'):
+                mod_type = 'pixie'
+                if name in pixie16_names:
+                    continue
+                pixie16_names.append(name)
+                reg = self._find_pixie_reg(fe.findall('vme_module'), name)
+            else:
+                mod_type = 'vme'
             # debug ...
             #print('n_crate: %d' % crate_n)
             #############
             if self.frontend.get_crate_n() < crate_n:
                 self.frontend.set_crate_n(crate_n)
             tmp = self.frontend.create_mod(name)
-            conf = self._get_mod_conf(glo, reg, adv)
+            conf = self._get_mod_conf(glo, reg, adv, mod_type)
             msg = tmp.set_conf(conf, True)
             if msg:
                 messagebox.showerror('error', msg, parent=self.root_win)
@@ -381,17 +429,52 @@ class config:
         self.frontend.get_adv_conf().set_conf(conf)
 
 
+    def _find_pixie_reg(self, mods, name):
+        # find all nodes that represents pixie16 channel with name == name, the
+        # result should be sorted by channel number 
+        regs = [0 for i in range(16)]
+        for mod in mods:
+            glo = mod.findall('global_var')
+            name1 = self._find_name(glo)
+            if name != name1:
+                continue
+            regs[self._find_slot(glo)] = mod.findall('register')
+        return regs
+
+    def _find_slot(self, glo):
+        for var in glo:
+            name = var.find('name').text
+            if name == 'slot_n':
+                return int(var.find('value').text)
+
+
+    def _find_pixie_reg_val(self, reg, off):
+        val = []
+        for ch in range(16):
+            for r in reg[ch]:
+                if r.find('offset').text == off:
+                    val.append(r.find('value').text)
+                    break
+        return val
+
+
     # compose the config package:
-    def _get_mod_conf(self, glo, reg, adv):
+    def _get_mod_conf(self, glo, reg, adv, mod_type):
         conf = []
         for var in glo:
             name = var.find('name').text
             val = var.find('value').text
             conf.append(('glo_'+name, val, ''))
-        for r in reg:
-            off = r.find('offset').text
-            val = r.find('value').text
-            conf.append(('reg_'+off, val, ''))
+        if mod_type == 'vme':
+            for r in reg:
+                off = r.find('offset').text
+                val = r.find('value').text
+                conf.append(('reg_'+off, val, ''))
+        else:
+            for r in reg[0]:
+                off = r.find('offset').text
+                val = self._find_pixie_reg_val(reg, off)
+                conf.append(('reg_'+off, val, ''))
         for a in adv:
             name = a.find('name').text
             val = a.find('value').text

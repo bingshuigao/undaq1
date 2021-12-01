@@ -51,6 +51,8 @@ class frontend:
         # the advanced settings
         self.adv_conf = adv_conf_fe()
        
+        # a dedicated list for XIA Pixie16 modules: a list of slot numbers 
+        self.pixie16_slots = []
        # main frame (to be added as a tab in a notebook widget)
         self.frm = tk.Frame(parent)
         # create all sub windows inside the main frame
@@ -216,8 +218,10 @@ class frontend:
                     continue
                 if crate == tmp.get_crate():
                     if base == tmp.get_base():
-                        bad_base = True
-                        break
+                        # check base address only for non-pixie modules
+                        if mod_name != 'PIXIE16_MOD':
+                            bad_base = True
+                            break
                     if slot == tmp.get_slot():
                         bad_slot = True
                         break
@@ -317,11 +321,26 @@ class frontend:
         else:
             messagebox.showinfo('info', msg, parent=self.frm)
 
+
+    def _set_pixie16_modnum(self):
+        mod_n = 0
+        for i in range(self.n_crate):
+            for j in range(21):
+                mod = self._find_mod(i, j)
+                if not mod:
+                    continue
+                if not mod.get_name().startswith('PIXIE16_MOD'):
+                    continue
+                mod.set_mod_num(mod_n)
+                mod_n += 1
+
+
     def _update_sel_mod_w(self):
         self.sel_mods_w.delete(0, tk.END)
         # debug ...
 #        print(self.n_crate)
         #########
+        self._set_pixie16_modnum()
         for i in range(self.n_crate):
             self.sel_mods_w.insert(tk.END, 'Crate%02d' % (i))
             for j in range(21):

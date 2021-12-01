@@ -273,10 +273,8 @@ private:
 	uint32_t* single_evt_buf;
 	int max_evt_len;
 
-#ifdef DAQ_XIA
 	/* pixie clock source (internal or external)*/
 	int pixie_clk_src;
-#endif
 
 };
 

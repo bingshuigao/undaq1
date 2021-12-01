@@ -131,8 +131,9 @@ public:
 	virtual int send_pulse2(bool invt) = 0;
 
 protected:
-	int am; /* address modifier */
-	int dw; /* data width (dw = 16, or 32, or 64) */
+	int am; /* address modifier, used as module number in case of pixie16 */
+	int dw; /* data width (dw = 16, or 32, or 64), used as channel number
+		   in case of pixie16 (0-15) */
 	std::string name; /* name of the controller */
 	int crate; /* crate number of the controller */
 };
