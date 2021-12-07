@@ -1125,13 +1125,14 @@ pixie16_ctl* initzer::do_init_pixie16_ctl(std::vector<struct conf_vme_mod>
 
 	/* Now let's try to open it. */
 	struct pixie16_ctl_open_par par;
-	par.ComFPGAConfigFile = "./ComFPGAConfigFile";
-	par.SPFPGAConfigFile  = "./SPFPGAConfigFile";
-	par.TrigFPGAConfigFile = "./TrigFPGAConfigFile";
-	par.DSPCodeFile = "./DSPCodeFile";
-	par.DSPParFile = "./DSPParFile";
-	par.DSPVarFile = "./DSPVarFile";
+	par.ComFPGAConfigFile = "./pixie16_firmware/firmware/syspixie16_revfgeneral_adc100mhz_r33338.bin";
+	par.SPFPGAConfigFile  = "./pixie16_firmware/firmware/fippixie16_revfgeneral_14b100m_r36263.bin";
+	par.TrigFPGAConfigFile = "";
+	par.DSPCodeFile = "./pixie16_firmware/firmware/Pixie16DSP_revfgeneral_14b100m_r38896.ldr";
+	par.DSPParFile = "./pixie16_firmware/initial_par.set";
+	par.DSPVarFile = "./pixie16_firmware/firmware/Pixie16DSP_revfgeneral_14b100m_r38896.var";
 	par.pxi_slot_map = pxi_slot_map;
+	par.mod_num = mod_n;
 	if (tmp_pixie16_ctl->open(&par)) 
 		goto fail;
 		

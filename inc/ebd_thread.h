@@ -181,7 +181,7 @@
 #include "daq_thread.h"
 #include <vector>
 
-#define USE_SLOW_MODE
+//#define USE_SLOW_MODE
 
 class ebd_thread : public daq_thread
 {

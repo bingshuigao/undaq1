@@ -212,7 +212,7 @@ class pixie16:
             if reg['value'] == 'default':
                 continue
             off = 'reg_0x%x' % reg['off']
-            value = ['0x%x' % reg['value'][i] for i in range(16)]
+            value = ['0x%x' % int(reg['value'][i]) for i in range(16)]
             com = reg['name']
             if reg['comment']:
                 com = reg['comment']
