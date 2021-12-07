@@ -214,6 +214,11 @@ start:
 #ifndef USE_SLOW_MODE
 			if (rm) {
 				/* the EOR is removed */
+				/* need to re-check the can_build flag */
+				bool y_n;
+				can_build(y_n);
+				if (!y_n)
+					return 0;
 				if (chg) 
 					/* the cur_rd is changed, we need to
 					 * restart the iteration. */
