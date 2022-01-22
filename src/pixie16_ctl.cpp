@@ -28,6 +28,10 @@ int pixie16_ctl::open(void* par)
 			tmp->mod_num,           /* boot all modules */
 			0x7f                    /* boot all chips */
 			);
+
+	if (ret == 0) 
+		return 0;
+	
 	switch (ret) {
 	case -1:
 		return -E_PIXIE_MOD_NUM;
@@ -47,7 +51,6 @@ int pixie16_ctl::open(void* par)
 	default:
 		return -E_PIXIE_GENERAL;
 	}
-	return 0;
 }
 
 pixie16_ctl::pixie16_ctl()
@@ -110,6 +113,14 @@ int pixie16_ctl::blt_read(unsigned long addr, void* buf, int sz_in, int* sz_out)
 	ret = Pixie16CheckExternalFIFOStatus(&n_word, mod_n);
 	if (ret) 
 		return -E_PIXIE_MOD_NUM;
+	/* the n_word could be zero, e.g. in case of flushing the buffer at the
+	 * stop of run. In this case, NEVER try to read the Pixie16 FIFO, or
+	 * else you may halt the kernel! */
+	if (n_word == 0) {
+		*sz_out = 0;
+		return 0;
+	}
+
 	/* need to reserve space for a whole evt, just in case we need a second
 	 * readout */
 	sz_in -= 4*evt_max_sz;
@@ -209,6 +220,11 @@ int pixie16_ctl::write_reg(long reg, void* data)
 	uint16_t bit_n, bit_val, bit_n2, bit_val2;
 	int ret, i;
 	char buf[100];
+
+	/* the register access is way too slow, we give up this approach. */
+	if (reg < 1000) 
+		return 0;
+
 	switch (reg) {
 	case 0:
 		/* module number, we do nother here */
@@ -820,6 +836,8 @@ int pixie16_ctl::write(unsigned long reg, void* data)
 		/* fifo threshold */
 		reset_clk = val64;
 		break;
+	default:
+		return -E_PIXIE_UNKNOW_REG;
 	}
 	return 0;
 }

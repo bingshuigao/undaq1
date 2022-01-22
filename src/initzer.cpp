@@ -1122,6 +1122,8 @@ pixie16_ctl* initzer::do_init_pixie16_ctl(std::vector<struct conf_vme_mod>
 		&the_conf, int mod_n, unsigned short* pxi_slot_map)
 {
 	pixie16_ctl* tmp_pixie16_ctl = new pixie16_ctl;
+	std::string dsp_par_f = get_conf_val_str(the_conf, "dsp set file");
+	std::string dsp_par_f1 = decode_str(dsp_par_f);
 
 	/* Now let's try to open it. */
 	struct pixie16_ctl_open_par par;
@@ -1129,7 +1131,10 @@ pixie16_ctl* initzer::do_init_pixie16_ctl(std::vector<struct conf_vme_mod>
 	par.SPFPGAConfigFile  = "./pixie16_firmware/firmware/fippixie16_revfgeneral_14b100m_r36263.bin";
 	par.TrigFPGAConfigFile = "";
 	par.DSPCodeFile = "./pixie16_firmware/firmware/Pixie16DSP_revfgeneral_14b100m_r38896.ldr";
-	par.DSPParFile = "./pixie16_firmware/initial_par.set";
+	//par.DSPParFile = "./pixie16_firmware/initial_par.set";
+	par.DSPParFile = dsp_par_f1.c_str();
+	printf("dsp set file: %s\n", par.DSPParFile);
+	//return 0;
 	par.DSPVarFile = "./pixie16_firmware/firmware/Pixie16DSP_revfgeneral_14b100m_r38896.var";
 	par.pxi_slot_map = pxi_slot_map;
 	par.mod_num = mod_n;
@@ -1143,7 +1148,7 @@ pixie16_ctl* initzer::do_init_pixie16_ctl(std::vector<struct conf_vme_mod>
 			/* this is a register setting */
 			uint64_t off = (*it).offset;
 			uint64_t val = (*it).val.val_uint64;
-			if (tmp_pixie16_ctl->write_reg(off, &val))
+			if (tmp_pixie16_ctl->write(off, &val))
 				goto fail;
 		}
 	}

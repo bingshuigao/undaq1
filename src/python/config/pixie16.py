@@ -3171,7 +3171,7 @@ class pixie16:
     # error and 'DEF' means the string is 'default'
     def _str2int(self, ch):
         try:
-            tmp = ch.strip().lower()
+            tmp = ch.strip()
             if tmp == 'default':
                 return 0, 'DEF'
             base = 10

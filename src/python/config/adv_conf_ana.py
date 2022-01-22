@@ -87,7 +87,7 @@ class adv_conf_ana(adv_conf):
 
     def _str2_big_int(self, ch):
         try:
-            tmp = ch.strip().lower()
+            tmp = ch.strip()
             if tmp == 'default':
                 return 0, 'DEF'
             big_int = 0 

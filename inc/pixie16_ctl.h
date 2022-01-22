@@ -39,6 +39,13 @@ public:
 	 * @return 0 if succeed, non-zero error codes are returned if error */
 	int close();
 
+	/* I must admit that I misunderstood the meanings of read/write and
+	 * read_reg/write/reg. In the case of vme controllers, read/write are
+	 * related to vme modules while the read_reg/write_reg are related to
+	 * the controller itself. However, here in the pixie16, there meanings
+	 * are opposite: read/write are for controller and read_reg/write_reg
+	 * are for modules. */
+	
 	/* read/write controller register. Since the pixie16 controller does
 	 * not physically exist at all, here the register is just regarded as
 	 * parameters with address as their identifier */

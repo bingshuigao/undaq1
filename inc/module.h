@@ -69,7 +69,7 @@ public:
 		ctl->set_dw(dw);
 #ifdef DAQ_XIA
 		ctl->set_dw(slot_n);
-		return ctl->read(base_addr, out);
+		return ctl->read_reg(addr, out);
 #endif
 		return ctl->read(addr + base_addr, out);
 	}
@@ -89,7 +89,7 @@ public:
 		ctl->set_dw(dw);
 #ifdef DAQ_XIA
 		ctl->set_dw(slot_n);
-		return ctl->write(addr, val);
+		return ctl->write_reg(addr, val);
 #endif
 		return ctl->write(base_addr + addr, val);
 	}

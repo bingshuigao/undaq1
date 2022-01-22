@@ -289,6 +289,9 @@ int xml_parser::get_adv_var(struct conf_vme_mod* conf)
 		return -E_GENERIC;
 	
 	conf->val.val_uint64 = strtol(str, NULL, 0);
+	conf->val.val_str = new char[1000];
+	str[999] = 0;
+	strcpy(conf->val.val_str, str);
 
 	return 0;
 }

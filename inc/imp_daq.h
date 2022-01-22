@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <stdint.h>
 
-#define DAQ_XIA
+//#define DAQ_XIA
 #define EBD_TYPE_TS 1
 #define EBD_TYPE_EVT_CNT 2
 

@@ -370,7 +370,7 @@ class v1190(vme_mod):
             return '%d' % (val - 65536)
     def _neg_str2int(self, ch):
         try:
-            tmp = ch.strip().lower()
+            tmp = ch.strip()
             if tmp == 'default':
                 return 0, 'DEF'
             base = 10

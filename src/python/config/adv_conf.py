@@ -42,7 +42,7 @@ class adv_conf:
     # error and 'DEF' means the string is 'default'
     def _str2int(self, ch, n_bit = 0):
         try:
-            tmp = ch.strip().lower()
+            tmp = ch.strip()
             if tmp == 'default':
                 return 0, 'DEF'
             base = 10
