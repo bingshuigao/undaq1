@@ -12,6 +12,7 @@
 #include "ana_evt_hd.h"
 #include "ana_frag_hd.h"
 #include "ana_madc32.h"
+#include "ana_pixie16.h"
 #include "ana_v775.h"
 #include "ana_v792.h"
 #include "ana_v830.h"
@@ -126,6 +127,7 @@ void clear_buf()
 	ana_v1751* tmp_v1751;
 	ana_v1190* tmp_v1190;
 	ana_madc32* tmp_madc;
+	ana_pixie16* tmp_pixie16;
 	ana_v775* tmp_v775;
 	ana_v792* tmp_v792;
 	ana_v830* tmp_v830;
@@ -138,6 +140,11 @@ void clear_buf()
 			/* madc32 */
 			tmp_madc = static_cast<ana_madc32*>((*it)->br_frag_body);
 			memset(tmp_madc->get_adc_val(), 0, 32*4);
+			break;
+		case 14:
+			/* pixie16 */
+			tmp_pixie16 = static_cast<ana_pixie16*>((*it)->br_frag_body);
+			memset(tmp_pixie16->get_data(), 0, sizeof(struct pixie16_data));
 			break;
 		case 2:
 			/* v1190 */
@@ -250,6 +257,16 @@ static int get_lst_branches()
 			tmp->br_frag_body = new ana_madc32();
 			lst_of_br.push_back(tmp);
 		}
+		else if (name.find("PIXIE16_MOD") != std::string::npos) {
+			FILE* f_tmp = fopen("./dsp.set", "r");
+			if (!f_tmp) {
+				std::cerr<<"cannot open dsp.set!\n"<<std::endl;
+				return -E_GENERIC;
+			}
+			fclose(f_tmp);
+			tmp->br_frag_body = new ana_pixie16("./dsp.set");
+			lst_of_br.push_back(tmp);
+		}
 		else if (name.find("V775") != std::string::npos) {
 			tmp->br_frag_body = new ana_v775();
 			lst_of_br.push_back(tmp);
@@ -309,11 +326,12 @@ static int get_lst_branches()
 TTree* set_br_addr(char* run_title)
 {
 	int i, n_samp, n_frag;
-	char buf1[100], buf2[100];
+	char buf1[100], buf2[100], buf3[1000];
 	ana_v1740* tmp_v1740;
 	ana_v1751* tmp_v1751;
 	ana_v1190* tmp_v1190;
 	ana_madc32*  tmp_madc;
+	ana_pixie16*  tmp_pixie16;
 	ana_v775* tmp_v775;
 	ana_v792* tmp_v792;
 	ana_v830* tmp_v830;
@@ -333,6 +351,17 @@ TTree* set_br_addr(char* run_title)
 			sprintf(buf1, "frag_madc_crate%02d_slot%02d",
 					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
 			tree->Branch(buf1, tmp_madc->get_adc_val(), "adc[32]/i");
+			break;
+		case 14:
+			/* pixie16 */
+			tmp_pixie16 = static_cast<ana_pixie16*>((*it)->br_frag_body);
+			sprintf(buf1, "frag_pixie_slot%02d_ch%02d",
+					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
+			n_samp = tmp_pixie16->get_wave_n(0, (*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
+			if (n_samp == 0) 
+				n_samp = 1;
+			sprintf(buf3, "ts/l:ts_ext:cfd/i:energy:energy_tr:energy_le:energy_ga:qdc0:qdc1:qdc2:qdc3:qdc4:qdc5:qdc6:qdc7:wave[%d]/s", n_samp);
+			tree->Branch(buf1, tmp_pixie16->get_data(), buf3);
 			break;
 		case 2:
 			/* v1190 */

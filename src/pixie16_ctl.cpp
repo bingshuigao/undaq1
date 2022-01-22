@@ -12,6 +12,23 @@ int pixie16_ctl::open(void* par)
 {
 	struct pixie16_ctl_open_par* tmp = (struct pixie16_ctl_open_par*)par;
 	int ret;
+
+	/* To make the compiler happy, use char* instead of const char* in the
+	 * Pixie16BootModule function. */
+	char ComFPGAConfigFile[1000];
+	char SPFPGAConfigFile[1000];
+	char TrigFPGAConfigFile[1000];
+	char DSPCodeFile[1000];
+	char DSPParFile[1000];
+	char DSPVarFile[1000];
+	strcpy(ComFPGAConfigFile, tmp->ComFPGAConfigFile);
+	strcpy(SPFPGAConfigFile, tmp->SPFPGAConfigFile);
+	strcpy(TrigFPGAConfigFile, tmp->TrigFPGAConfigFile);
+	strcpy(DSPCodeFile, tmp->DSPCodeFile);
+	strcpy(DSPParFile, tmp->DSPParFile);
+	strcpy(DSPVarFile, tmp->DSPVarFile);
+
+
 	
 	mod_num = tmp->mod_num;
 	if (mod_num > MAX_CRATE)
@@ -19,14 +36,14 @@ int pixie16_ctl::open(void* par)
 	if (Pixie16InitSystem(tmp->mod_num, tmp->pxi_slot_map, 0)) 
 		return -E_PIXIE_INIT;
 	ret = Pixie16BootModule(
-			tmp->ComFPGAConfigFile, /* ComFPGA configuration file */
-			tmp->SPFPGAConfigFile,  /* SPFPGA configuration file */ 
-			tmp->TrigFPGAConfigFile,/* trigger FPGA file */          
-			tmp->DSPCodeFile,       /* DSP code file */             
-			tmp->DSPParFile,        /* DSP parameter file */        
-			tmp->DSPVarFile,        /* DSP variable names file */   
-			tmp->mod_num,           /* boot all modules */
-			0x7f                    /* boot all chips */
+			ComFPGAConfigFile, /* ComFPGA configuration file */
+			SPFPGAConfigFile,  /* SPFPGA configuration file */ 
+			TrigFPGAConfigFile,/* trigger FPGA file */          
+			DSPCodeFile,       /* DSP code file */             
+			DSPParFile,        /* DSP parameter file */        
+			DSPVarFile,        /* DSP variable names file */   
+			tmp->mod_num,      /* boot all modules */
+			0x7f               /* boot all chips */
 			);
 
 	if (ret == 0) 
@@ -267,7 +284,8 @@ int pixie16_ctl::write_reg(long reg, void* data)
 		return set_modCSRB_bit(mod_n, bit_n, bit_val);
 	case 7:
 		/* XDT (us) */
-		if (Pixie16WriteSglChanPar("XDT", valf64, mod_n, ch_n))
+		sprintf(buf, "%s", "XDT");
+		if (Pixie16WriteSglChanPar(buf, valf64, mod_n, ch_n))
 			return -E_PIXIE_GENERAL;
 		break;
 	case 8:
@@ -288,7 +306,8 @@ int pixie16_ctl::write_reg(long reg, void* data)
 	case 11:
 		/* adjust base line */
 		valf64 *= 1000.; /* because it was integer in the config GUI */
-		if (Pixie16WriteSglChanPar("BASELINE_PERCENT", valf64, mod_n, ch_n))
+		sprintf(buf, "%s", "BASELINE_PERCENT");
+		if (Pixie16WriteSglChanPar(buf, valf64, mod_n, ch_n))
 			return -E_PIXIE_GENERAL;
 		if (Pixie16AdjustOffsets(mod_n))
 			return -E_PIXIE_GENERAL;
@@ -316,7 +335,8 @@ int pixie16_ctl::write_reg(long reg, void* data)
 		return do_conf_filter_pars(mod_n, ch_n);
 	case 17:
 		/* preamplifier decay const (Tau (us))*/
-		if (Pixie16WriteSglChanPar("TAU", valf64, mod_n, ch_n))
+		sprintf(buf, "%s", "TAU");
+		if (Pixie16WriteSglChanPar(buf, valf64, mod_n, ch_n))
 			return -E_PIXIE_GENERAL;
 		break;
 	case 18:
@@ -352,18 +372,21 @@ int pixie16_ctl::write_reg(long reg, void* data)
 	case 23:
 		/* cfd scaler in the cfd algrithm */
 		valf64 *= 1000;
-		if (Pixie16WriteSglChanPar("CFDScale", valf64, mod_n, ch_n))
+		sprintf(buf, "%s", "CFDScale");
+		if (Pixie16WriteSglChanPar(buf, valf64, mod_n, ch_n))
 			return -E_PIXIE_GENERAL;
 		break;
 	case 24:
 		/* cfd delay used in the cfd algrithm */
-		if (Pixie16WriteSglChanPar("CFDDelay", valf64, mod_n, ch_n))
+		sprintf(buf, "%s", "CFDDelay");
+		if (Pixie16WriteSglChanPar(buf, valf64, mod_n, ch_n))
 			return -E_PIXIE_GENERAL;
 		break;
 	case 25:
 		/* cfd threshold in the cfd algrithm */
 		valf64 *= 1000;
-		if (Pixie16WriteSglChanPar("CFDThresh", valf64, mod_n, ch_n))
+		sprintf(buf, "%s", "CFDThresh");
+		if (Pixie16WriteSglChanPar(buf, valf64, mod_n, ch_n))
 			return -E_PIXIE_GENERAL;
 		break;
 	case 26:
@@ -470,20 +493,23 @@ int pixie16_ctl::write_reg(long reg, void* data)
 		/* channel trigger selection (if used as channel VT).
 		 * MultMaskHix bit16 and bit31, TrigConfig2 bit24-26. The
 		 * following code is based on Wang Jianguo's code */
-		if (Pixie16ReadSglChanPar("MultiplicityMaskH", &valf64, mod_n, ch_n))
+		sprintf(buf, "%s", "MultiplicityMaskH");
+		if (Pixie16ReadSglChanPar(buf, &valf64, mod_n, ch_n))
 			return -E_PIXIE_GENERAL;
 		if (val64 >= 2) {
 			valf64 = set_bits_double(valf64, 31, 1, 1);
 			uint32_t data1;
 			uint16_t ChNum=ch_n;
 			ChNum /= 4;
-			if (Pixie16ReadSglModPar("TrigConfig2", &data1, mod_n))
+			sprintf(buf, "%s", "TrigConfig2");
+			if (Pixie16ReadSglModPar(buf, &data1, mod_n))
 				return -E_PIXIE_GENERAL;
 			if (val64 == 2)
 				data1 = set_bits_int(data1, 24+ChNum, 1, 1);
 			else
 				data1 = set_bits_int(data1, 24+ChNum, 1, 0);
-			if (Pixie16WriteSglModPar("TrigConfig2", data1, mod_n))
+			sprintf(buf, "%s", "TrigConfig2");
+			if (Pixie16WriteSglModPar(buf, data1, mod_n))
 				return -E_PIXIE_GENERAL;
 		}
 		else {
@@ -496,7 +522,8 @@ int pixie16_ctl::write_reg(long reg, void* data)
 				valf64 = set_bits_double(valf64, 31, 1, 0);
 			}
 		}
-		if (Pixie16WriteSglChanPar("MultiplicityMaskH", valf64, mod_n, ch_n))
+		sprintf(buf, "%s", "MultiplicityMaskH");
+		if (Pixie16WriteSglChanPar(buf, valf64, mod_n, ch_n))
 			return -E_PIXIE_GENERAL;
 		break;
 	case 51:
@@ -566,32 +593,38 @@ int pixie16_ctl::write_reg(long reg, void* data)
 		//return set_chreg_bit(mod_n, ch_n, "TrigConfig2", 22, 2, val64);
 	case 66:
 		/* LCFT Delay */
-		if (Pixie16WriteSglChanPar("FtrigoutDelay", valf64, mod_n, ch_n))
+		sprintf(buf, "%s", "FtrigoutDelay");
+		if (Pixie16WriteSglChanPar(buf, valf64, mod_n, ch_n))
 			return -E_PIXIE_GENERAL;
 		break;
 	case 67:
 		/* LCFT Width  */
-		if (Pixie16WriteSglChanPar("FASTTRIGBACKLEN", valf64, mod_n, ch_n))
+		sprintf(buf, "%s", "FASTTRIGBACKLEN");
+		if (Pixie16WriteSglChanPar(buf, valf64, mod_n, ch_n))
 			return -E_PIXIE_GENERAL;
 		break;
 	case 68:
 		/* fifo delay */
-		if (Pixie16WriteSglChanPar("ExternDelayLen", valf64, mod_n, ch_n))
+		sprintf(buf, "%s", "ExternDelayLen");
+		if (Pixie16WriteSglChanPar(buf, valf64, mod_n, ch_n))
 			return -E_PIXIE_GENERAL;
 		break;
 	case 69:
 		/* ChVT Width */
-		if (Pixie16WriteSglChanPar("ChanTrigStretch", valf64, mod_n, ch_n))
+		sprintf(buf, "%s", "ChanTrigStretch");
+		if (Pixie16WriteSglChanPar(buf, valf64, mod_n, ch_n))
 			return -E_PIXIE_GENERAL;
 		break;
 	case 70:
 		/* ModVT Width */
-		if (Pixie16WriteSglChanPar("ExtTrigStretch", valf64, mod_n, ch_n))
+		sprintf(buf, "%s", "ExtTrigStretch");
+		if (Pixie16WriteSglChanPar(buf, valf64, mod_n, ch_n))
 			return -E_PIXIE_GENERAL;
 		break;
 	case 71:
 		/* Veto Width */
-		if (Pixie16WriteSglChanPar("VetoStretch", valf64, mod_n, ch_n))
+		sprintf(buf, "%s", "VetoStretch");
+		if (Pixie16WriteSglChanPar(buf, valf64, mod_n, ch_n))
 			return -E_PIXIE_GENERAL;
 		break;
 	case 72:
@@ -659,14 +692,16 @@ int pixie16_ctl::write_reg(long reg, void* data)
 		/* start runs synchronisely */
 		mod_n = 0;
 		val32 = 1;
-		if (Pixie16WriteSglModPar("SYNCH_WAIT", val32, mod_n)) 
+		sprintf(buf, "%s", "SYNCH_WAIT");
+		if (Pixie16WriteSglModPar(buf, val32, mod_n)) 
 			return -E_PIXIE_GENERAL;
 		
 		/* reset clock */
 		if (reset_clk) {
 			mod_n = 0;
 			val32 = 0;
-			if (Pixie16WriteSglModPar("IN_SYNCH", val32, mod_n)) 
+			sprintf(buf, "%s", "IN_SYNCH");
+			if (Pixie16WriteSglModPar(buf, val32, mod_n)) 
 				return -E_PIXIE_GENERAL;
 		}
 
@@ -687,7 +722,8 @@ int pixie16_ctl::write_reg(long reg, void* data)
 
 		/* check synchronization */
 		mod_n = 0;
-		if (Pixie16ReadSglModPar("IN_SYNCH", &val32, mod_n))
+		sprintf(buf, "%s", "IN_SYNCH");
+		if (Pixie16ReadSglModPar(buf, &val32, mod_n))
 			return -E_PIXIE_GENERAL;
 		if (val32 != 1) 
 			return -E_PIXIE_SYNC;
@@ -709,12 +745,14 @@ int pixie16_ctl::write_reg(long reg, void* data)
 		break;
 	case 1008:
 		/* dsp slot number */
-		if (Pixie16WriteSglModPar("SlotID", val64, mod_n))
+		sprintf(buf, "%s", "SlotID");
+		if (Pixie16WriteSglModPar(buf, val64, mod_n))
 			return -E_PIXIE_GENERAL;
 		break;
 	case 1009:
 		/* dsp crate number */
-		if (Pixie16WriteSglModPar("CrateID", val64, mod_n))
+		sprintf(buf, "%s", "CrateID");
+		if (Pixie16WriteSglModPar(buf, val64, mod_n))
 			return -E_PIXIE_GENERAL;
 		break;
 	default:
@@ -729,10 +767,12 @@ int pixie16_ctl::set_modreg_bit(unsigned short mod_n, const char* par_name,
 		uint16_t start_bit, uint16_t n_bit, uint32_t bit_val)
 {
 	uint32_t val32;
-	if (Pixie16ReadSglModPar(par_name, &val32, mod_n))
+	char buf[100];
+	sprintf(buf, "%s", par_name);
+	if (Pixie16ReadSglModPar(buf, &val32, mod_n))
 		return -E_PIXIE_GENERAL;
 	val32 = set_bits_int(val32, start_bit, n_bit, bit_val);
-	if (Pixie16WriteSglModPar(par_name, val32, mod_n))
+	if (Pixie16WriteSglModPar(buf, val32, mod_n))
 		return -E_PIXIE_GENERAL;
 	return 0;
 }
@@ -770,10 +810,12 @@ int pixie16_ctl::set_chreg_bit(unsigned short mod_n, unsigned short ch_n, const
 
 	uint32_t val32, tmp32;
 	double valf64;
-	if (Pixie16ReadSglChanPar(par_name, &valf64, mod_n, ch_n))
+	char buf[100];
+	sprintf(buf, "%s", par_name);
+	if (Pixie16ReadSglChanPar(buf, &valf64, mod_n, ch_n))
 		return -E_PIXIE_GENERAL;
 	valf64 = set_bits_double(valf64, start_bit, n_bit, bit_val);
-	if (Pixie16WriteSglChanPar(par_name, valf64, mod_n, ch_n))
+	if (Pixie16WriteSglChanPar(buf, valf64, mod_n, ch_n))
 		return -E_PIXIE_GENERAL;
 	
 	return 0;
@@ -869,6 +911,7 @@ int pixie16_ctl::do_conf_filter_pars(uint16_t mod_n, uint16_t ch_n)
 	double t_thre = T_Threshold[mod_n][ch_n];
 	double e_gap = E_FlatTop_us[mod_n][ch_n];
 	double e_rise = E_Risetime_us[mod_n][ch_n];
+	char buf[100];
 	if (t_range < 0) return 0;
 	if (t_gap   < 0) return 0;
 	if (t_rise  < 0) return 0;
@@ -887,17 +930,28 @@ int pixie16_ctl::do_conf_filter_pars(uint16_t mod_n, uint16_t ch_n)
 	/* those parameters should be written into module in the
 	 * following order (yes, the flattops are written twice) : */
 	int ret = 0;
-	ret |= Pixie16WriteSglModPar("FAST_FILTER_RANGE" , t_range, mod_n      );
-	ret |= Pixie16WriteSglModPar("SLOW_FILTER_RANGE" , e_range, mod_n      );
-	ret |= Pixie16WriteSglChanPar("TRACE_LENGTH"     , tr_len , mod_n, ch_n);
-	ret |= Pixie16WriteSglChanPar("TRACE_DELAY"      , tr_del , mod_n, ch_n);
-	ret |= Pixie16WriteSglChanPar("TRIGGER_FLATTOP"  , t_gap  , mod_n, ch_n);
-	ret |= Pixie16WriteSglChanPar("TRIGGER_RISETIME" , t_rise , mod_n, ch_n);
-	ret |= Pixie16WriteSglChanPar("TRIGGER_FLATTOP"  , t_gap  , mod_n, ch_n);
-	ret |= Pixie16WriteSglChanPar("TRIGGER_THRESHOLD", t_thre , mod_n, ch_n);
-	ret |= Pixie16WriteSglChanPar("ENERGY_FLATTOP"   , e_gap  , mod_n, ch_n);
-	ret |= Pixie16WriteSglChanPar("ENERGY_RISETIME"  , e_rise , mod_n, ch_n);
-	ret |= Pixie16WriteSglChanPar("ENERGY_FLATTOP"   , e_gap  , mod_n, ch_n);
+	sprintf(buf, "%s", "FAST_FILTER_RANGE");
+	ret |= Pixie16WriteSglModPar(buf, t_range, mod_n      );
+	sprintf(buf, "%s", "SLOW_FILTER_RANGE");
+	ret |= Pixie16WriteSglModPar(buf, e_range, mod_n      );
+	sprintf(buf, "%s", "TRACE_LENGTH");
+	ret |= Pixie16WriteSglChanPar(buf, tr_len , mod_n, ch_n);
+	sprintf(buf, "%s", "TRACE_DELAY");
+	ret |= Pixie16WriteSglChanPar(buf, tr_del , mod_n, ch_n);
+	sprintf(buf, "%s", "TRIGGER_FLATTOP");
+	ret |= Pixie16WriteSglChanPar(buf, t_gap  , mod_n, ch_n);
+	sprintf(buf, "%s", "TRIGGER_RISETIME");
+	ret |= Pixie16WriteSglChanPar(buf, t_rise , mod_n, ch_n);
+	sprintf(buf, "%s", "TRIGGER_FLATTOP");
+	ret |= Pixie16WriteSglChanPar(buf, t_gap  , mod_n, ch_n);
+	sprintf(buf, "%s", "TRIGGER_THRESHOLD");
+	ret |= Pixie16WriteSglChanPar(buf, t_thre , mod_n, ch_n);
+	sprintf(buf, "%s", "ENERGY_FLATTOP");
+	ret |= Pixie16WriteSglChanPar(buf, e_gap  , mod_n, ch_n);
+	sprintf(buf, "%s", "ENERGY_RISETIME");
+	ret |= Pixie16WriteSglChanPar(buf, e_rise , mod_n, ch_n);
+	sprintf(buf, "%s", "ENERGY_FLATTOP");
+	ret |= Pixie16WriteSglChanPar(buf, e_gap  , mod_n, ch_n);
 	if (ret)
 		return -E_PIXIE_GENERAL;
 
@@ -912,6 +966,7 @@ int pixie16_ctl::do_conf_blcut(uint16_t mod_n, uint16_t ch_n)
 	 * */
 	int if_auto = auto_blcut[mod_n][ch_n];
 	double cut_val = bl_cut[mod_n][ch_n];
+	char buf[100];
 	if (if_auto < 0) return 0;
 	if (cut_val < 0) return 0;
 
@@ -921,7 +976,8 @@ int pixie16_ctl::do_conf_blcut(uint16_t mod_n, uint16_t ch_n)
 			return -E_PIXIE_GENERAL;
 	}
 	else {
-		if (Pixie16WriteSglChanPar("BLCUT", cut_val, mod_n, ch_n))
+		sprintf(buf, "%s", "BLCUT");
+		if (Pixie16WriteSglChanPar(buf, cut_val, mod_n, ch_n))
 			return -E_PIXIE_GENERAL;
 	}
 

@@ -8,7 +8,7 @@
 #define PIXIE16_CTL_HHH
 #include "vme_ctl.h"
 #include <stdint.h>
-#include "../os_libs/pixie16/pixie16.h"
+#include "pixie16app_export.h"
 
 struct pixie16_ctl_open_par
 {

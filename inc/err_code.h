@@ -93,6 +93,8 @@
 #define E_PIXIE_UNKNOW_REG     81 /* unknown pixei16 register */
 #define E_PIXIE_SYNC           82 /* synchronization problems with pixei16
 				     modules */
+#define E_PIXIE_WAVE_TOO_LONG  83 /* pixei16 waveform too long, need to
+				     increase MAX_PIXIE16_WAVE */
 
 
 

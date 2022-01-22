@@ -1,4 +1,5 @@
 #include "hist_man.h"
+#include <unistd.h>
 #include "scal_cnter.h"
 #include "imp_daq.h"
 #include "err_code.h"
@@ -35,6 +36,8 @@ int ana_usr_trig(void* p_evt, hist_man& hists, bool is_bor)
 	uint32_t len_tot, len_frag;
 	int slot;
 
+	return 0;
+	sleep(100);
 	/* parse event header */
 	evt_hd.parse_hd(p_dw);
 	len_tot = evt_hd.get_len();

@@ -19,6 +19,8 @@
 #define EBD_TYPE_TS 1
 #define EBD_TYPE_EVT_CNT 2
 
+#define MAX_PIXIE16_WAVE 100000
+
 /* default sizes for buffers, please note that the actual size of the ring
  *  * buffer is only half of the defined values below.  */
 /********** event builder buffers *************/
