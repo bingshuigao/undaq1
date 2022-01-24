@@ -97,6 +97,21 @@ private:
 	 * header) */
 	void parse_dsp(const char* f_dsp);
 
+	/* get number of modules based on dsp.set file. The max number returned
+	 * is MAX_CRATE. However, we check the slot id extracted from dsp.set
+	 * file. If the slot id of the n'th module equals that of a previous
+	 * one, the max module should be n-1. */
+	int get_n_mod(const char* f_dsp);
+
+	/* set the pointers (ptr_*) based on the CSRA settings of the module
+	 * number mod and channel number ch. Note that it alos checks if
+	 * waveform recording is enabled, if not, set number of points of
+	 * waveform to zero. */
+	void set_ptrs(uint32_t csra, int mod, int ch);
+
+	/* set number of points of waveform based on dsp.set */
+	void set_wave_n(const char* f_dsp, int mod, int ch);
+
 
 private:
 	int slot;
@@ -117,6 +132,9 @@ private:
 	int ptr_cfd[MAX_CRATE][16];
 	int ptr_ts_ext[MAX_CRATE][16];
 	int ptr_ts[MAX_CRATE][16];
+	
+	/* slot map of the pixie16 modules */
+	int slots[MAX_CRATE];
 
 };
 

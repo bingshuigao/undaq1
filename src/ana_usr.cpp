@@ -13,6 +13,7 @@
 #include "ana_v785.h"
 #include "ana_v830.h"
 #include "ana_v1751.h"
+#include "ana_pixie16.h"
 #include <TH1D.h>
 #include <iostream>
 
@@ -27,6 +28,7 @@ ana_v792* evt_v792 = new ana_v792;
 ana_v785* evt_v785 = new ana_v785;
 ana_v1190*  evt_v1190= new ana_v1190;
 ana_v830* evt_v830 = new ana_v830;
+ana_pixie16* evt_pixie16 = new ana_pixie16("./pixie16_firmware/dsp.set");
 
 
 int ana_usr_trig(void* p_evt, hist_man& hists, bool is_bor)
@@ -34,10 +36,10 @@ int ana_usr_trig(void* p_evt, hist_man& hists, bool is_bor)
 	uint32_t* p_dw1 = static_cast<uint32_t*>(p_evt);
 	uint32_t* p_dw = p_dw1;
 	uint32_t len_tot, len_frag;
-	int slot;
+	int slot, crate;
 
-	return 0;
-	sleep(100);
+	//return 0;
+	//sleep(100);
 	/* parse event header */
 	evt_hd.parse_hd(p_dw);
 	len_tot = evt_hd.get_len();
@@ -49,13 +51,16 @@ int ana_usr_trig(void* p_evt, hist_man& hists, bool is_bor)
 		frag_hd.parse_hd(p_dw);
 		p_dw += 5;
 		slot = frag_hd.get_slot();
+		crate = frag_hd.get_crate();
 		len_frag = frag_hd.get_len();
-		if (slot == 1) {
-			/* madc */
-			evt_madc->parse_raw(p_dw);
-			auto adcs = evt_madc->get_adc_val();
-			((TH1D*)hists.get(0))->Fill(adcs[0]);
-
+		if (slot == 0) {
+			/* pixie16 */
+			int i;
+			evt_pixie16->parse_raw(p_dw);
+			((TH1D*)hists.get(1))->Fill(evt_pixie16->get_energy());
+			for (i = 0; i < 5000; i++) {
+				((TH1D*)hists.get(0))->SetBinContent(i+1, evt_pixie16->get_wave()[i]);
+			}
 		}
 		else if (slot == 2) {
 			/* v775 */

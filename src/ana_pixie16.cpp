@@ -1,5 +1,8 @@
 #include "ana_pixie16.h"
 #include "err_code.h"
+#include <string.h>
+#include <assert.h>
+#include <stdio.h>
 
 ana_pixie16::ana_pixie16(const char* f_dsp)
 {
@@ -26,9 +29,94 @@ ana_pixie16::ana_pixie16(const char* f_dsp)
 ana_pixie16::~ana_pixie16()
 {}
 
+int ana_pixie16::get_n_mod(const char* f_dsp)
+{
+	uint32_t reg_val;
+	int i, n_mod;
+	int tmp[MAX_CRATE];
+	FILE* fp = fopen(f_dsp, "rb");
+	
+	if (!fp) {
+		printf("ana_pixie16: cannot open dsp file!\n");
+		assert(0);
+	}
+
+	n_mod = 0;
+	memset(tmp, 0, sizeof(int)*MAX_CRATE);
+	for (i = 0; i < MAX_CRATE; i++) {
+		fseek(fp, 0x31*4 + 1280*i*4, SEEK_SET);
+		fread(&reg_val, 4, 1, fp);
+		if (reg_val >= MAX_CRATE)
+			break;
+		if (tmp[reg_val]) 
+			break;
+		tmp[reg_val] = 1;
+		slots[n_mod] = reg_val;
+		n_mod++;
+	}
+	fclose(fp);
+
+	return n_mod;
+}
+static uint32_t get_csra(int mod, int ch, const char* f_dsp)
+{
+	uint32_t reg_val;
+	FILE* fp = fopen(f_dsp, "rb");
+
+	fseek(fp, (0x40+ch)*4 + 1280*mod*4, SEEK_SET);
+	fread(&reg_val, 4, 1, fp);
+	fclose(fp);
+
+	return reg_val;
+}
+
+void ana_pixie16::set_ptrs(uint32_t csra, int mod, int ch)
+{
+	int qdc_en, trace_en, e_sum_en, ext_ts_en;
+
+	trace_en = (csra>>8)&0x1;
+	qdc_en = (csra>>9)&0x1;
+	e_sum_en = (csra>>12)&0x1;
+	ext_ts_en = (csra>>21)&0x1;
+	
+	if (!trace_en)
+		n_pt[mod][ch] = 0;
+	if (qdc_en) 
+		ptr_qdc[mod][ch] = 4 + e_sum_en*4;
+	if (e_sum_en) {
+		ptr_energy_tr[mod][ch] = 4;
+		ptr_energy_le[mod][ch] = 5;
+		ptr_energy_ga[mod][ch] = 6;
+	}
+	ptr_cfd[mod][ch] = 2;
+	ptr_ts[mod][ch] = 1;
+	ptr_ts_ext[mod][ch] = 4 + e_sum_en*4 + qdc_en*8;
+	ptr_energy[mod][ch] = 3;
+}
+
+void ana_pixie16::set_wave_n(const char* f_dsp, int mod, int ch)
+{
+	uint32_t reg_val;
+	FILE* fp = fopen(f_dsp, "rb");
+
+	fseek(fp, (0x160+ch)*4 + 1280*mod*4, SEEK_SET);
+	fread(&reg_val, 4, 1, fp);
+	fclose(fp);
+
+	n_pt[mod][ch] = reg_val;
+}
+
 void ana_pixie16::parse_dsp(const char* f_dsp)
 {
+	int n_mod, i, j;
 
+	n_mod = get_n_mod(f_dsp);
+	for (i = 0; i < n_mod; i++) {
+		for (j = 0; j < 16; j++) {
+			set_wave_n(f_dsp, slots[i], j);
+			set_ptrs(get_csra(i, j, f_dsp), slots[i], j);
+		}
+	}
 }
 
 int ana_pixie16::parse_raw(uint32_t* raw_data)

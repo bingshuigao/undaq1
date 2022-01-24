@@ -34,9 +34,9 @@ class adv_conf_pixie_ctl(adv_conf):
                  'wid_type' : 'entry',
                  'comment' : None
                  })
-        # The dsp parameter file
+        # The dsp parameter file (default is './pixie16_firmware/dsp.set')
         self.var_lst.append({
-                 'value' : 0x617461642f2e2e,
+                 'value' : 0x7465732e7073642f657261776d7269665f363165697869702f2e,
                  'name' : 'dsp set file',
                  'str2int' : self._str2_big_int,
                  'int2str' : self._big_int2_str,

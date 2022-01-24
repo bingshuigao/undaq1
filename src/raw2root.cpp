@@ -313,6 +313,9 @@ static int get_lst_branches()
 		else if (name.find("TEST_CTL") != std::string::npos) {
 			delete tmp;
 		}
+		else if (name.find("PIXIE16_CTL") != std::string::npos) {
+			delete tmp;
+		}
 		else {
 			delete tmp;
 			return -E_NOT_IMPLE;
