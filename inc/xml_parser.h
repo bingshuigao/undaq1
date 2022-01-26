@@ -149,7 +149,7 @@ static inline
 char* get_conf_val_str(std::vector<struct conf_vme_mod>& the_conf, 
 		const char* name)
 {
-	char* val;
+	char* val = NULL;
 	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
 		if ((*it).name == name) {
 			val = (*it).val.val_str;

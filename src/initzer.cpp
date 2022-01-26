@@ -17,11 +17,15 @@
  * using the lib from https://github.com/panks/BigInteger. */
 static std::string decode_str(std::string& raw)
 {
+	int i;
 	std::string ret("");
 	std::string hex_int("");
-	BigInteger big_int(raw);
-	int i;
 	
+	if (raw == "") {
+		return ret;
+	}
+	
+	BigInteger big_int(raw);
 	while (big_int > 0) {
 		BigInteger rem = big_int % 16;
 		if (rem < 10)
@@ -1122,8 +1126,15 @@ pixie16_ctl* initzer::do_init_pixie16_ctl(std::vector<struct conf_vme_mod>
 		&the_conf, int mod_n, unsigned short* pxi_slot_map)
 {
 	pixie16_ctl* tmp_pixie16_ctl = new pixie16_ctl;
-	std::string dsp_par_f = get_conf_val_str(the_conf, "dsp set file");
-	std::string dsp_par_f1 = decode_str(dsp_par_f);
+	char* dsp_par_f_ptr = get_conf_val_str(the_conf, "dsp set file");
+	std::string dsp_par_f, dsp_par_f1;
+	if (!dsp_par_f_ptr) {
+		/* dsp set file == "default" */
+		dsp_par_f_ptr = new char[10];
+		dsp_par_f_ptr[0] = 0;
+	}
+	dsp_par_f = dsp_par_f_ptr;
+	dsp_par_f1 = decode_str(dsp_par_f);
 
 	/* Now let's try to open it. */
 	struct pixie16_ctl_open_par par;
@@ -1207,6 +1218,15 @@ int initzer::init_vme_mod()
 		RET_IF_NONZERO(ret);
 		p_module.push_back(tmp);
 	}
+
+	/* In case of Pixie16 modules, we may need to load the dsp parameters */
+#ifdef DAQ_XIA
+	for (auto it = p_pixie16_ctl.begin(); it != p_pixie16_ctl.end(); it++) {
+		ret = (*it)->try_load_dsp();
+		RET_IF_NONZERO(ret);
+		break;
+	}
+#endif
 
 	return 0;
 }

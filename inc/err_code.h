@@ -95,6 +95,7 @@
 				     modules */
 #define E_PIXIE_WAVE_TOO_LONG  83 /* pixei16 waveform too long, need to
 				     increase MAX_PIXIE16_WAVE */
+#define E_PIXIE_LOAD_DSP       84 /* cannot load dsp parameters from file */
 
 
 
