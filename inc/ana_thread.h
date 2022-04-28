@@ -49,6 +49,7 @@
  * 12 --> mqdc32
  * 13 --> v792
  * 14 --> pixie16
+ * 15 --> mdpp
  *
  *
  * For trigger events:

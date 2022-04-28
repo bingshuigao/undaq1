@@ -33,7 +33,6 @@ from v785 import v785
 from v792 import v792
 from v775n import v775n
 from v785n import v785n
-from mdpp import mdpp
 from fake_module import fake_module
 from pixie16 import pixie16
 from pixie16_ctl import pixie16_ctl
@@ -44,16 +43,14 @@ class frontend:
         # number of crates
         self.n_crate = 1 
         # list of supported modules
-        self.sup_mods_lst = ['V2718', 'TEST_CTL', 'MADC32', 'MQDC32', 'MDPP', 'V1190A', 'V830', 'V977',
-                'V1740', 'V1751', 'V775', 'V775N', 'V785', 'V785N', 'V792', 'FAKE_MODULE', 'PIXIE16_MOD', 'PIXIE16_CTL']
+        self.sup_mods_lst = ['V2718', 'TEST_CTL', 'MADC32', 'MQDC32', 'V1190A', 'V830', 'V977',
+                'V1740', 'V1751', 'V775', 'V775N', 'V785', 'V785N', 'V792', 'FAKE_MODULE', 'PIXIE16', 'PIXIE16_CTL']
         # list of selected modules (note: the element is an object of the
         # vme_mod class, not a string as in the sup_mods_list)
         self.sel_mods_lst = []
         # the advanced settings
         self.adv_conf = adv_conf_fe()
        
-        # a dedicated list for XIA Pixie16 modules: a list of slot numbers 
-        self.pixie16_slots = []
        # main frame (to be added as a tab in a notebook widget)
         self.frm = tk.Frame(parent)
         # create all sub windows inside the main frame
@@ -145,8 +142,6 @@ class frontend:
             tmp = madc32(self._get_uniq_name(name), mod)
         elif name == 'MQDC32':
             tmp = mqdc32(self._get_uniq_name(name), mod)
-        elif name == 'MDPP':
-            tmp = mdpp(self._get_uniq_name(name), mod)
         elif name == 'V1190A':
             tmp = v1190(self._get_uniq_name(name), mod)
         elif name == 'V830':
@@ -175,7 +170,7 @@ class frontend:
             tmp = fake_module(self._get_uniq_name(name), mod)
         elif name == 'PIXIE16_CTL':
             tmp = pixie16_ctl(self._get_uniq_name(name), mod)
-        elif name == 'PIXIE16_MOD':
+        elif name == 'PIXIE16':
             tmp = pixie16(self._get_uniq_name(name), mod)
         else:
             return None
@@ -221,10 +216,8 @@ class frontend:
                     continue
                 if crate == tmp.get_crate():
                     if base == tmp.get_base():
-                        # check base address only for non-pixie modules
-                        if mod_name != 'PIXIE16_MOD':
-                            bad_base = True
-                            break
+                        bad_base = True
+                        break
                     if slot == tmp.get_slot():
                         bad_slot = True
                         break
@@ -324,26 +317,11 @@ class frontend:
         else:
             messagebox.showinfo('info', msg, parent=self.frm)
 
-
-    def _set_pixie16_modnum(self):
-        mod_n = 0
-        for i in range(self.n_crate):
-            for j in range(21):
-                mod = self._find_mod(i, j)
-                if not mod:
-                    continue
-                if not mod.get_name().startswith('PIXIE16_MOD'):
-                    continue
-                mod.set_mod_num(mod_n)
-                mod_n += 1
-
-
     def _update_sel_mod_w(self):
         self.sel_mods_w.delete(0, tk.END)
         # debug ...
 #        print(self.n_crate)
         #########
-        self._set_pixie16_modnum()
         for i in range(self.n_crate):
             self.sel_mods_w.insert(tk.END, 'Crate%02d' % (i))
             for j in range(21):
@@ -393,12 +371,12 @@ class frontend:
             
 
 # tests ##########################
-#win = tk.Tk()
-#win.geometry('800x650')
-#frm = tk.Frame(win)
-#frm.place(x=0, y=30, width=800, height=600) 
-#tab_ctrl = ttk.Notebook(frm)
-#tab1 = frontend(tab_ctrl)
-#tab_ctrl.add(tab1.get_frm(), text='frontend')
-#tab_ctrl.pack(fill=tk.BOTH, expand=1) 
-#win.mainloop()
+win = tk.Tk()
+win.geometry('800x650')
+frm = tk.Frame(win)
+frm.place(x=0, y=30, width=800, height=900) 
+tab_ctrl = ttk.Notebook(frm)
+tab1 = frontend(tab_ctrl)
+tab_ctrl.add(tab1.get_frm(), text='frontend')
+tab_ctrl.pack(fill=tk.BOTH, expand=1) 
+win.mainloop()

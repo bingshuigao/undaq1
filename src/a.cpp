@@ -17,15 +17,11 @@
  * using the lib from https://github.com/panks/BigInteger. */
 static std::string decode_str(std::string& raw)
 {
-	int i;
 	std::string ret("");
 	std::string hex_int("");
-	
-	if (raw == "") {
-		return ret;
-	}
-	
 	BigInteger big_int(raw);
+	int i;
+	
 	while (big_int > 0) {
 		BigInteger rem = big_int % 16;
 		if (rem < 10)
@@ -306,9 +302,6 @@ static int create_mod(std::string& name, module*& mod)
 	}
 	else if (name.find("MQDC32") != std::string::npos) {
 		mod = new mqdc32;
-	}
-	else if (name.find("MDPP") != std::string::npos) {
-		mod = new mdpp;
 	}
 	else if (name.find("V1190A") != std::string::npos) {
 		mod = new v1190; 
@@ -701,31 +694,24 @@ do_init_mqdc32(mqdc32* mod, std::vector<struct conf_vme_mod> &the_conf)
 
 /* initialize pixie16 module, return 0 if succeed, otherwise return error code.
  * One should note that in our DAQ framework, each channel of a pixie16 module
- * is defined as a pixie16 module.  */
+ * is defined as a pixie16 module. */
 static int 
 do_init_pixie16(pixie16* mod, std::vector<struct conf_vme_mod> &the_conf)
 {
 	/* The 'the_conf' contains parameters for the present channel as well
 	 * as parameters for the pixie16 module. Since the module parameters
 	 * are the same for different channels, we have 16 copies of the module
-	 * parameter, which (I know) causes some redundancy. These module
-	 * parameters will be configured 16 times instead of once, which may
-	 * take slightly longer time in the initialization. */
+	 * parameter, which (I know) causes some redundancy. */
 
 	/* make sure we set the module number correctly before doing other
 	 * register read/write operations. Because the module number is used in
 	 * many read/write operations. */
-	int auto_blcut;
-	uint32_t off;
-	uint64_t val;
-	int dw = 0;
-
 	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
 		if ((*it).name != "") 
 			continue;
 		/* this is a register setting */
-		off = (*it).offset;
-		val = (*it).val.val_uint64;
+		uint32_t off = (*it).offset;
+		uint64_t val = (*it).val.val_uint64;
 		if (off == 0) {
 			mod->set_mod_num(val);
 			break;
@@ -737,196 +723,26 @@ do_init_pixie16(pixie16* mod, std::vector<struct conf_vme_mod> &the_conf)
 		if ((*it).name != "") 
 			continue;
 		/* this is a register setting */
-		off = (*it).offset;
-		val = (*it).val.val_uint64;
-		if (mod->write_reg(off, dw, &val))
-			return -E_INIT_PIXIE16;
-		if (off == 87)
-			auto_blcut = val;
-	}
-	/* perform the auto bl cut again. Maybe its not necessary, but it won't
-	 * harm anyway. */
-	if (auto_blcut) {
-		off = 87;
-		val = 1;
+		uint32_t off = (*it).offset;
+		uint64_t val = (*it).val.val_uint64;
+		int dw = 0;
+		if (mod->is_mod_par(off) && (mod->get_slot() != 15)) {
+			/* the module parameters needs to be configured once,
+			 * therefore, we do it only for the last channel */
+			continue;
+		}
 		if (mod->write_reg(off, dw, &val))
 			return -E_INIT_PIXIE16;
 	}
-
-	/* need to set slotID/CrateID (which is reported in the data structure)
-	 * */
-	if (mod->set_dsp_slot_id(mod->get_crate()))
-		return -E_INIT_PIXIE16;
-	if (mod->set_dsp_crate_id(0))
-		return -E_INIT_PIXIE16;
-
 
 	/* we set the first channel of the first pixie16 module as the trigger
-	 * module and set the threshold */
+	 * module */
 	if ((mod->get_slot() == 0) && (mod->get_mod_num() == 0)) {
-		uint32_t thresh = 
-			((pixie16_ctl*)mod->get_ctl())->get_fifo_thresh();
 		mod->set_trig_mod(1);
-		mod->set_fifo_thresh(thresh);
 	}
 
 	return 0;
 }
-
-/* init mdpp scp/rcp software module settings */
-static int mdpp_init_scp(mdpp* mod, int fw_ver, uint32_t off, uint16_t val)
-{
-	uint16_t ch;
-	ch = off & 0xf;
-
-	/* first, need to check if the offset and firmware version match */
-	if (fw_ver == 1 || fw_ver == 2) {
-		if (off > 0x8077) 
-			return 0;
-	}
-
-	if (off < 0x8010) {
-		/* TF_int_diff */
-		if (mod->write_reg(0x6100, 16, &ch) )
-			return -E_MDPP_INIT_SCP;
-		if (mod->write_reg(0x6110, 16, &val))
-			return -E_MDPP_INIT_SCP;
-		usleep(20);
-	}
-	else if (off < 0x8020) {
-		/* Gain */
-		if (mod->write_reg(0x6100, 16, &ch) )
-			return -E_MDPP_INIT_SCP;
-		if (mod->write_reg(0x611a, 16, &val))
-			return -E_MDPP_INIT_SCP;
-		usleep(20);
-	}
-	else if (off < 0x8030) {
-		/* shaping time */
-		if (mod->write_reg(0x6100, 16, &ch) )
-			return -E_MDPP_INIT_SCP;
-		if (mod->write_reg(0x6124, 16, &val))
-			return -E_MDPP_INIT_SCP;
-		usleep(20);
-	}
-	else if (off < 0x8040) {
-		/* reset time */
-		if (mod->write_reg(0x6100, 16, &ch) )
-			return -E_MDPP_INIT_SCP;
-		if (mod->write_reg(0x6128, 16, &val))
-			return -E_MDPP_INIT_SCP;
-		usleep(20);
-	}
-	else if (off < 0x8050) {
-		/* rise time */
-		if (mod->write_reg(0x6100, 16, &ch) )
-			return -E_MDPP_INIT_SCP;
-		if (mod->write_reg(0x612a, 16, &val))
-			return -E_MDPP_INIT_SCP;
-		usleep(20);
-	}
-	else if (off < 0x8060) {
-		/* threshold */
-		uint16_t ch1 = ch>>1;
-		uint32_t off1 = 0x611c + (2*(ch&1));
-		if (mod->write_reg(0x6100, 16, &ch1) )
-			return -E_MDPP_INIT_SCP;
-		if (mod->write_reg(off1, 16, &val))
-			return -E_MDPP_INIT_SCP;
-		usleep(20);
-	}
-	else if (off < 0x8070) {
-		/* pole zero */
-		uint16_t ch1 = ch>>1;
-		uint32_t off1 = 0x6112 + (2*(ch&1));
-		if (fw_ver != 2) 
-			/* pz is for scp only */
-			return 0;
-		if (mod->write_reg(0x6100, 16, &ch1) )
-			return -E_MDPP_INIT_SCP;
-		if (mod->write_reg(off1, 16, &val))
-			return -E_MDPP_INIT_SCP;
-		usleep(20);
-	}
-	else if (off < 0x8080) {
-		/* base line restore */
-		if (mod->write_reg(0x6100, 16, &ch) )
-			return -E_MDPP_INIT_SCP;
-		if (mod->write_reg(0x6126, 16, &val))
-			return -E_MDPP_INIT_SCP;
-		usleep(20);
-	}
-	return 0;
-}
-
-/* initialize vme module, return 0 if succeed, otherwise return error code */
-static int 
-do_init_mdpp(mdpp* mod, std::vector<struct conf_vme_mod> &the_conf)
-{
-	/* special attention should be paid to the 0x6090 register. If set to
-	 * 0xc, one must first send a pulse to the fc/res port before writing
-	 * 0xc to this register, or else the result of the register will be 8
-	 * instead of 0xc (a bug???) */
-	uint16_t dum = 0;
-	uint16_t fw_ver;
-	int ret;
-	/* First, we need to soft-reset all settings */
-	if (mod->write_reg(0x6008, 16, &dum))
-		return -E_INIT_MDPP;
-	usleep(210000);
-
-	/* read firmware 
-	 * rcp = 1
-	 * scp = 2
-	 * qdc = 3 
-	 * */
-	if (mod->read_reg(0x600e, 16, &fw_ver))
-		return -E_INIT_MDPP;
-	fw_ver >>= 12;
-
-	/* check if firmware matches */
-	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
-		if ((*it).name != "") 
-			continue;
-		/* this is a register setting */
-		uint32_t off = (*it).offset;
-		uint16_t val = (*it).val.val_uint64;
-		if (off == 1) {
-			uint16_t fw_ver1 = val + 1;
-			if (fw_ver1 != fw_ver) 
-				return -E_MDPP_FW;
-			break;
-		}
-	}
-
-	/* then init all registers with non-default values */
-	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
-		if ((*it).name != "") 
-			continue;
-		/* this is a register setting */
-		uint32_t off = (*it).offset;
-		uint16_t val = (*it).val.val_uint64;
-		if ((off >= 0x6000) && (off < 0x8000)) {
-			/* this is a physical register */
-			if ((off == 0x605a) && (fw_ver != 2)) 
-				/* this register for scp only */
-				continue;
-			if (mod->write_reg(off, 16, &val))
-				return -E_INIT_MDPP;
-		}
-		else if (off >= 0x8000 && off <= 0x8077) {
-			/* rcp/scp firmware settings */
-			ret = mdpp_init_scp(mod, fw_ver, off, val);
-			RET_IF_NONZERO(ret);
-		}
-		else {
-			/* unknown register */
-			return -E_INIT_MDPP;
-		}
-	}
-	return 0;
-}
-
 
 
 /* initialize vme module, return 0 if succeed, otherwise return error code */
@@ -1218,8 +1034,6 @@ static int do_init_mod(module* mod, std::vector<struct conf_vme_mod> &the_conf)
 		return do_init_madc32(static_cast<madc32*>(mod), the_conf);
 	if (name == "mqdc32")
 		return do_init_mqdc32(static_cast<mqdc32*>(mod), the_conf);
-	if (name == "mdpp")
-		return do_init_mdpp(static_cast<mdpp*>(mod), the_conf);
 	if (name == "v1190")
 		return do_init_v1190(static_cast<v1190*>(mod), the_conf);
 	if (name == "v830")
@@ -1286,29 +1100,16 @@ pixie16_ctl* initzer::do_init_pixie16_ctl(std::vector<struct conf_vme_mod>
 		&the_conf, int mod_n, unsigned short* pxi_slot_map)
 {
 	pixie16_ctl* tmp_pixie16_ctl = new pixie16_ctl;
-	char* dsp_par_f_ptr = get_conf_val_str(the_conf, "dsp set file");
-	std::string dsp_par_f, dsp_par_f1;
-	if (!dsp_par_f_ptr) {
-		/* dsp set file == "default" */
-		dsp_par_f_ptr = new char[10];
-		dsp_par_f_ptr[0] = 0;
-	}
-	dsp_par_f = dsp_par_f_ptr;
-	dsp_par_f1 = decode_str(dsp_par_f);
 
 	/* Now let's try to open it. */
 	struct pixie16_ctl_open_par par;
-	par.ComFPGAConfigFile = "./pixie16_firmware/firmware/syspixie16_revfgeneral_adc100mhz_r33338.bin";
-	par.SPFPGAConfigFile  = "./pixie16_firmware/firmware/fippixie16_revfgeneral_14b100m_r36263.bin";
-	par.TrigFPGAConfigFile = "";
-	par.DSPCodeFile = "./pixie16_firmware/firmware/Pixie16DSP_revfgeneral_14b100m_r38896.ldr";
-	//par.DSPParFile = "./pixie16_firmware/initial_par.set";
-	par.DSPParFile = dsp_par_f1.c_str();
-	printf("dsp set file: %s\n", par.DSPParFile);
-	//return 0;
-	par.DSPVarFile = "./pixie16_firmware/firmware/Pixie16DSP_revfgeneral_14b100m_r38896.var";
+	par.ComFPGAConfigFile = "./ComFPGAConfigFile";
+	par.SPFPGAConfigFile  = "./SPFPGAConfigFile";
+	par.TrigFPGAConfigFile = "./TrigFPGAConfigFile";
+	par.DSPCodeFile = "./DSPCodeFile";
+	par.DSPParFile = "./DSPParFile";
+	par.DSPVarFile = "./DSPVarFile";
 	par.pxi_slot_map = pxi_slot_map;
-	par.mod_num = mod_n;
 	if (tmp_pixie16_ctl->open(&par)) 
 		goto fail;
 		
@@ -1319,7 +1120,7 @@ pixie16_ctl* initzer::do_init_pixie16_ctl(std::vector<struct conf_vme_mod>
 			/* this is a register setting */
 			uint64_t off = (*it).offset;
 			uint64_t val = (*it).val.val_uint64;
-			if (tmp_pixie16_ctl->write(off, &val))
+			if (tmp_pixie16_ctl->write_reg(off, &val))
 				goto fail;
 		}
 	}
@@ -1378,15 +1179,6 @@ int initzer::init_vme_mod()
 		RET_IF_NONZERO(ret);
 		p_module.push_back(tmp);
 	}
-
-	/* In case of Pixie16 modules, we may need to load the dsp parameters */
-#ifdef DAQ_XIA
-	for (auto it = p_pixie16_ctl.begin(); it != p_pixie16_ctl.end(); it++) {
-		ret = (*it)->try_load_dsp();
-		RET_IF_NONZERO(ret);
-		break;
-	}
-#endif
 
 	return 0;
 }

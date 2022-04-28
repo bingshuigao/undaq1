@@ -12,6 +12,7 @@
 #include "ana_evt_hd.h"
 #include "ana_frag_hd.h"
 #include "ana_madc32.h"
+#include "ana_mdpp.h"
 #include "ana_pixie16.h"
 #include "ana_v775.h"
 #include "ana_v792.h"
@@ -127,6 +128,7 @@ void clear_buf()
 	ana_v1751* tmp_v1751;
 	ana_v1190* tmp_v1190;
 	ana_madc32* tmp_madc;
+	ana_mdpp* tmp_mdpp;
 	ana_pixie16* tmp_pixie16;
 	ana_v775* tmp_v775;
 	ana_v792* tmp_v792;
@@ -140,6 +142,14 @@ void clear_buf()
 			/* madc32 */
 			tmp_madc = static_cast<ana_madc32*>((*it)->br_frag_body);
 			memset(tmp_madc->get_adc_val(), 0, 32*4);
+			break;
+		case 15:
+			/* mdpp */
+			tmp_mdpp = static_cast<ana_mdpp*>((*it)->br_frag_body);
+			memset(tmp_mdpp->get_adc_val(), 0, 16*4);
+			memset(tmp_mdpp->get_tdc_val(), 0, 16*4);
+			memset(tmp_mdpp->get_qdc_val(), 0, 16*4);
+			memset(tmp_mdpp->get_trig_t(), 0, 2*4);
 			break;
 		case 14:
 			/* pixie16 */
@@ -257,6 +267,12 @@ static int get_lst_branches()
 			tmp->br_frag_body = new ana_madc32();
 			lst_of_br.push_back(tmp);
 		}
+		else if (name.find("MDPP") != std::string::npos) {
+			bool is_found;
+			int fw_ver = get_conf_val_reg((*it), 0x1, is_found);
+			tmp->br_frag_body = new ana_mdpp(fw_ver);
+			lst_of_br.push_back(tmp);
+		}
 		else if (name.find("PIXIE16_MOD") != std::string::npos) {
 			FILE* f_tmp = fopen("./dsp.set", "r");
 			if (!f_tmp) {
@@ -334,6 +350,7 @@ TTree* set_br_addr(char* run_title)
 	ana_v1751* tmp_v1751;
 	ana_v1190* tmp_v1190;
 	ana_madc32*  tmp_madc;
+	ana_mdpp*  tmp_mdpp;
 	ana_pixie16*  tmp_pixie16;
 	ana_v775* tmp_v775;
 	ana_v792* tmp_v792;
@@ -354,6 +371,22 @@ TTree* set_br_addr(char* run_title)
 			sprintf(buf1, "frag_madc_crate%02d_slot%02d",
 					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
 			tree->Branch(buf1, tmp_madc->get_adc_val(), "adc[32]/i");
+			break;
+		case 15:
+			/* mdpp */
+			tmp_mdpp = static_cast<ana_mdpp*>((*it)->br_frag_body);
+			sprintf(buf1, "frag_mdpp_crate%02d_slot%02d_adc",
+					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
+			tree->Branch(buf1, tmp_mdpp->get_adc_val(), "adc[16]/i");
+			sprintf(buf1, "frag_mdpp_crate%02d_slot%02d_tdc",
+					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
+			tree->Branch(buf1, tmp_mdpp->get_tdc_val(), "tdc[16]/i");
+			sprintf(buf1, "frag_mdpp_crate%02d_slot%02d_qdc",
+					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
+			tree->Branch(buf1, tmp_mdpp->get_qdc_val(), "qdc[16]/i");
+			sprintf(buf1, "frag_mdpp_crate%02d_slot%02d_trig_t",
+					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
+			tree->Branch(buf1, tmp_mdpp->get_trig_t(), "trig_t[2]/i");
 			break;
 		case 14:
 			/* pixie16 */

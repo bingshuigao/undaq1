@@ -34,6 +34,7 @@
 #include "fake_module.h"
 #include "pixie16.h"
 #include "pixie16_ctl.h"
+#include "mdpp.h"
 #endif
 
 struct mod_rb_par

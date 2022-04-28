@@ -96,6 +96,10 @@
 #define E_PIXIE_WAVE_TOO_LONG  83 /* pixei16 waveform too long, need to
 				     increase MAX_PIXIE16_WAVE */
 #define E_PIXIE_LOAD_DSP       84 /* cannot load dsp parameters from file */
+#define E_INIT_MDPP            85 /* error init mdpp module */
+#define E_MDPP_FW              86 /* mdpp firmware version does not match */
+#define E_MDPP_INIT_SCP        87 /* mdpp scp firmware init */
+#define E_DATA_MDPP            88 /* corrupted mdpp data */
 
 
 

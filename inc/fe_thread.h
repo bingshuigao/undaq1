@@ -65,6 +65,7 @@
  * 12 --> mqdc32;
  * 13 --> v792;
  * 14 --> pixie16;
+ * 15 --> mdpp
  *
  *             The true body has the following format: (see modules.h):
  *                  _______________

@@ -1,13 +1,13 @@
-#include "madc32.h"
+#include "mdpp.h"
 #include <unistd.h>
 
-madc32::madc32()
+mdpp::mdpp()
 {
 	/* set buffer offset */
 	buf_off = 0x0;
 	
-	name = "madc32";
-	mod_id = 1;
+	name = "mdpp";
+	mod_id = 15;
 	clk_freq = DEF_MADC32_CLK;
 }
 
@@ -16,7 +16,7 @@ madc32::madc32()
  * @param evt Pointer to the buffer where the word will be saved
  * @param sz_out number of bytes read.
  * @return 0 if succeed, nonzero error codes if error. */
-int madc32::read_single_evt(int am, uint32_t *evt, int* sz_out)
+int mdpp::read_single_evt(int am, uint32_t *evt, int* sz_out)
 {
 	int ret, am_old;
 
@@ -24,7 +24,7 @@ int madc32::read_single_evt(int am, uint32_t *evt, int* sz_out)
 	set_am(am);
 	*sz_out = 0;
 	do {
-		/* event buffer address (offset) in the madc32 is 0x0000 */
+		/* event buffer address (offset) in the mdpp is 0x0000 */
 		ret = read_reg(base_addr, 32, (void*) evt);
 		if (ret) {
 			set_am(am_old);
@@ -43,7 +43,7 @@ int madc32::read_single_evt(int am, uint32_t *evt, int* sz_out)
  * @param mcst_addr The mcst_addr to be used. If zero, use the default
  * address (0xBB)
  * @return 0 if succeed, nonzero error codes if error. */
-int madc32::enable_mcst(uint32_t mcst_addr)
+int mdpp::enable_mcst(uint32_t mcst_addr)
 {
 	int ret;
 	uint16_t val;
@@ -63,7 +63,7 @@ int madc32::enable_mcst(uint32_t mcst_addr)
  * @param last  if true, set the module to be the last  one in the cblt
  * chain
  * @return 0 if succeed, nonzero error codes if error.*/
-int madc32::enable_cblt(uint32_t cblt_addr, int first, int last)
+int mdpp::enable_cblt(uint32_t cblt_addr, int first, int last)
 {
 	int ret;
 	uint16_t val;
@@ -79,7 +79,7 @@ int madc32::enable_cblt(uint32_t cblt_addr, int first, int last)
 	val = cblt_addr & 0xFF;
 	return write_reg(0x6022, 16, &val);
 }
-int madc32::get_cblt_conf(uint16_t* addr, int* cblt_enable, int* cblt_first,
+int mdpp::get_cblt_conf(uint16_t* addr, int* cblt_enable, int* cblt_first,
 		int* cblt_last)
 {
 	int ret;
@@ -125,7 +125,7 @@ int madc32::get_cblt_conf(uint16_t* addr, int* cblt_enable, int* cblt_first,
 	return 0;
 }
 
-int madc32::if_trig(bool& x)
+int mdpp::if_trig(bool& x)
 {
 	uint16_t data_ready;
 	int ret;
@@ -148,10 +148,10 @@ int madc32::if_trig(bool& x)
 	return 0;
 }
 
-int madc32::on_start()
+int mdpp::on_start()
 {
 	uint16_t dum = 0;
-	int ret;
+	int ret; 
 
 	/* stop acq */
 	dum = 0;
@@ -181,7 +181,7 @@ int madc32::on_start()
 	return 0;
 }
 
-int madc32::on_stop()
+int mdpp::on_stop()
 {
 	/* reset timestamp */
 	uint16_t dum = 0xc;

@@ -3538,7 +3538,7 @@ class pixie16:
                  })
         self.reg_map.append({
                  'off'    : 8,
-                 'value'  : [0 for i in range(16)],
+                 'value'  : [1 for i in range(16)],
                  'name'   : 'Good Ch',
                  'comment': 'Good Ch'
                  })

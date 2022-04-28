@@ -49,5 +49,6 @@ This explains how to added a 'supported module' (v1740) to the DAQ
           # cp ana_madc32.cpp ana_mqdc32.cpp
 	  Then modify the source file accordingly
        c) add example code in the ana_usr.cpp
-9, modify the makefile
-10, compile and run the code to test!
+9, modify the raw2root.cpp accordingly
+10, modify the makefile
+11, compile and run the code to test!
