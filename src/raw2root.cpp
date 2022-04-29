@@ -114,7 +114,8 @@ void parse_and_fill(uint32_t* p_raw, int daq, int crate, int slot)
 			continue;
 		if ((*it)->br_frag_hd.slot != slot)
 			continue;
-		(*it)->br_frag_body->parse_raw(p_raw);
+		if ((*it)->br_frag_body->parse_raw(p_raw))
+			std::cout<<"cannot parse raw data!"<<std::endl;
 		(*it)->br_frag_hd.is_valid = 1;
 		(*it)->br_frag_hd.ts = (*it)->br_frag_body->get_cnt();
 	}
@@ -269,7 +270,7 @@ static int get_lst_branches()
 		}
 		else if (name.find("MDPP") != std::string::npos) {
 			bool is_found;
-			int fw_ver = get_conf_val_reg((*it), 0x1, is_found);
+			int fw_ver = 1 + get_conf_val_reg((*it), 0x1, is_found);
 			tmp->br_frag_body = new ana_mdpp(fw_ver);
 			lst_of_br.push_back(tmp);
 		}

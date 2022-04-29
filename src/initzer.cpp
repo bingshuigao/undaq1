@@ -906,7 +906,10 @@ do_init_mdpp(mdpp* mod, std::vector<struct conf_vme_mod> &the_conf)
 		/* this is a register setting */
 		uint32_t off = (*it).offset;
 		uint16_t val = (*it).val.val_uint64;
-		if ((off >= 0x6000) && (off < 0x8000)) {
+		if (off == 1) {
+			continue;
+		}
+		else if ((off >= 0x6000) && (off < 0x8000)) {
 			/* this is a physical register */
 			if ((off == 0x605a) && (fw_ver != 2)) 
 				/* this register for scp only */
