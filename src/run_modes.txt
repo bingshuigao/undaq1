@@ -1,0 +1,17 @@
+We used macros (#define) to determin the following different run modes:
+
+1, #define DAQ_XIA
+use this macro if XIA system is going to be used.
+NOTE: USE_SLOW_MODE cannot be used in this case (see below)
+
+2, #define USE_SLOW_MODE
+use this macro if slow mode is going to be used (reset the infinite busy logic
+when all data read out, i.e. event-by-event read out).
+NOTE: cannot be used together with DAQ_XIA macro.
+
+3, #define USE_DIRECT_SAVE
+use this macro if a copy of data should be saved directly to files before
+sending to event builder. 
+NOTE: this feature reduces the performance, use it only for debugging purposes.
+
+
