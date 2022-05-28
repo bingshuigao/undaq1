@@ -290,8 +290,9 @@ int xml_parser::get_adv_var(struct conf_vme_mod* conf)
 	
 	conf->val.val_uint64 = strtol(str, NULL, 0);
 	conf->val.val_str = new char[1000];
-	str[999] = 0;
-	strcpy(conf->val.val_str, str);
+	//str[999] = 0;
+	strncpy(conf->val.val_str, str,999);
+	conf->val.val_str[999] = 0;
 
 	return 0;
 }

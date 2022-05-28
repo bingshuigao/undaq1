@@ -412,7 +412,7 @@ class control:
             # scaler counters
             cnts = []
             for i in range(30):
-                cnts.append(msg[4+i*4:8+i*4])
+                cnts.append(int.from_bytes(msg[4+i*4:8+i*4], 'little'))
             self.stat_tab.update_scal_cnter(cnts)
 
     def _handle_log_msg(self, msg):
