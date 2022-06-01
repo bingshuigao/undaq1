@@ -26,6 +26,15 @@ class mdpp(vme_mod):
                  'set_wid_type' : 'comb',
                  'set_wid_values' : ['RCP', 'SCP'],
                  })
+        # firmware
+        self.reg_map.append(
+                {'off' : 0x2,
+                 'value' : 'default',
+                 'name' : 'max_hits',
+                 'nbit' : 16,
+                 'has_set_wid' : True,
+                 'set_wid_type' : 'entry',
+                 })
         # module id
         self.reg_map.append(
                 {'off' : 0x6004,

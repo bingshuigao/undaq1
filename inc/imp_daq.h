@@ -21,6 +21,7 @@
 
 #define MAX_PIXIE16_WAVE 100000
 
+#define DEF_MDPP_MAX_HIT 10
 /* default sizes for buffers, please note that the actual size of the ring
  *  * buffer is only half of the defined values below.  */
 /********** event builder buffers *************/

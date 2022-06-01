@@ -271,7 +271,10 @@ static int get_lst_branches()
 		else if (name.find("MDPP") != std::string::npos) {
 			bool is_found;
 			int fw_ver = 1 + get_conf_val_reg((*it), 0x1, is_found);
-			tmp->br_frag_body = new ana_mdpp(fw_ver);
+			int max_hit_mdpp = get_conf_val_reg((*it), 0x2, is_found);
+			if (!is_found)
+				max_hit_mdpp = DEF_MDPP_MAX_HIT;
+			tmp->br_frag_body = new ana_mdpp(fw_ver, max_hit_mdpp);
 			lst_of_br.push_back(tmp);
 		}
 		else if (name.find("PIXIE16_MOD") != std::string::npos) {
@@ -345,7 +348,7 @@ static int get_lst_branches()
 
 TTree* set_br_addr(char* run_title)
 {
-	int i, n_samp, n_frag;
+	int i, n_samp, n_frag, mdpp_max_hit;
 	char buf1[100], buf2[100], buf3[1000];
 	ana_v1740* tmp_v1740;
 	ana_v1751* tmp_v1751;
@@ -376,18 +379,23 @@ TTree* set_br_addr(char* run_title)
 		case 15:
 			/* mdpp */
 			tmp_mdpp = static_cast<ana_mdpp*>((*it)->br_frag_body);
+			mdpp_max_hit = tmp_mdpp->get_max_hit();
 			sprintf(buf1, "frag_mdpp_crate%02d_slot%02d_adc",
 					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
-			tree->Branch(buf1, tmp_mdpp->get_adc_val(), "adc[16]/i");
+			sprintf(buf2, "adc[%d]/i", mdpp_max_hit*16);
+			tree->Branch(buf1, tmp_mdpp->get_adc_val(), buf2);
 			sprintf(buf1, "frag_mdpp_crate%02d_slot%02d_tdc",
 					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
-			tree->Branch(buf1, tmp_mdpp->get_tdc_val(), "tdc[16]/i");
+			sprintf(buf2, "tdc[%d]/i", mdpp_max_hit*16);
+			tree->Branch(buf1, tmp_mdpp->get_tdc_val(), buf2);
 			sprintf(buf1, "frag_mdpp_crate%02d_slot%02d_qdc",
 					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
-			tree->Branch(buf1, tmp_mdpp->get_qdc_val(), "qdc[16]/i");
+			sprintf(buf2, "qdc[%d]/i", mdpp_max_hit*16);
+			tree->Branch(buf1, tmp_mdpp->get_qdc_val(), buf2);
 			sprintf(buf1, "frag_mdpp_crate%02d_slot%02d_trig_t",
 					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
-			tree->Branch(buf1, tmp_mdpp->get_trig_t(), "trig_t[2]/i");
+			sprintf(buf2, "trig_t[%d]/i", mdpp_max_hit*2);
+			tree->Branch(buf1, tmp_mdpp->get_trig_t(), buf2);
 			break;
 		case 14:
 			/* pixie16 */
