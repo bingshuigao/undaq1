@@ -12,6 +12,7 @@
 #include "ana_evt_hd.h"
 #include "ana_frag_hd.h"
 #include "ana_madc32.h"
+#include "ana_mqdc32.h"
 #include "ana_mdpp.h"
 #include "ana_pixie16.h"
 #include "ana_v775.h"
@@ -129,6 +130,7 @@ void clear_buf()
 	ana_v1751* tmp_v1751;
 	ana_v1190* tmp_v1190;
 	ana_madc32* tmp_madc;
+	ana_mqdc32* tmp_mqdc;
 	ana_mdpp* tmp_mdpp;
 	ana_pixie16* tmp_pixie16;
 	ana_v775* tmp_v775;
@@ -143,6 +145,11 @@ void clear_buf()
 			/* madc32 */
 			tmp_madc = static_cast<ana_madc32*>((*it)->br_frag_body);
 			memset(tmp_madc->get_adc_val(), 0, 32*4);
+			break;
+		case 12:
+			/* mqdc32 */
+			tmp_mqdc = static_cast<ana_mqdc32*>((*it)->br_frag_body);
+			memset(tmp_mqdc->get_qdc_val(), 0, 32*4);
 			break;
 		case 15:
 			/* mdpp */
@@ -268,6 +275,10 @@ static int get_lst_branches()
 			tmp->br_frag_body = new ana_madc32();
 			lst_of_br.push_back(tmp);
 		}
+		else if (name.find("MQDC32") != std::string::npos) {
+			tmp->br_frag_body = new ana_mqdc32();
+			lst_of_br.push_back(tmp);
+		}
 		else if (name.find("MDPP") != std::string::npos) {
 			bool is_found;
 			int fw_ver = 1 + get_conf_val_reg((*it), 0x1, is_found);
@@ -354,6 +365,7 @@ TTree* set_br_addr(char* run_title)
 	ana_v1751* tmp_v1751;
 	ana_v1190* tmp_v1190;
 	ana_madc32*  tmp_madc;
+	ana_mqdc32*  tmp_mqdc;
 	ana_mdpp*  tmp_mdpp;
 	ana_pixie16*  tmp_pixie16;
 	ana_v775* tmp_v775;
@@ -375,6 +387,13 @@ TTree* set_br_addr(char* run_title)
 			sprintf(buf1, "frag_madc_crate%02d_slot%02d",
 					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
 			tree->Branch(buf1, tmp_madc->get_adc_val(), "adc[32]/i");
+			break;
+		case 12:
+			/* mqdc32 */
+			tmp_mqdc = static_cast<ana_mqdc32*>((*it)->br_frag_body);
+			sprintf(buf1, "frag_mqdc_crate%02d_slot%02d",
+					(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot);
+			tree->Branch(buf1, tmp_mqdc->get_qdc_val(), "qdc[32]/i");
 			break;
 		case 15:
 			/* mdpp */

@@ -215,7 +215,7 @@ int pixie16_ctl::blt_read(unsigned long addr, void* buf, int sz_in, int* sz_out)
 {
 	int ret;
 	unsigned short mod_n = am;
-	unsigned int n_word, n_word2;
+	unsigned int n_word, n_word2, n_word3;
 	
 	/* First, we need to check fifo status to get number of words */
 	ret = Pixie16CheckExternalFIFOStatus(&n_word, mod_n);
@@ -230,15 +230,19 @@ int pixie16_ctl::blt_read(unsigned long addr, void* buf, int sz_in, int* sz_out)
 	}
 
 	/* need to reserve space for a whole evt, just in case we need a second
-	 * readout */
+	 * readout, the -8 is due to possible artifical read */
 	sz_in -= 4*evt_max_sz;
+	sz_in -= 8;
 	if (sz_in <= 0) 
 		return -E_BLT_BUFF_SZ;
 	if ((n_word*4) > sz_in) 
 		n_word = sz_in/4;
 
 	/* Second, do a readout */
-	ret = Pixie16ReadDataFromExternalFIFO((unsigned int*)buf, n_word, mod_n);
+	n_word3 = artifical_read((unsigned int*)buf);
+	ret = Pixie16ReadDataFromExternalFIFO(((unsigned int*)buf)+n_word3,
+			n_word, mod_n);
+	n_word += n_word3;
 	*sz_out = n_word*4;
 	if (ret == -1) 
 		return -E_PIXIE_MOD_NUM;
@@ -254,10 +258,13 @@ int pixie16_ctl::blt_read(unsigned long addr, void* buf, int sz_in, int* sz_out)
 		ret = Pixie16CheckExternalFIFOStatus(&n_word3, mod_n);
 		if (ret) 
 			return -E_PIXIE_MOD_NUM;
-		if (n_word3 >= n_word2) 
+		if (n_word3 >= ((n_word2>2) ? n_word2 : 3)) 
 			break;
 	}
-	ret = Pixie16ReadDataFromExternalFIFO(((unsigned int*)buf)+n_word, n_word2, mod_n);
+	ret = Pixie16ReadDataFromExternalFIFO(((unsigned int*)buf)+n_word,
+			(n_word2>2) ? n_word2 : 3, mod_n);
+	/* why we need this artifical thing? see comments in the artifical_read */
+	artifical_write(((unsigned int*)buf)+n_word, n_word2);
 	*sz_out += n_word2*4;
 	if (ret == -1) 
 		return -E_PIXIE_MOD_NUM;
@@ -765,6 +772,9 @@ int pixie16_ctl::write_reg(long reg, void* data)
 	case 1003:
 		/* start a new run (based on Wang Jianguo's code) */
 	
+		/* reset n_word_art */
+		n_word_art = 0;
+
 		/* start runs synchronisely */
 		mod_n = 0;
 		val32 = 1;

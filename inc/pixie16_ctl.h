@@ -104,6 +104,39 @@ public:
 	int try_load_dsp();
 
 private:
+	/* we need the artifical_write and artifical_read because the pixie16
+	 * read event buffer always read >=3 32-bit words, even the n_word = 1
+	 * or 2 is specified. Therefore, we need to temporarily store the extra
+	 * words for the next readout.*/
+	unsigned int artifical_read(unsigned int* buf)
+	{
+		unsigned int ret;
+		if (n_word_art == 1) {
+			buf[0] = art_data[0];
+		}
+		else if (n_word_art == 2) {
+			buf[0] = art_data[0];
+			buf[1] = art_data[1];
+		}
+		ret = n_word_art;
+		n_word_art = 0;
+		return ret;
+	}
+	void artifical_write(unsigned int* buf, int n_word) 
+	{
+		if (n_word >= 3) {
+			n_word_art = 0;
+		}
+		else if (n_word == 2) {
+			n_word_art = 1;
+			art_data[0] = buf[2];
+		}
+		else if (n_word == 1) {
+			n_word_art = 2;
+			art_data[0] = buf[1];
+			art_data[1] = buf[2];
+		}
+	}
 	/* check if the events in the buf are event aligned.
 	 * @param buf buffer containing the events
 	 * @param n_word length of the events in the buffer (number of 32-bit
@@ -208,6 +241,9 @@ private:
 
 
 private:
+	/* artifical data */
+	unsigned int art_data[2];
+	int n_word_art;
 	/* total number of pixie16 modules installed in the system */
 	unsigned short mod_num;
 	/* max size of single event (number of 32-bit words) */
