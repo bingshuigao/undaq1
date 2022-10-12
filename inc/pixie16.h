@@ -10,6 +10,7 @@
 #include "module.h"
 //#include "../os_libs/pixie16/pixie16.h"
 
+#ifdef DAQ_XIA
 class pixie16: public module
 {
 public:
@@ -127,5 +128,7 @@ private:
 
 	
 };
+
+#endif
 
 #endif

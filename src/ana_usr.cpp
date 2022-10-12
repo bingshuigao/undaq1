@@ -40,6 +40,13 @@ int ana_usr_trig(void* p_evt, hist_man& hists, bool is_bor)
 	uint32_t len_tot, len_frag;
 	int slot, crate;
 
+	static int n_evt;
+	if (is_bor)
+		n_evt = 0;
+	n_evt++;
+	if (n_evt%5)
+		return 0;
+
 	//return 0;
 	//sleep(100);
 	/* parse event header */

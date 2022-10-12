@@ -20,3 +20,5 @@ The max number of pixie16 modules is determined by '#define MAX_CRATE 10' The
 max number of channels of a pixie16 module is determined by '#define MAX_MODULE
 21' If the above numbers are too small, just increase them without worrying
 about anything.
+
+Currently it supports only 100MHz 14bit cards

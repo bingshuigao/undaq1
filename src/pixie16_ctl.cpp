@@ -6,6 +6,7 @@
 #include <string.h>
 #include <math.h>
 
+#ifdef DAQ_XIA
 
 int pixie16_ctl::read_dsp_par()
 {
@@ -4005,3 +4006,5 @@ int pixie16_ctl::myPixie_Copy_DSPVarAddress(int SourceModNum, int
 	
 	return(0);
 }
+
+#endif

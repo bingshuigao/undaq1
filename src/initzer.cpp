@@ -319,9 +319,11 @@ static int create_mod(std::string& name, module*& mod)
 	else if (name.find("V1740") != std::string::npos) {
 		mod = new v1740;
 	}
+#ifdef DAQ_XIA
 	else if (name.find("PIXIE16_MOD") != std::string::npos) {
 		mod = new pixie16;
 	}
+#endif
 	else if (name.find("V1751") != std::string::npos) {
 		mod = new v1751;
 	}
@@ -702,6 +704,7 @@ do_init_mqdc32(mqdc32* mod, std::vector<struct conf_vme_mod> &the_conf)
 /* initialize pixie16 module, return 0 if succeed, otherwise return error code.
  * One should note that in our DAQ framework, each channel of a pixie16 module
  * is defined as a pixie16 module.  */
+#ifdef DAQ_XIA
 static int 
 do_init_pixie16(pixie16* mod, std::vector<struct conf_vme_mod> &the_conf)
 {
@@ -772,6 +775,7 @@ do_init_pixie16(pixie16* mod, std::vector<struct conf_vme_mod> &the_conf)
 
 	return 0;
 }
+#endif
 
 /* init mdpp scp/rcp software module settings */
 static int mdpp_init_scp(mdpp* mod, int fw_ver, uint32_t off, uint16_t val)
@@ -1239,12 +1243,15 @@ static int do_init_mod(module* mod, std::vector<struct conf_vme_mod> &the_conf)
 		return do_init_v785(static_cast<v785*>(mod), the_conf);
 	if (name == "v792" || name == "v792n")
 		return do_init_v792(static_cast<v792*>(mod), the_conf);
+#ifdef DAQ_XIA
 	if (name == "pixie16")
 		return do_init_pixie16(static_cast<pixie16*>(mod), the_conf);
+#endif
 	return -E_UNKOWN_MOD;
 }
 
 
+#ifdef DAQ_XIA
 int initzer::init_pixie16_ctl()
 {
 	/* first, find out how many pixie16 modules are included in the system
@@ -1284,7 +1291,9 @@ int initzer::init_pixie16_ctl()
 	}
 	return 0;
 }
+#endif
 
+#ifdef DAQ_XIA
 pixie16_ctl* initzer::do_init_pixie16_ctl(std::vector<struct conf_vme_mod>
 		&the_conf, int mod_n, unsigned short* pxi_slot_map)
 {
@@ -1333,6 +1342,7 @@ fail:
 	delete tmp_pixie16_ctl;
 	return NULL;
 }
+#endif
 
 
 int initzer::init_vme_mod()
@@ -1352,9 +1362,11 @@ int initzer::init_vme_mod()
 	/* try virtual vme controller supported vme controller here */
 	ret = init_test_ctl();
 	RET_IF_NONZERO(ret);
+#ifdef DAQ_XIA
 	/* try pixie16 controller */
 	ret = init_pixie16_ctl();
 	RET_IF_NONZERO(ret);
+#endif
 	/* try another supported vme controller here */
 
 
@@ -1612,11 +1624,13 @@ int initzer::init_global_var(module* mod,
 		}
 	}
 
+#ifdef DAQ_XIA
 	/* then try other supported controllers (pixie16_ctl)*/
 	for (auto it = p_pixie16_ctl.begin(); it != p_pixie16_ctl.end(); it++) {
 		mod->set_ctl(*it);
 		break;
 	}
+#endif
 
 
 	/* make sure the module has a vme controller assigned */

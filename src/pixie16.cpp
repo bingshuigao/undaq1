@@ -1,6 +1,8 @@
 #include "pixie16.h"
 #include <unistd.h>
 
+#ifdef DAQ_XIA
+
 pixie16::pixie16()
 {
 	/* set buffer offset */
@@ -112,3 +114,4 @@ int pixie16::on_stop()
 	return 0;
 }
 
+#endif

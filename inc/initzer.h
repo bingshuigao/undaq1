@@ -328,9 +328,11 @@ private:
 	 * Return 0 if succeed, otherwise return error code. */
 	int init_v2718();
 
+#ifdef DAQ_XIA
 	/* find and init the pixie16_ctl controller.
 	 * Return 0 if succeed, otherwise return error code. */
 	int init_pixie16_ctl();
+#endif
 
 	/* find and init all the test_ctl modules.
 	 * Return 0 if succeed, otherwise return error code. */
@@ -342,11 +344,13 @@ private:
 	 * pointer to the vme object. Return NULL in case of error. */
 	v2718* do_init_v2718(std::vector<struct conf_vme_mod> &the_conf, int offset);
 
+#ifdef DAQ_XIA
 	/* Init the pixie16_ctl controller according to its configurations
 	 * (the_config). The mod_n is the total number of pixie16 modules
 	 * included in the system Return NULL in case of error. */
 	pixie16_ctl* do_init_pixie16_ctl(std::vector<struct conf_vme_mod>
 			&the_conf, int mod_n, unsigned short* pxi_slot_map);
+#endif
 
 	/* Init the vme module according to its configurations. The offset is
 	 * the offset between board numbers and crate numbers. Return the
@@ -414,7 +418,9 @@ private:
 #ifdef MAKE_FRONTEND
 	std::vector<module*> p_module;
 	std::vector<v2718*> p_v2718;
+#ifdef DAQ_XIA
 	std::vector<pixie16_ctl*> p_pixie16_ctl;
+#endif
 	std::vector<test_ctl*> p_test_ctl;
 #endif
 	std::vector<std::vector<struct conf_vme_mod> > vme_conf;
