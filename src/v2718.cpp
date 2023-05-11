@@ -13,8 +13,10 @@ int v2718::open(void* par)
 	struct v2718_open_par* tmp = (struct v2718_open_par*)par;
 	int ret;
 	
+#ifndef DAQ_XIA
 	ret = CAENVME_Init(static_cast<CVBoardTypes>(tmp->bd_type), tmp->link,
 			tmp->bd_num, &handle);
+#endif
 	return error_code(ret);
 }
 
@@ -25,7 +27,9 @@ int v2718::close()
 {
 	int ret;
 
+#ifndef DAQ_XIA
 	ret = CAENVME_End(handle);
+#endif
 	return error_code(ret);
 }
 
@@ -71,8 +75,10 @@ int v2718::read(unsigned long addr, void* data)
 {
 	int ret;
 
+#ifndef DAQ_XIA
 	ret = CAENVME_ReadCycle(handle, addr, data,
 			static_cast<CVAddressModifier>(am), caen_dw());
+#endif
 	return error_code(ret);
 }
 
@@ -86,8 +92,10 @@ int v2718::write(unsigned long addr, void* data)
 {
 	int ret;
 
+#ifndef DAQ_XIA
 	ret = CAENVME_WriteCycle(handle, addr, data,
 			static_cast<CVAddressModifier>(am), caen_dw());
+#endif
 	return error_code(ret);
 }
 
@@ -99,7 +107,9 @@ int v2718::read_reg(long reg, void* data)
 {
 	int ret;
 
+#ifndef DAQ_XIA
 	ret = CAENVME_ReadRegister(handle, static_cast<CVRegisters>(reg), (unsigned int*) data);
+#endif
 	return error_code(ret);
 }
 
@@ -112,7 +122,9 @@ int v2718::write_reg(long reg, void* data)
 	int ret;
 	unsigned int val = *((unsigned int*)data);
 
+#ifndef DAQ_XIA
 	ret = CAENVME_WriteRegister(handle, static_cast<CVRegisters>(reg), val);
+#endif
 	return error_code(ret);
 }
 
@@ -126,17 +138,21 @@ int v2718::blt_read(unsigned long addr, void* buf, int sz_in, int* sz_out)
 {
 	int ret;
 
+#ifndef DAQ_XIA
 	ret = CAENVME_FIFOBLTReadCycle(handle, addr, buf, sz_in,
 			static_cast<CVAddressModifier>(am), caen_dw(),
 			sz_out);
+#endif
 	return error_code(ret);
 }
 int v2718::mblt_read(unsigned long addr, void* buf, int sz_in, int* sz_out)
 {
 	int ret;
 
+#ifndef DAQ_XIA
 	ret = CAENVME_FIFOMBLTReadCycle(handle, addr, buf, sz_in,
 			static_cast<CVAddressModifier>(am), sz_out);
+#endif
 	return error_code(ret);
 }
 
