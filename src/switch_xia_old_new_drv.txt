@@ -1,0 +1,9 @@
+How to switch between old(PCI) and new(PCIe) drivers?
+
+Suppose you already correctly installed Plx and Pixie driver and libs. Now, to
+switch from PCI to PCIe driver, just do the following with the code:
+    1, in pixie16_ctl.h, change #include "pixie16app_export.h" to #include "pixie16/pixie16.h" and add #include "pixie16app_defs.h"  
+    2, add -I/usr/local/xia/PixieSDK/include  flag in compiling the frontend in the makefile
+    3, in makefile, change libs from "-lPixie16App -lPixie16Sys -lPlxApi" to "-lPixie16Api -lPlxApi"
+
+If you want to change from PCIe to PCI, just reverse the above procedure.
