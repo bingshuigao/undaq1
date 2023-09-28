@@ -1,4 +1,5 @@
 /* convert raw data file into root format. currently it does not surpport
+/* convert raw data file into root format. currently it does not surpport
  * multiple DAQs (i.e. the daq number has to be zero).  
  * By B.Gao Jun. 23, 2020
  *
@@ -11,8 +12,9 @@
 #include <string.h>
 #include "ana_evt_hd.h"
 #include "ana_frag_hd.h"
-#include "ana_madc32.h"
+#include "ana_mtdc32.h"
 #include "ana_mqdc32.h"
+#include "ana_madc32.h"
 #include "ana_mdpp.h"
 #include "ana_pixie16.h"
 #include "ana_v775.h"
@@ -131,6 +133,7 @@ void clear_buf()
 	ana_v1190* tmp_v1190;
 	ana_madc32* tmp_madc;
 	ana_mqdc32* tmp_mqdc;
+	ana_mtdc32* tmp_mtdc;
 	ana_mdpp* tmp_mdpp;
 	ana_pixie16* tmp_pixie16;
 	ana_v775* tmp_v775;
@@ -170,6 +173,14 @@ void clear_buf()
 			for (i = 0; i < 128; i++) {
 				memset(tmp_v1190->get_data_ptr(i), 0,
 					sizeof(struct v1190_channel_data));
+			}
+			break;
+		case 16:
+			/* mtdc32 */
+			tmp_mtdc = static_cast<ana_mtdc32*>((*it)->br_frag_body);
+			for (i = 0; i < 32; i++) {
+				memset(tmp_mtdc->get_data_ptr(i), 0,
+					sizeof(struct mtdc32_channel_data));
 			}
 			break;
 		case 5:
@@ -279,6 +290,10 @@ static int get_lst_branches()
 			tmp->br_frag_body = new ana_mqdc32();
 			lst_of_br.push_back(tmp);
 		}
+		else if (name.find("MTDC32") != std::string::npos) {
+			tmp->br_frag_body = new ana_mtdc32();
+			lst_of_br.push_back(tmp);
+		}
 		else if (name.find("MDPP") != std::string::npos) {
 			bool is_found;
 			int fw_ver = 1 + get_conf_val_reg((*it), 0x1, is_found);
@@ -365,6 +380,7 @@ TTree* set_br_addr(char* run_title)
 	ana_v1751* tmp_v1751;
 	ana_v1190* tmp_v1190;
 	ana_madc32*  tmp_madc;
+	ana_mtdc32*  tmp_mtdc;
 	ana_mqdc32*  tmp_mqdc;
 	ana_mdpp*  tmp_mdpp;
 	ana_pixie16*  tmp_pixie16;
@@ -436,6 +452,17 @@ TTree* set_br_addr(char* run_title)
 				sprintf(buf2, "n_dw%03d/i:tdc[n_dw%03d]", i, i);
 				tmp_v1190->set_data_ptr(i, new struct v1190_channel_data);
 				tree->Branch(buf1, tmp_v1190->get_data_ptr(i), "n_hit/i:hit[n_hit]");
+			}
+			break;
+		case 16:
+			/* mtdc */
+			tmp_mtdc = static_cast<ana_mtdc32*>((*it)->br_frag_body);
+			for (i = 0; i < 32; i++) {
+				sprintf(buf1, "frag_mtdc_crate%02d_slot%02d_ch%03d", 
+						(*it)->br_frag_hd.crate, (*it)->br_frag_hd.slot, i);
+				sprintf(buf2, "n_dw%03d/i:tdc[n_dw%03d]", i, i);
+				tmp_mtdc->set_data_ptr(i, new struct mtdc32_channel_data);
+				tree->Branch(buf1, tmp_mtdc->get_data_ptr(i), "n_hit/i:hit[n_hit]");
 			}
 			break;
 		case 5:

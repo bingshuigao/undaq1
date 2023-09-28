@@ -19,6 +19,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from madc32 import madc32
+from mtdc32 import mtdc32
 from mqdc32 import mqdc32
 from v1190 import v1190
 from v830 import v830
@@ -44,7 +45,7 @@ class frontend:
         # number of crates
         self.n_crate = 1 
         # list of supported modules
-        self.sup_mods_lst = ['V2718', 'TEST_CTL', 'MADC32', 'MQDC32', 'MDPP', 'V1190A', 'V830', 'V977',
+        self.sup_mods_lst = ['V2718', 'TEST_CTL', 'MADC32', 'MQDC32', 'MTDC32', 'MDPP', 'V1190A', 'V830', 'V977',
                 'V1740', 'V1751', 'V775', 'V775N', 'V785', 'V785N', 'V792', 'FAKE_MODULE', 'PIXIE16_MOD', 'PIXIE16_CTL']
         # list of selected modules (note: the element is an object of the
         # vme_mod class, not a string as in the sup_mods_list)
@@ -145,6 +146,8 @@ class frontend:
             tmp = madc32(self._get_uniq_name(name), mod)
         elif name == 'MQDC32':
             tmp = mqdc32(self._get_uniq_name(name), mod)
+        elif name == 'MTDC32':
+            tmp = mtdc32(self._get_uniq_name(name), mod)
         elif name == 'MDPP':
             tmp = mdpp(self._get_uniq_name(name), mod)
         elif name == 'V1190A':

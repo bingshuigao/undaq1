@@ -100,6 +100,8 @@
 #define E_MDPP_FW              86 /* mdpp firmware version does not match */
 #define E_MDPP_INIT_SCP        87 /* mdpp scp firmware init */
 #define E_DATA_MDPP            88 /* corrupted mdpp data */
+#define E_INIT_MTDC32          89 /* error in the mtdc32 module init */
+#define E_DATA_MTDC32          29 /* corrupted mtdc32 data */
 
 
 

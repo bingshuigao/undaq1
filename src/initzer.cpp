@@ -307,6 +307,9 @@ static int create_mod(std::string& name, module*& mod)
 	else if (name.find("MQDC32") != std::string::npos) {
 		mod = new mqdc32;
 	}
+	else if (name.find("MTDC32") != std::string::npos) {
+		mod = new mtdc32;
+	}
 	else if (name.find("MDPP") != std::string::npos) {
 		mod = new mdpp;
 	}
@@ -664,6 +667,41 @@ do_init_v1740(v1740* mod, std::vector<struct conf_vme_mod> &the_conf)
 	}
 	return 0;
 }
+
+/* initialize vme module, return 0 if succeed, otherwise return error code */
+static int 
+do_init_mtdc32(mtdc32* mod, std::vector<struct conf_vme_mod> &the_conf)
+{
+	/* special attention should be paid to the 0x6090 register. If set to
+	 * 0xc, one must first send a pulse to the fc/res port before writing
+	 * 0xc to this register, or else the result of the register will be 8
+	 * instead of 0xc (a bug???) */
+	uint16_t dum = 0;
+	/* First, we need to soft-reset all settings */
+	if (mod->write_reg(0x6008, 16, &dum))
+		return -E_INIT_MTDC32;
+	usleep(1200000);
+	/* then init all registers with non-default values */
+	for (auto it = the_conf.begin(); it != the_conf.end(); it++) {
+		if ((*it).name != "") 
+			continue;
+		/* this is a register setting */
+		uint32_t off = (*it).offset;
+		uint16_t val = (*it).val.val_uint64;
+		if ((off >= 0x6000) && (off <= 0x60b6)) {
+			/* this is a physical register */
+			if (mod->write_reg(off, 16, &val))
+				return -E_INIT_MTDC32;
+		}
+		else {
+			/* unknown register */
+			return -E_INIT_MTDC32;
+		}
+	}
+	return 0;
+}
+
+
 
 
 /* initialize vme module, return 0 if succeed, otherwise return error code */
@@ -1225,6 +1263,8 @@ static int do_init_mod(module* mod, std::vector<struct conf_vme_mod> &the_conf)
 		return do_init_madc32(static_cast<madc32*>(mod), the_conf);
 	if (name == "mqdc32")
 		return do_init_mqdc32(static_cast<mqdc32*>(mod), the_conf);
+	if (name == "mtdc32")
+		return do_init_mtdc32(static_cast<mtdc32*>(mod), the_conf);
 	if (name == "mdpp")
 		return do_init_mdpp(static_cast<mdpp*>(mod), the_conf);
 	if (name == "v1190")

@@ -101,6 +101,8 @@ private:
 			return handle_single_evt_pixie16(evt, evt_len, max_len);
 		case 15: 
 			return handle_single_evt_mdpp(evt, evt_len, max_len);
+		case 16: 
+			return handle_single_evt_mtdc32(evt, evt_len, max_len);
 		default:
 			return -E_UNKOWN_MOD;
 		}
@@ -108,6 +110,7 @@ private:
 	int handle_single_evt_madc32(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_mdpp(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_mqdc32(uint32_t* evt, int& evt_len, int max_len);
+	int handle_single_evt_mtdc32(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v1190(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v830(uint32_t* evt, int& evt_len, int max_len);
 	int handle_single_evt_v1740(uint32_t* evt, int& evt_len, int max_len);

@@ -216,6 +216,7 @@ protected:
 	 * v792   --> mod_id = 13;
 	 * pixie16   --> mod_id = 14;
 	 * mdpp   --> mod_id = 15;
+	 * mtdc32 --> mod_id = 16;
 	 * */
 	uint32_t mod_id;
 	

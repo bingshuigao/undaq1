@@ -50,6 +50,7 @@
  * 13 --> v792
  * 14 --> pixie16
  * 15 --> mdpp
+ * 16 --> mtdc32
  *
  *
  * For trigger events:

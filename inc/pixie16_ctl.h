@@ -8,9 +8,9 @@
 #define PIXIE16_CTL_HHH
 #include "vme_ctl.h"
 #include <stdint.h>
-#include "pixie16app_export.h"
 
 #ifdef DAQ_XIA
+#include "pixie16app_export.h"
 
 /* struct defines copied from pixie16app_globals.h */
 #define ROUND(x)    ((x) < 0.0 ? ceil((x) - 0.5) : floor((x) + 0.5))

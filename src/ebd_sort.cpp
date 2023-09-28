@@ -618,6 +618,109 @@ err_data:
 }
 
 
+int ebd_sort::handle_single_evt_mtdc32(uint32_t* evt, int& evt_len, int max_len)
+{
+	uint32_t sig;
+	uint32_t buf[500]; /* big enough to accomadate a mtdc32 event plus the
+			     additional header .*/
+	uint64_t ts, ts_hi, ts_mono, clk_freq, evt_cnt, clk_off;
+	bool has_et = false;
+	int idx, evt_len_w;
+	
+	/* first, we make sure that it has event header */
+	sig = evt[0] >> 24;
+	if (sig != 0x40)
+		/* Opps! Not a header, corrupted data... */
+		goto err_data;
+
+	/* Now we try to get event length */
+	evt_len_w = ((evt[0] & 0xFFF) + 1); 
+	evt_len = evt_len_w * 4;
+	if ((evt_len_w > max_len) || (evt_len_w > 500))
+		goto err_data;
+
+	/* debug ...*/
+//	std::cout<<"OK1"<<std::endl;
+	/* ***********/
+	/* get slot number if necessary  */
+	if (slot == -1)
+		slot = slot_map[SLOT_MAP_IDX(crate,mod_id,(evt[0]>>16)&0xFF)];
+
+	/* debug ...*/
+//	std::cout<<"OK2"<<std::endl;
+	/* ***********/
+	
+	switch (ebd_type) {
+	case EBD_TYPE_TS:
+		/* get time stamp */
+		idx = evt_len_w - 1;
+		sig = evt[idx] >> 30;
+		if (sig != 0x3)
+			goto err_data;
+		ts = evt[idx] & 0x3FFFFFFF;
+
+		/* now try to find the extended ts */
+		idx = evt_len_w - 2;
+		if (evt[idx] == 0)
+			/* this is a filler */
+			idx--;
+//		std::cout<<idx<<std::endl;
+		sig = evt[idx] >> 21;
+		if (sig == 0x24)
+			has_et = true;
+		if (has_et) {
+			ts_hi = evt[idx] & 0xFFFF;
+			ts += (ts_hi<<30);
+		}
+		/* debug ...*/
+//		std::cout<<"OK3"<<std::endl;
+		/* ***********/
+
+
+		/* calculate the monotonic time stamp */
+		/* debug ...*/
+//		printf("clk_map pointer: 0x%016x", clk_map);
+		/* ***********/
+		
+		clk_freq = clk_map[CLK_MAP_IDX(crate, slot)];
+		clk_off = clk_off_map[CLK_OFF_MAP_IDX(crate, slot)];
+		/* debug ...*/
+//		std::cout<<"clk: "<<"clk_freq"<<std::endl;
+		/* ***********/
+		ts = get_mono_ts(ts, has_et ? 46 : 30, clk_freq, clk_off);
+		if (ts == 0)
+			return -E_SYNC_CLOCK;
+		ts = static_cast<uint64_t>(ts * (1. * hz / clk_freq));
+		break;
+		
+	case EBD_TYPE_EVT_CNT:
+		idx = evt_len_w - 1;
+		sig = evt[idx] >> 30;
+		if (sig != 0x3)
+			goto err_data;
+		evt_cnt = evt[idx] & 0x3FFFFFFF;
+		ts = get_mono_evt_cnt(evt_cnt, 30);
+		/* note that the evt cnt starts from zero, which is different
+		 * from madc according to manual */
+	//	ts++;
+		break;
+	}
+
+	/* save the event into the ring buffer */
+	return save_evt(buf, evt, evt_len_w, ts);
+
+err_data:
+	/* we changed the policy with corrupted data, since it does happen from
+	 * time to time. We don't return errors, instead, we just abanden this
+	 * event. We only need to figure out the length of this event and
+	 * return it in the param 'evt_len'*/
+	evt_len = max_len*4; //abonden the whole block of data.
+	send_text_mes("corrupted mtdc32 data", MSG_LEV_WARN);
+	return 0;
+//	return -E_DATA_MADC32;
+}
+
+
 int ebd_sort::handle_single_evt_mqdc32(uint32_t* evt, int& evt_len, int max_len)
 {
 	uint32_t sig;
